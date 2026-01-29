@@ -386,7 +386,6 @@
             } catch(e) { console.error("Ref Error", e); }
         }
 
-        // --- LOGIN & SESSION (MODIFIED) ---
         async function doLogin() {
             const u = document.getElementById('uid').value.trim();
             const p = document.getElementById('pwd').value.trim();
@@ -398,7 +397,7 @@
             
             const r = await postData('login', {u, p});
             if(r.success) {
-                r.username = u; // SIMPAN USERNAME ASAL
+                r.username = u;
                 const sessionData = { uProf: r, userToken: r.token, currentUserID: u };
                 localStorage.setItem('pnr_session', JSON.stringify(sessionData));
                 applyLogin(r, r.token, u);
@@ -406,7 +405,6 @@
                 msg.innerText = r.message; btn.disabled = false; btn.innerText = "MASUK";
             }
         }
-
         function applyLogin(r, token, uid) {
             uProf = r; userToken = token; currentUserID = uid;
             if(!uProf.username) uProf.username = uid;
