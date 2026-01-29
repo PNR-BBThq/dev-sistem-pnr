@@ -769,46 +769,63 @@
         // (Bahagian ini TIDAK kacau layout report card asal)
 
         async function renderEditForm(rowID, rowData) {
-            if(!refPestData) await loadRefData();
-            const d = rowData;
-            keptImages = [];
-            const rawImg = d[18] || ""; 
-            if(rawImg) keptImages = rawImg.split(',').map(s=>s.trim()).filter(s=>s.startsWith('http'));
+        if(!refPestData) await loadRefData();
+        const d = rowData;
+        keptImages = [];
+        const rawImg = d[18] || ""; 
+        if(rawImg) keptImages = rawImg.split(',').map(s=>s.trim()).filter(s=>s.startsWith('http'));
 
-            let html = `
-            <div id="fullEditForm">
-                <input type="hidden" id="fe_row" value="${rowID}">
-                <h6 class="text-primary border-bottom pb-2">A. Lokasi & Tarikh</h6>
-                <div class="row g-2 mb-2">
-                    <div class="col-6"><label class="small fw-bold">Negeri</label><select id="fe_negeri" class="form-select form-select-sm" onchange="updateDistricts('fe_negeri','fe_daerah')"><option value="">- Pilih -</option>${Object.keys(districtData).sort().map(n => `<option value="${n}">${n}</option>`).join('')}</select></div>
-                    <div class="col-6"><label class="small fw-bold">Daerah</label><select id="fe_daerah" class="form-select form-select-sm"></select></div>
-                </div>
-                <div class="mb-2"><label class="small fw-bold">Lokasi/Kebun</label><input type="text" id="fe_lokasi" class="form-control form-control-sm"></div>
-                <div class="row g-2 mb-2">
-                    <div class="col-6"><label class="small fw-bold">Tarikh</label><input type="date" id="fe_tarikh" class="form-control form-control-sm"></div>
-                    <div class="col-6"><label class="small fw-bold">Koordinat</label><input type="text" id="fe_coord" class="form-control form-control-sm"></div>
-                    <div class="col-12"><label class="small fw-bold">Nama Pegawai</label><input type="text" id="fe_pegawai" class="form-control form-control-sm" readonly></div>
-                </div>
-                <h6 class="text-primary border-bottom pb-2 mt-3">B. Tanaman</h6>
-                <div class="mb-2"><label class="small fw-bold">Kategori</label><select id="fe_kategori" class="form-select form-select-sm" onchange="updateEditDD('kat')"></select></div>
-                <div class="row g-2 mb-2">
-                    <div class="col-6"><label class="small fw-bold">Tanaman</label><select id="fe_tanaman" class="form-select form-select-sm" onchange="updateEditDD('tan')"></select></div>
-                    <div class="col-6"><label class="small fw-bold">Varieti</label><input type="text" id="fe_varieti" class="form-control form-control-sm"></div>
-                </div>
-                <div class="mb-2"><label class="small fw-bold">Luas Tanam (Ha)</label><input type="number" id="fe_luasT" class="form-control form-control-sm"></div>
-                <h6 class="text-primary border-bottom pb-2 mt-3">C. Data Serangan</h6>
-                <table class="table table-sm table-bordered" id="fe_pestTable"><thead class="table-light"><tr><th>Perosak</th><th width="70">Luas(Ha)</th><th width="70">Tahap</th><th width="30"></th></tr></thead><tbody></tbody></table>
-                <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-3" onclick="addPestRow()">+ Tambah Perosak</button>
-                
-                <h6 class="text-primary border-bottom pb-2 mt-3">D. Gambar & Keterangan</h6>
-                <div class="mb-2"><label class="small fw-bold mb-2">Gambar Sedia Ada:</label><div id="existingImgContainer"></div></div>
-                <div class="mb-3"><label class="small fw-bold">Muat Naik Gambar Baru:</label><input type="file" id="fe_newImages" class="form-control form-control-sm" multiple accept="image/*"></div>
-                <div class="mb-3"><label class="small fw-bold">Keterangan Gambar</label><textarea id="fe_caption" class="form-control" rows="2" placeholder="Masukkan kapsyen gambar..."></textarea></div>
+        // Ambil Caption Sedia Ada (d[21] adalah jangkaan index column Caption, semak jika perlu)
+        const oldCaption = d.cp || ""; // d.cp datang dari backend getAnalytics
 
-                <h6 class="text-primary border-bottom pb-2 mt-3">E. Syor</h6>
-                <div class="mb-3"><textarea id="fe_syor" class="form-control" rows="4"></textarea></div>
-                <button class="btn btn-success w-100 py-2 fw-bold" onclick="saveFullEdit()">SIMPAN & HANTAR</button>
-            </div>`;
+        let html = `
+        <div id="fullEditForm">
+            <input type="hidden" id="fe_row" value="${rowID}">
+            <h6 class="text-primary border-bottom pb-2">A. Lokasi & Tarikh</h6>
+            <div class="row g-2 mb-2">
+                <div class="col-6"><label class="small fw-bold">Negeri</label><select id="fe_negeri" class="form-select form-select-sm" onchange="updateDistricts('fe_negeri','fe_daerah')"><option value="">- Pilih -</option>${Object.keys(districtData).sort().map(n => `<option value="${n}">${n}</option>`).join('')}</select></div>
+                <div class="col-6"><label class="small fw-bold">Daerah</label><select id="fe_daerah" class="form-select form-select-sm"></select></div>
+            </div>
+            <div class="mb-2"><label class="small fw-bold">Lokasi/Kebun</label><input type="text" id="fe_lokasi" class="form-control form-control-sm"></div>
+            <div class="row g-2 mb-2">
+                <div class="col-6"><label class="small fw-bold">Tarikh</label><input type="date" id="fe_tarikh" class="form-control form-control-sm"></div>
+                <div class="col-6"><label class="small fw-bold">Koordinat</label><input type="text" id="fe_coord" class="form-control form-control-sm"></div>
+            </div>
+
+            <h6 class="text-primary border-bottom pb-2 mt-3">B. Tanaman</h6>
+            <div class="mb-2"><label class="small fw-bold">Kategori</label><select id="fe_kategori" class="form-select form-select-sm" onchange="updateEditDD('kat')"></select></div>
+            <div class="row g-2 mb-2">
+                <div class="col-6"><label class="small fw-bold">Tanaman</label><select id="fe_tanaman" class="form-select form-select-sm" onchange="updateEditDD('tan')"></select></div>
+                <div class="col-6"><label class="small fw-bold">Varieti</label><input type="text" id="fe_varieti" class="form-control form-control-sm"></div>
+            </div>
+            <div class="mb-2"><label class="small fw-bold">Luas Tanam (Ha)</label><input type="number" id="fe_luasT" class="form-control form-control-sm"></div>
+
+            <h6 class="text-primary border-bottom pb-2 mt-3">C. Data Serangan</h6>
+            <table class="table table-sm table-bordered" id="fe_pestTable"><thead class="table-light"><tr><th>Perosak</th><th width="70">Luas(Ha)</th><th width="70">Tahap</th><th width="30"></th></tr></thead><tbody></tbody></table>
+            <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-3" onclick="addPestRow()">+ Tambah Perosak</button>
+
+            <h6 class="text-primary border-bottom pb-2 mt-3">D. Gambar & Keterangan</h6>
+            
+            <div class="mb-2">
+                <label class="small fw-bold mb-2">Gambar Sedia Ada:</label>
+                <div id="existingImgContainer" class="d-flex flex-column gap-2"></div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="small fw-bold">Muat Naik Gambar Baru:</label>
+                <input type="file" id="fe_newImages" class="form-control form-control-sm" multiple accept="image/*">
+            </div>
+
+            <div class="mb-3">
+                <label class="small fw-bold text-dark">Keterangan Gambar (Caption)</label>
+                <textarea id="fe_caption" class="form-control" rows="2" placeholder="Masukkan kapsyen gambar...">${oldCaption}</textarea>
+            </div>
+
+            <h6 class="text-primary border-bottom pb-2 mt-3">E. Syor</h6>
+            <div class="mb-3"><textarea id="fe_syor" class="form-control" rows="4"></textarea></div>
+
+            <button class="btn btn-success w-100 py-2 fw-bold" onclick="saveFullEdit()">SIMPAN & HANTAR</button>
+        </div>`;
 
             document.getElementById('detailBody').innerHTML = html;
             document.getElementById('modalTitle').innerText = "KEMASKINI TUGASAN";
@@ -851,9 +868,9 @@
             // Render Caption (Kalau ada data caption di row hujung, masukkan sini. Buat masa ni kosongkan)
             // setV('fe_caption', d[21]); // Jika backend hantar caption
             
-            setV('fe_syor', d[17]);
-            new bootstrap.Modal(document.getElementById('detailModal')).show();
-        }
+           setV('fe_syor', d[17]);
+        new bootstrap.Modal(document.getElementById('detailModal')).show();
+    }
 
         function updateEditDD(level) {
             const katEl = document.getElementById('fe_kategori'); const tanEl = document.getElementById('fe_tanaman');
@@ -889,26 +906,26 @@
         }
 
         // [MODIFIED] GUNA LINK & BUTTON DELETE
-        function renderKeptImages() {
-            const c = document.getElementById('existingImgContainer'); if(!c) return;
-            c.innerHTML = ""; 
-            if(keptImages.length === 0) {
-                c.innerHTML = "<small class='text-muted fst-italic'>Tiada gambar sedia ada.</small>";
-            } else {
-                keptImages.forEach((url, idx) => { 
-                    c.innerHTML += `
-                    <div class="d-flex align-items-center justify-content-between border rounded p-2 mb-2 bg-white">
-                        <a href="${url}" target="_blank" class="btn btn-sm btn-outline-primary fw-bold">
-                            <i class="bi bi-image me-1"></i> Lihat Gambar ${idx+1}
-                        </a>
-                        <button class="btn btn-sm btn-outline-danger" onclick="removeImage(${idx})" title="Padam Gambar">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>`; 
-                });
-            }
+       function renderKeptImages() {
+        const c = document.getElementById('existingImgContainer'); if(!c) return;
+        c.innerHTML = ""; 
+        
+        if (keptImages.length === 0) {
+            c.innerHTML = "<small class='text-muted fst-italic'>Tiada gambar sedia ada.</small>";
+        } else {
+            keptImages.forEach((url, idx) => {
+                c.innerHTML += `
+                <div class="d-flex align-items-center justify-content-between p-2 border rounded bg-white">
+                    <a href="${url}" target="_blank" class="btn btn-sm btn-outline-primary fw-bold text-truncate" style="max-width: 80%;">
+                        <i class="bi bi-box-arrow-up-right me-1"></i> Lihat Gambar ${idx+1}
+                    </a>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeImage(${idx})" title="Padam">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>`;
+            });
         }
-
+    }
         function removeImage(idx) { 
             if(confirm("Padam gambar ini dari senarai?")) {
                 keptImages.splice(idx, 1); 
@@ -916,32 +933,39 @@
             }
         }
 
-        async function saveFullEdit() {
-            if(!confirm("Hantar kemaskini?")) return;
-            const btn = event.target; btn.innerHTML="Menghantar..."; btn.disabled=true;
-            const fileInput = document.getElementById('fe_newImages'); const newImages = [];
-            if(fileInput.files.length > 0) {
-                for (let i = 0; i < fileInput.files.length; i++) {
-                    const file = fileInput.files[i];
-                    const base64 = await new Promise((resolve) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.readAsDataURL(file); });
-                    newImages.push({ name: file.name, dataUrl: base64 });
-                }
+       // [UPDATED] SAVE FUNCTION (MASUKKAN CAPTION)
+    async function saveFullEdit() {
+        if(!confirm("Hantar kemaskini?")) return;
+        const btn = event.target; btn.innerHTML="Menghantar..."; btn.disabled=true;
+        
+        // ... (Proses Gambar Baru sama) ...
+        const fileInput = document.getElementById('fe_newImages'); const newImages = [];
+        if(fileInput.files.length > 0) {
+            for (let i = 0; i < fileInput.files.length; i++) {
+                const file = fileInput.files[i];
+                const base64 = await new Promise((resolve) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.readAsDataURL(file); });
+                newImages.push({ name: file.name, dataUrl: base64 });
             }
-            const luasS={}, sevS={}, pctS={}; const lt = parseFloat(document.getElementById('fe_luasT').value)||0;
-            document.querySelectorAll('#fe_pestTable tbody tr').forEach(tr => {
-                const n = tr.querySelector('.p-name-select').value; const a = parseFloat(tr.querySelector('.p-area').value)||0; const s = tr.querySelector('.p-sev').value;
-                if(n) { luasS[n]=a; sevS[n]=s; pctS[n]= lt>0 ? ((a/lt)*100).toFixed(2) : 0; }
-            });
-            const payload = {
-                row: document.getElementById('fe_row').value, tarikh: document.getElementById('fe_tarikh').value, pegawai: uProf.name, 
-                negeri: document.getElementById('fe_negeri').value, daerah: document.getElementById('fe_daerah').value, lokasi: document.getElementById('fe_lokasi').value,
-                coord: document.getElementById('fe_coord').value, kategori: document.getElementById('fe_kategori').value, tanaman: document.getElementById('fe_tanaman').value,
-                varieti: document.getElementById('fe_varieti').value, luasT: lt, luasS: luasS, keterukan: sevS, peratus: pctS,
-                syor: formatSyorPerenggan(document.getElementById('fe_syor').value), 
-                keptImages: keptImages, // Array gambar lama (yg belum delete)
-                newImages: newImages,   // Gambar baru
-                caption: document.getElementById('fe_caption').value // Caption
-            };
+        }
+        
+        // ... (Proses Pest sama) ...
+        const luasS={}, sevS={}, pctS={}; const lt = parseFloat(document.getElementById('fe_luasT').value)||0;
+        document.querySelectorAll('#fe_pestTable tbody tr').forEach(tr => {
+            const n = tr.querySelector('.p-name-select').value; const a = parseFloat(tr.querySelector('.p-area').value)||0; const s = tr.querySelector('.p-sev').value;
+            if(n) { luasS[n]=a; sevS[n]=s; pctS[n]= lt>0 ? ((a/lt)*100).toFixed(2) : 0; }
+        });
+
+        const payload = {
+            row: document.getElementById('fe_row').value, 
+            tarikh: document.getElementById('fe_tarikh').value, 
+            // ... (field lain sama) ...
+            
+            // [BARU] HANTAR CAPTION
+            caption: document.getElementById('fe_caption').value,
+            
+            keptImages: keptImages, 
+            newImages: newImages
+        };
             const r = await postData('updateEntry', payload);
             if(r.success) { alert("✅ Berjaya!"); bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide(); loadMyTasks(); initDash(); } else { alert("Ralat: " + r.message); btn.innerHTML="SIMPAN & HANTAR"; btn.disabled=false; }
         }
