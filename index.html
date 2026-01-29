@@ -840,7 +840,7 @@
                 luasS: luasS, 
                 keterukan: sevS,
                 peratus: pctS,
-                syor: document.getElementById('fe_syor').value,
+                syor: formatSyorPerenggan(document.getElementById('fe_syor').value),
                 name: uProf.name 
             };
 
@@ -1168,6 +1168,23 @@
 
             btn.innerHTML = '<i class="bi bi-file-earmark-pdf"></i> PDF';
             btn.disabled = false;
-        }    </script>
+        }  
+    // --- MESIN PENAPIS AYAT (Letak di Bawah Sekali Script) ---
+function formatSyorPerenggan(teksInput) {
+    if (!teksInput) return "";
+    
+    // Pecahkan ikut ; atau baris baru
+    return String(teksInput).split(/[;\n]+/)
+        .map(t => t.trim())              // Buang space
+        .filter(t => t.length > 0)       // Buang kosong
+        .map(t => {
+            // Huruf Besar depan + Titik belakang
+            let s = t.charAt(0).toUpperCase() + t.slice(1);
+            if (!s.endsWith('.')) s += '.';
+            return s;
+        })
+        .join(' '); // Gabung dengan Space
+}
+    </script>
 </body>
 </html>
