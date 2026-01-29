@@ -200,14 +200,13 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script>
+   <script>
         // *** SILA PASTE URL BACKEND TUAN DI SINI ***
         const API_URL = "https://script.google.com/macros/s/AKfycbx1hlsIWN5MCo7ab_ytT_d_oFqVjy1XMJwM39oBC8yPp9OLukRSbk47Ufate26quu4k/exec";
         
         const BANCIAN_URL = "https://script.google.com/macros/s/AKfycbz2hKf0rlCm8xWD_kXwEi0kYiVCOtcX1_noM6S0dHjkDJOrG6LtQ3GGt-4TT0plWVm60g/exec";
         document.getElementById('frameBorang').src = BANCIAN_URL;
 
-        // DATA UTAMA
         const districtData = {
             "Johor": ["Batu Pahat", "Johor Bahru", "Kluang", "Kota Tinggi", "Kulai", "Mersing", "Muar", "Pontian", "Segamat", "Tangkak"],
             "Kedah": ["Baling", "Bandar Baharu", "Kota Setar", "Kuala Muda", "Kubang Pasu", "Kulim", "Langkawi", "Padang Terap", "Pendang", "Pokok Sena", "Sik", "Yan"],
@@ -229,14 +228,14 @@
         let refPestData = null; 
         let keptImages = []; 
 
-        // --- FETCHING ---
+        // --- FETCHING (DIPERBETULKAN) ---
         async function postData(act, load) {
             try {
-                // Pastikan token dihantar jika user dah login
                 let payload = { action: act, ...load };
+                // PEMBETULAN: Pastikan hantar Username (ID), BUKAN Nama Penuh
                 if(uProf && uProf.token) {
                     payload.token = uProf.token;
-                    payload.u = uProf.name || uProf.u;
+                    payload.u = uProf.username; // <--- INI KUNCINYA (Kita guna 'username' yg disimpan masa login)
                 }
                 
                 const res = await fetch(API_URL, { 
@@ -255,19 +254,27 @@
             try {
                 const res = await fetch(API_URL + "?action=getPestData");
                 refPestData = await res.json();
-                console.log("Ref Data OK");
             } catch(e) { console.error("Ref Error", e); }
         }
 
+        // --- LOGIN (DIPERBETULKAN) ---
         async function doLogin() {
-            const u = document.getElementById('uid').value, p = document.getElementById('pwd').value;
+            const u = document.getElementById('uid').value.trim(); // Trim space
+            const p = document.getElementById('pwd').value.trim();
             const btn = document.getElementById('btnLogin');
-            if(!u || !p) return;
+            
+            if(!u || !p) { alert("Sila isi ID dan Password"); return; }
+            
             btn.innerText="Memproses..."; btn.disabled=true;
+            
+            // Hantar login request
             const r = await postData('login', {u, p});
+            
             if(r.success) {
-                uProf = r;
-                localStorage.setItem('pnr_user', JSON.stringify(r)); // Simpan login
+                // PEMBETULAN: Simpan 'u' (input user) sebagai username rasmi
+                uProf = { ...r, username: u }; 
+                
+                localStorage.setItem('pnr_user', JSON.stringify(uProf));
                 applyLogin();
             } else {
                 document.getElementById('loginMsg').innerText = r.message;
@@ -286,36 +293,31 @@
             loadRefData();
         }
 
-        // Auto Login if saved
         window.onload = function() {
             const saved = localStorage.getItem('pnr_user');
             if(saved) {
                 uProf = JSON.parse(saved);
+                // Pastikan username wujud dalam saved data (untuk user lama)
+                if(!uProf.username && uProf.token) {
+                    // Cuba ambil dari token jika username hilang
+                    uProf.username = uProf.token.split('_')[0]; 
+                }
                 applyLogin();
             }
         }
 
         async function initDash() {
             console.log("Memanggil Data Dashboard...");
-            // Panggil API dengan parameter yang betul
             const d = await postData('getAnalytics', {state: uProf.state});
             
-            console.log("Respon Dashboard:", d); // Debug di console
-
             if(d.records) {
                 mData = d.records;
-                console.log("Jumlah Rekod:", mData.length);
-                
-                // POPULATE DROPDOWN SECARA AUTOMATIK DARI DATA
                 populateDropdown('selNegeri', mData.map(r=>r.n));
                 populateDropdown('selDaerah', mData.map(r=>r.d));
                 populateDropdown('selTanaman', mData.map(r=>r.tn));
-                populateDropdown('selPerosak', []); // Perosak perlu logic khas jika nak list semua
-
-                // Set Default Filter jika bukan ALL
+                
                 if(uProf.state !== "ALL") { 
                     const sel = document.getElementById('selNegeri');
-                    // Cari option yang sepadan (case insensitive)
                     for(let i=0; i<sel.options.length; i++){
                         if(sel.options[i].value.toUpperCase() === uProf.state.toUpperCase()){
                             sel.selectedIndex = i; break;
@@ -323,35 +325,32 @@
                     }
                     sel.disabled=true; 
                 }
-                
                 runFilter();
-                // Alert pengesahan
-                // alert(`Data diterima: ${mData.length} rekod.`); 
             } else {
-                alert("Tiada data atau ralat: " + (d.message || "Unknown"));
+                // Jika masih gagal session, auto logout
+                if(d.message && d.message.includes("Sesi tamat")) {
+                    alert("Sesi tamat. Sila log masuk semula.");
+                    doLogout();
+                } else {
+                    console.log("Tiada data: " + d.message);
+                }
             }
         }
 
         function populateDropdown(id, arrValues) {
             const el = document.getElementById(id);
             const currentVal = el.value;
-            // Dapatkan senarai unik, buang null/kosong, sort
             const unique = [...new Set(arrValues.filter(x => x && x !== "-"))].sort();
-            
             el.innerHTML = '<option value="">Semua</option>';
-            unique.forEach(v => {
-                el.innerHTML += `<option value="${v}">${v}</option>`;
-            });
-            el.value = currentVal; // Kekalkan pilihan jika ada
+            unique.forEach(v => { el.innerHTML += `<option value="${v}">${v}</option>`; });
+            el.value = currentVal;
         }
 
         function runFilter(src) {
-            // Ambil value filter
             const n = document.getElementById('selNegeri').value;
             const d = document.getElementById('selDaerah').value;
             const t = document.getElementById('selTanaman').value;
             
-            // Logik Tapis
             fData = mData.filter(r => {
                 const matchN = (n === "" || r.n === n);
                 const matchD = (d === "" || r.d === d);
@@ -359,59 +358,36 @@
                 return matchN && matchD && matchT;
             });
             
-            // Cascading Dropdown (Update daerah bila negeri dipilih)
             if(src === 'n') {
                 populateDropdown('selDaerah', fData.map(r=>r.d));
                 populateDropdown('selTanaman', fData.map(r=>r.tn));
             }
-            
             calcUI();
         }
 
         function calcUI() {
             let tt=0, ts=0; 
-            fData.forEach(r => { 
-                tt += (parseFloat(r.lt) || 0); 
-                ts += (parseFloat(r.ls) || 0); 
-            });
-            
+            fData.forEach(r => { tt += (parseFloat(r.lt) || 0); ts += (parseFloat(r.ls) || 0); });
             document.getElementById('k1').innerText = tt.toFixed(2);
             document.getElementById('k2').innerText = ts.toFixed(2);
             document.getElementById('k3').innerText = tt>0 ? ((ts/tt)*100).toFixed(1)+"%" : "0%";
             document.getElementById('k4').innerText = fData.length;
             
-            // Map
             if(!map) { map = L.map('map').setView([4.2, 101.9], 6); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map); }
             if(layer) map.removeLayer(layer);
             let pts=[]; 
-            fData.forEach(r=>{ 
-                if(r.c && r.c.includes(',')) {
-                    let coord = r.c.split(',').map(Number);
-                    if(!isNaN(coord[0])) pts.push(coord);
-                }
-            });
-            if(pts.length) {
-                layer=L.layerGroup(pts.map(p=>L.circleMarker(p,{radius:5,color:'red',fillOpacity:0.8}))).addTo(map);
-                map.fitBounds(L.latLngBounds(pts)); // Zoom ke data
-            }
+            fData.forEach(r=>{ if(r.c && r.c.includes(',')) { let coord = r.c.split(',').map(Number); if(!isNaN(coord[0])) pts.push(coord); } });
+            if(pts.length) { layer=L.layerGroup(pts.map(p=>L.circleMarker(p,{radius:5,color:'red',fillOpacity:0.8}))).addTo(map); map.fitBounds(L.latLngBounds(pts)); }
 
-            // Hotspot
-            let h={}; 
-            fData.forEach(r=>{ if(r.ls>0) h[r.d]=(h[r.d]||0)+r.ls; });
+            let h={}; fData.forEach(r=>{ if(r.ls>0) h[r.d]=(h[r.d]||0)+r.ls; });
             document.getElementById('hotspotTable').innerHTML = Object.entries(h).sort((a,b)=>b[1]-a[1]).slice(0,5).map(x=>`<tr><td>${x[0]}</td><td class="text-end text-danger fw-bold">${x[1].toFixed(2)}</td></tr>`).join('');
-            
             pg=1; renTab();
         }
 
         function renTab() {
             const st = (pg-1)*pSize, dt = fData.slice(st, st+pSize);
             const tbody = document.getElementById('tBody');
-            
-            if(dt.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-3 text-muted">Tiada Rekod</td></tr>';
-                return;
-            }
-
+            if(dt.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-center p-3 text-muted">Tiada Rekod</td></tr>'; return; }
             tbody.innerHTML = dt.map((d,i) => `
                 <tr>
                     <td>${d.t}</td>
@@ -427,7 +403,7 @@
         }
         function movePg(v){ pg=Math.max(1, pg+v); renTab(); }
 
-        // --- EDIT MODE UTILITIES ---
+        // --- EDIT MODE ---
         async function renderEditForm(rowID, rowData) {
             if(!refPestData) await loadRefData();
             const d = rowData;
@@ -440,13 +416,7 @@
                 <input type="hidden" id="fe_row" value="${rowID}">
                 <h6 class="text-primary border-bottom pb-2">A. Lokasi & Tarikh</h6>
                 <div class="row g-2 mb-2">
-                    <div class="col-6">
-                        <label class="small fw-bold">Negeri</label>
-                        <select id="fe_negeri" class="form-select form-select-sm" onchange="updateDistricts('fe_negeri','fe_daerah')">
-                            <option value="">- Pilih -</option>
-                            ${Object.keys(districtData).sort().map(n => `<option value="${n}">${n}</option>`).join('')}
-                        </select>
-                    </div>
+                    <div class="col-6"><label class="small fw-bold">Negeri</label><select id="fe_negeri" class="form-select form-select-sm" onchange="updateDistricts('fe_negeri','fe_daerah')"><option value="">- Pilih -</option>${Object.keys(districtData).sort().map(n => `<option value="${n}">${n}</option>`).join('')}</select></div>
                     <div class="col-6"><label class="small fw-bold">Daerah</label><select id="fe_daerah" class="form-select form-select-sm"></select></div>
                 </div>
                 <div class="mb-2"><label class="small fw-bold">Lokasi/Kebun</label><input type="text" id="fe_lokasi" class="form-control form-control-sm"></div>
@@ -454,322 +424,169 @@
                     <div class="col-6"><label class="small fw-bold">Tarikh</label><input type="date" id="fe_tarikh" class="form-control form-control-sm"></div>
                     <div class="col-6"><label class="small fw-bold">Koordinat</label><input type="text" id="fe_coord" class="form-control form-control-sm"></div>
                 </div>
-
                 <h6 class="text-primary border-bottom pb-2 mt-3">B. Tanaman</h6>
-                <div class="mb-2">
-                    <label class="small fw-bold">Kategori</label>
-                    <select id="fe_kategori" class="form-select form-select-sm" onchange="updateEditDD('kat')"></select>
-                </div>
+                <div class="mb-2"><label class="small fw-bold">Kategori</label><select id="fe_kategori" class="form-select form-select-sm" onchange="updateEditDD('kat')"></select></div>
                 <div class="row g-2 mb-2">
-                    <div class="col-6">
-                        <label class="small fw-bold">Tanaman</label>
-                        <select id="fe_tanaman" class="form-select form-select-sm" onchange="updateEditDD('tan')"></select>
-                    </div>
+                    <div class="col-6"><label class="small fw-bold">Tanaman</label><select id="fe_tanaman" class="form-select form-select-sm" onchange="updateEditDD('tan')"></select></div>
                     <div class="col-6"><label class="small fw-bold">Varieti</label><input type="text" id="fe_varieti" class="form-control form-control-sm"></div>
                 </div>
                 <div class="mb-2"><label class="small fw-bold">Luas Tanam (Ha)</label><input type="number" id="fe_luasT" class="form-control form-control-sm"></div>
-
                 <h6 class="text-primary border-bottom pb-2 mt-3">C. Data Serangan</h6>
-                <table class="table table-sm table-bordered" id="fe_pestTable">
-                    <thead class="table-light"><tr><th>Perosak</th><th width="70">Luas(Ha)</th><th width="70">Tahap</th><th width="30"></th></tr></thead>
-                    <tbody></tbody>
-                </table>
+                <table class="table table-sm table-bordered" id="fe_pestTable"><thead class="table-light"><tr><th>Perosak</th><th width="70">Luas(Ha)</th><th width="70">Tahap</th><th width="30"></th></tr></thead><tbody></tbody></table>
                 <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-3" onclick="addPestRow()">+ Tambah Perosak</button>
-
                 <h6 class="text-primary border-bottom pb-2 mt-3">D. Gambar</h6>
-                <div class="mb-2">
-                    <label class="small fw-bold mb-2">Gambar Sedia Ada:</label>
-                    <div id="existingImgContainer" class="d-flex flex-wrap gap-2"></div>
-                </div>
-                <div class="mb-3">
-                    <label class="small fw-bold">Muat Naik Gambar Baru:</label>
-                    <input type="file" id="fe_newImages" class="form-control form-control-sm" multiple accept="image/*">
-                </div>
-
+                <div class="mb-2"><label class="small fw-bold mb-2">Gambar Sedia Ada:</label><div id="existingImgContainer" class="d-flex flex-wrap gap-2"></div></div>
+                <div class="mb-3"><label class="small fw-bold">Muat Naik Gambar Baru:</label><input type="file" id="fe_newImages" class="form-control form-control-sm" multiple accept="image/*"></div>
                 <h6 class="text-primary border-bottom pb-2 mt-3">E. Syor</h6>
-                <div class="mb-3">
-                    <textarea id="fe_syor" class="form-control" rows="4"></textarea>
-                </div>
-
+                <div class="mb-3"><textarea id="fe_syor" class="form-control" rows="4"></textarea></div>
                 <button class="btn btn-success w-100 py-2 fw-bold" onclick="saveFullEdit()">SIMPAN & HANTAR</button>
             </div>`;
 
             document.getElementById('detailBody').innerHTML = html;
             document.getElementById('modalTitle').innerText = "KEMASKINI TUGASAN";
-
             const setV = (id, v) => { if(document.getElementById(id)) document.getElementById(id).value = v||""; };
-            
             setV('fe_tarikh', d[3] ? new Date(d[3]).toISOString().split('T')[0] : "");
-            setV('fe_lokasi', d[6]);
-            setV('fe_coord', d[7]);
+            setV('fe_lokasi', d[6]); setV('fe_coord', d[7]);
             
             const smartSet = (elId, val, options) => {
                 const el = document.getElementById(elId);
                 el.innerHTML = '<option value="">- Pilih -</option>';
                 options.forEach(o => { el.innerHTML += `<option value="${o}">${o}</option>`; });
                 const match = options.find(o => String(o).toUpperCase() === String(val).toUpperCase());
-                if(match) el.value = match;
-                else if(val) el.innerHTML += `<option value="${val}" selected>${val} (Rekod Asal)</option>`;
+                if(match) el.value = match; else if(val) el.innerHTML += `<option value="${val}" selected>${val} (Rekod Asal)</option>`;
             };
 
-            smartSet('fe_negeri', d[4], Object.keys(districtData));
-            updateDistricts('fe_negeri','fe_daerah'); 
+            smartSet('fe_negeri', d[4], Object.keys(districtData)); updateDistricts('fe_negeri','fe_daerah');
             const elD = document.getElementById('fe_daerah'); 
-            if(d[4] && districtData[d[4]]) {
-                elD.innerHTML='<option value="">- Pilih -</option>';
-                districtData[d[4]].forEach(x=>elD.innerHTML+=`<option value="${x}">${x}</option>`);
-            }
+            if(d[4] && districtData[d[4]]) { elD.innerHTML='<option value="">- Pilih -</option>'; districtData[d[4]].forEach(x=>elD.innerHTML+=`<option value="${x}">${x}</option>`); }
             elD.value = d[5];
 
             const cats = refPestData ? Object.keys(refPestData).sort() : [];
-            smartSet('fe_kategori', d[8], cats);
-            updateEditDD('kat'); 
-            
+            smartSet('fe_kategori', d[8], cats); updateEditDD('kat');
             const currentCat = document.getElementById('fe_kategori').value;
-            let crops = [];
-            if(currentCat && refPestData && refPestData[currentCat]) {
-                crops = Object.keys(refPestData[currentCat]).sort();
-            }
+            let crops = []; if(currentCat && refPestData && refPestData[currentCat]) { crops = Object.keys(refPestData[currentCat]).sort(); }
             smartSet('fe_tanaman', d[9], crops);
-            
-            setV('fe_varieti', d[11]);
-            setV('fe_luasT', d[12]);
+            setV('fe_varieti', d[11]); setV('fe_luasT', d[12]);
 
-            let luasObj={}, sevObj={};
-            try { luasObj = JSON.parse(d[14]); } catch(e){}
-            try { sevObj = JSON.parse(d[16]); } catch(e){}
+            let luasObj={}, sevObj={}; try { luasObj = JSON.parse(d[14]); } catch(e){} try { sevObj = JSON.parse(d[16]); } catch(e){}
             const pList = Object.keys(luasObj);
             if(pList.length===0 && d[13]) addPestRow(d[13], d[14], d[16]);
             else pList.forEach(p => addPestRow(p, luasObj[p], sevObj[p]));
             if(pList.length===0) addPestRow();
-
-            renderKeptImages();
-            setV('fe_syor', d[17]);
-
+            renderKeptImages(); setV('fe_syor', d[17]);
             new bootstrap.Modal(document.getElementById('detailModal')).show();
         }
 
         function updateEditDD(level) {
-            const katEl = document.getElementById('fe_kategori');
-            const tanEl = document.getElementById('fe_tanaman');
+            const katEl = document.getElementById('fe_kategori'); const tanEl = document.getElementById('fe_tanaman');
             if(level === 'kat') {
-                const k = katEl.value;
-                tanEl.innerHTML = '<option value="">- Pilih -</option>';
-                if(k && refPestData && refPestData[k]) {
-                    Object.keys(refPestData[k]).sort().forEach(t => {
-                        tanEl.innerHTML += `<option value="${t}">${t}</option>`;
-                    });
-                }
+                const k = katEl.value; tanEl.innerHTML = '<option value="">- Pilih -</option>';
+                if(k && refPestData && refPestData[k]) { Object.keys(refPestData[k]).sort().forEach(t => { tanEl.innerHTML += `<option value="${t}">${t}</option>`; }); }
             }
             updatePestDropdowns();
         }
 
         function updatePestDropdowns() {
-            const k = document.getElementById('fe_kategori').value;
-            const t = document.getElementById('fe_tanaman').value;
-            let pests = [];
-            if(k && t && refPestData && refPestData[k] && refPestData[k][t]) {
-                pests = refPestData[k][t];
-            }
+            const k = document.getElementById('fe_kategori').value; const t = document.getElementById('fe_tanaman').value;
+            let pests = []; if(k && t && refPestData && refPestData[k] && refPestData[k][t]) { pests = refPestData[k][t]; }
             document.querySelectorAll('.p-name-select').forEach(sel => {
-                const cur = sel.value;
-                sel.innerHTML = '<option value="">- Pilih -</option>';
+                const cur = sel.value; sel.innerHTML = '<option value="">- Pilih -</option>';
                 pests.forEach(p => sel.innerHTML += `<option value="${p}">${p}</option>`);
                 const match = pests.find(p=>p===cur);
-                if(match) sel.value = match;
-                else if(cur) sel.innerHTML += `<option value="${cur}" selected>${cur} (Asal)</option>`;
+                if(match) sel.value = match; else if(cur) sel.innerHTML += `<option value="${cur}" selected>${cur} (Asal)</option>`;
             });
         }
 
         function addPestRow(name="", area="", sev="") {
-            const tbody = document.querySelector('#fe_pestTable tbody');
-            const tr = document.createElement('tr');
-            
+            const tbody = document.querySelector('#fe_pestTable tbody'); const tr = document.createElement('tr');
             const k = document.getElementById('fe_kategori') ? document.getElementById('fe_kategori').value : "";
             const t = document.getElementById('fe_tanaman') ? document.getElementById('fe_tanaman').value : "";
-            let pests = [];
-            if(k && t && refPestData && refPestData[k] && refPestData[k][t]) pests = refPestData[k][t];
-
+            let pests = []; if(k && t && refPestData && refPestData[k] && refPestData[k][t]) pests = refPestData[k][t];
             let opts = '<option value="">- Pilih -</option>';
             pests.forEach(p => opts += `<option value="${p}" ${p===name?'selected':''}>${p}</option>`);
             if(name && !pests.includes(name)) opts += `<option value="${name}" selected>${name} (Asal)</option>`;
-
-            tr.innerHTML = `
-                <td><select class="form-select form-select-sm p-name p-name-select" onfocus="updatePestDropdowns()">${opts}</select></td>
-                <td><input type="number" class="form-control form-control-sm p-area" value="${area}" step="0.01"></td>
-                <td><select class="form-select form-select-sm p-sev"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></td>
-                <td class="text-center"><button class="btn btn-link text-danger p-0" onclick="this.closest('tr').remove()"><i class="bi bi-x-circle"></i></button></td>
-            `;
+            tr.innerHTML = `<td><select class="form-select form-select-sm p-name p-name-select" onfocus="updatePestDropdowns()">${opts}</select></td><td><input type="number" class="form-control form-control-sm p-area" value="${area}" step="0.01"></td><td><select class="form-select form-select-sm p-sev"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></td><td class="text-center"><button class="btn btn-link text-danger p-0" onclick="this.closest('tr').remove()"><i class="bi bi-x-circle"></i></button></td>`;
             if(sev) tr.querySelector('.p-sev').value = sev;
             tbody.appendChild(tr);
         }
 
         function renderKeptImages() {
-            const c = document.getElementById('existingImgContainer');
-            if(!c) return;
-            c.innerHTML = "";
-            keptImages.forEach((url, idx) => {
-                c.innerHTML += `
-                <div class="img-thumb-container">
-                    <img src="${url}">
-                    <button class="btn-del-img" onclick="removeImage(${idx})"><i class="bi bi-x"></i></button>
-                </div>`;
-            });
+            const c = document.getElementById('existingImgContainer'); if(!c) return;
+            c.innerHTML = ""; keptImages.forEach((url, idx) => { c.innerHTML += `<div class="img-thumb-container"><img src="${url}"><button class="btn-del-img" onclick="removeImage(${idx})"><i class="bi bi-x"></i></button></div>`; });
             if(keptImages.length === 0) c.innerHTML = "<small class='text-muted fst-italic'>Tiada gambar.</small>";
         }
 
-        function removeImage(idx) {
-            keptImages.splice(idx, 1);
-            renderKeptImages();
-        }
+        function removeImage(idx) { keptImages.splice(idx, 1); renderKeptImages(); }
 
         async function saveFullEdit() {
             if(!confirm("Hantar kemaskini?")) return;
             const btn = event.target; btn.innerHTML="Menghantar..."; btn.disabled=true;
-
-            const fileInput = document.getElementById('fe_newImages');
-            const newImages = [];
+            const fileInput = document.getElementById('fe_newImages'); const newImages = [];
             if(fileInput.files.length > 0) {
                 for (let i = 0; i < fileInput.files.length; i++) {
                     const file = fileInput.files[i];
-                    const base64 = await new Promise((resolve) => {
-                        const r = new FileReader();
-                        r.onload = () => resolve(r.result);
-                        r.readAsDataURL(file);
-                    });
+                    const base64 = await new Promise((resolve) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.readAsDataURL(file); });
                     newImages.push({ name: file.name, dataUrl: base64 });
                 }
             }
-
-            const luasS={}, sevS={}, pctS={};
-            const lt = parseFloat(document.getElementById('fe_luasT').value)||0;
+            const luasS={}, sevS={}, pctS={}; const lt = parseFloat(document.getElementById('fe_luasT').value)||0;
             document.querySelectorAll('#fe_pestTable tbody tr').forEach(tr => {
-                const n = tr.querySelector('.p-name-select').value;
-                const a = parseFloat(tr.querySelector('.p-area').value)||0;
-                const s = tr.querySelector('.p-sev').value;
-                if(n) {
-                    luasS[n]=a; sevS[n]=s;
-                    pctS[n]= lt>0 ? ((a/lt)*100).toFixed(2) : 0;
-                }
+                const n = tr.querySelector('.p-name-select').value; const a = parseFloat(tr.querySelector('.p-area').value)||0; const s = tr.querySelector('.p-sev').value;
+                if(n) { luasS[n]=a; sevS[n]=s; pctS[n]= lt>0 ? ((a/lt)*100).toFixed(2) : 0; }
             });
-
             const payload = {
-                row: document.getElementById('fe_row').value,
-                tarikh: document.getElementById('fe_tarikh').value,
-                pegawai: uProf.name, // Auto name
-                negeri: document.getElementById('fe_negeri').value,
-                daerah: document.getElementById('fe_daerah').value,
-                lokasi: document.getElementById('fe_lokasi').value,
-                coord: document.getElementById('fe_coord').value,
-                kategori: document.getElementById('fe_kategori').value,
-                tanaman: document.getElementById('fe_tanaman').value,
-                varieti: document.getElementById('fe_varieti').value,
-                luasT: lt,
-                luasS: luasS, keterukan: sevS, peratus: pctS,
-                syor: formatSyorPerenggan(document.getElementById('fe_syor').value),
-                keptImages: keptImages, 
-                newImages: newImages
+                row: document.getElementById('fe_row').value, tarikh: document.getElementById('fe_tarikh').value, pegawai: uProf.name, 
+                negeri: document.getElementById('fe_negeri').value, daerah: document.getElementById('fe_daerah').value, lokasi: document.getElementById('fe_lokasi').value,
+                coord: document.getElementById('fe_coord').value, kategori: document.getElementById('fe_kategori').value, tanaman: document.getElementById('fe_tanaman').value,
+                varieti: document.getElementById('fe_varieti').value, luasT: lt, luasS: luasS, keterukan: sevS, peratus: pctS,
+                syor: formatSyorPerenggan(document.getElementById('fe_syor').value), keptImages: keptImages, newImages: newImages
             };
-
             const r = await postData('updateEntry', payload);
-            if(r.success) {
-                alert("✅ Berjaya dikemaskini!");
-                bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
-                loadMyTasks(); 
-                initDash();
-            } else {
-                alert("Ralat: " + r.message);
-                btn.innerHTML="SIMPAN & HANTAR"; btn.disabled=false;
-            }
+            if(r.success) { alert("✅ Berjaya!"); bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide(); loadMyTasks(); initDash(); } else { alert("Ralat: " + r.message); btn.innerHTML="SIMPAN & HANTAR"; btn.disabled=false; }
         }
 
         async function loadMyTasks() {
-            const c = document.getElementById('taskContainer');
-            c.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-primary"></div></div>';
+            const c = document.getElementById('taskContainer'); c.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-primary"></div></div>';
             const d = await postData('getMyTasks', {name: uProf.name});
             const tasks = d.rows || [];
-            
-            document.getElementById('badgeTask').innerText = tasks.length;
-            document.getElementById('badgeTask').style.display = tasks.length ? 'inline-block' : 'none';
-
+            document.getElementById('badgeTask').innerText = tasks.length; document.getElementById('badgeTask').style.display = tasks.length ? 'inline-block' : 'none';
             if(!tasks.length) { c.innerHTML='<div class="col-12 text-center p-5 text-muted">Tiada tugasan.</div>'; return; }
-            
             c.innerHTML = "";
             tasks.forEach(t => {
-                // Map based on index from backend (getMyTasks returns row, data array)
-                // idx: 6=Lokasi, 9=Tanaman, 3=Tarikh, 20=Status
-                const loc = t.data[6] || t.data[7] || "Lokasi?";
-                const crop = t.data[9] || t.data[10] || "Tanaman?";
-                const date = t.data[3] || t.data[4] || "-";
-                // Reason log is usually last or 21
-                const reason = t.data[21] || "Sila semak data";
-
-                c.innerHTML += `
-                <div class="col-md-6 col-xl-4">
-                    <div class="verify-card bg-white rounded-3 shadow-sm border mb-3 h-100 border-danger">
-                        <div class="p-3 border-bottom bg-danger bg-opacity-10">
-                            <div class="fw-bold text-dark">${loc}</div>
-                            <small class="text-muted">${crop} | ${date}</small>
-                            <span class="badge bg-danger float-end">DITOLAK</span>
-                        </div>
-                        <div class="p-3">
-                            <div class="task-reject-box p-2 mb-3 small"><i class="bi bi-info-circle me-1"></i> ${reason}</div>
-                            <button class="btn btn-danger w-100 btn-sm fw-bold" onclick='openTaskEdit(${JSON.stringify(t)})'>KEMASKINI</button>
-                        </div>
-                    </div>
-                </div>`;
+                const loc = t.data[6] || t.data[7] || "Lokasi?"; const crop = t.data[9] || t.data[10] || "Tanaman?"; const date = t.data[3] || t.data[4] || "-"; const reason = t.data[21] || "Sila semak data";
+                c.innerHTML += `<div class="col-md-6 col-xl-4"><div class="verify-card bg-white rounded-3 shadow-sm border mb-3 h-100 border-danger"><div class="p-3 border-bottom bg-danger bg-opacity-10"><div class="fw-bold text-dark">${loc}</div><small class="text-muted">${crop} | ${date}</small><span class="badge bg-danger float-end">DITOLAK</span></div><div class="p-3"><div class="task-reject-box p-2 mb-3 small"><i class="bi bi-info-circle me-1"></i> ${reason}</div><button class="btn btn-danger w-100 btn-sm fw-bold" onclick='openTaskEdit(${JSON.stringify(t)})'>KEMASKINI</button></div></div></div>`;
             });
         }
 
-        function openTaskEdit(taskObj) {
-            renderEditForm(taskObj.row, taskObj.data);
-        }
+        function openTaskEdit(taskObj) { renderEditForm(taskObj.row, taskObj.data); }
 
         async function dlRowPDF(idx) {
-            const rData = fData[idx];
-            if(!rData) return;
-            const btn = event.target.closest('button');
-            const orig = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>'; btn.disabled = true;
+            const rData = fData[idx]; if(!rData) return;
+            const btn = event.target.closest('button'); const orig = btn.innerHTML; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>'; btn.disabled = true;
             const m = { user: uProf.name, negeri: rData.n, dates: rData.t };
             const r = await postData('genPDF', { data: [rData], meta: m });
-            if (r.success) {
-                const a = document.createElement('a');
-                a.href = "data:application/pdf;base64," + r.base64;
-                a.download = r.filename; a.click();
-            } else { alert("Gagal: " + r.message); }
+            if (r.success) { const a = document.createElement('a'); a.href = "data:application/pdf;base64," + r.base64; a.download = r.filename; a.click(); } else { alert("Gagal: " + r.message); }
             btn.innerHTML = orig; btn.disabled = false;
         }
 
         async function downloadDualExcel() {
             if(!fData.length) { alert("Tiada data"); return; }
             alert("Sedang menjana Excel...");
-            // Logic ExcelJS ringkas
-            const wb = new ExcelJS.Workbook();
-            const ws = wb.addWorksheet('Laporan');
-            ws.columns = [
-                {header:'Tarikh', key:'t'}, {header:'Negeri', key:'n'}, {header:'Daerah', key:'d'},
-                {header:'Lokasi', key:'l'}, {header:'Tanaman', key:'tn'}, {header:'Luas(Ha)', key:'lt'},
-                {header:'Syor', key:'s'}
-            ];
+            const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Laporan');
+            ws.columns = [{header:'Tarikh', key:'t'}, {header:'Negeri', key:'n'}, {header:'Daerah', key:'d'}, {header:'Lokasi', key:'l'}, {header:'Tanaman', key:'tn'}, {header:'Luas(Ha)', key:'lt'}, {header:'Syor', key:'s'}];
             fData.forEach(r => ws.addRow(r));
-            const buf = await wb.xlsx.writeBuffer();
-            const url = window.URL.createObjectURL(new Blob([buf]));
+            const buf = await wb.xlsx.writeBuffer(); const url = window.URL.createObjectURL(new Blob([buf]));
             const a = document.createElement('a'); a.href=url; a.download="Laporan.xlsx"; a.click();
         }
 
         function updateDistricts(sId, tId) {
-            const s = document.getElementById(sId).value;
-            const t = document.getElementById(tId);
-            t.innerHTML = '<option value="">- Pilih -</option>';
+            const s = document.getElementById(sId).value; const t = document.getElementById(tId); t.innerHTML = '<option value="">- Pilih -</option>';
             if(s && districtData[s]) districtData[s].forEach(x=>t.innerHTML+=`<option value="${x}">${x}</option>`);
         }
         function switchTab(t, el) {
-            document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
-            if(el) el.classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active')); if(el) el.classList.add('active');
             ['main','tasks','verify','form'].forEach(v => document.getElementById('view-'+v).style.display = (v===t?'block':'none'));
-            if(t==='main' && map) setTimeout(()=>map.invalidateSize(),300);
-            if(t==='verify') loadPend();
+            if(t==='main' && map) setTimeout(()=>map.invalidateSize(),300); if(t==='verify') loadPend();
         }
         function doLogout() { localStorage.removeItem('pnr_user'); location.reload(); }
         function formatSyorPerenggan(t) { if(!t)return ""; return String(t).split(/[;\n]+/).map(s=>s.trim()).filter(s=>s).map(s=>(s[0].toUpperCase()+s.slice(1)).replace(/\.+$/,'')+'.').join(' '); }
