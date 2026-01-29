@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem PNR Digital - FINAL STABLE</title>
+    <title>Sistem PNR Digital - UPGRADE V4 (ORIGINAL STRUCTURE)</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
@@ -22,6 +22,8 @@
         .sidebar { width: 260px; height: 100vh; position: fixed; top: 0; left: 0; background: #e8f5e9; border-right: 1px solid #c6e7ce; padding: 20px; z-index: 100; transition: transform 0.3s; display: flex; flex-direction: column; }
         .brand { font-size: 1.3rem; font-weight: 900; color: #000; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; padding-left: 10px; flex-shrink: 0; }
         .sidebar-content { flex-grow: 1; overflow-y: auto; overflow-x: hidden; padding-right: 5px; margin-bottom: 10px; }
+        .sidebar-content::-webkit-scrollbar { width: 4px; }
+        .sidebar-content::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
         .nav-item { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; cursor: pointer; color: #000; font-weight: 600; display: flex; align-items: center; justify-content: space-between; transition: 0.2s; }
         .nav-item:hover { background: #c8e6c9; color: #000; }
         .nav-item.active { background: #1b5e20; color: white; font-weight: 700; }
@@ -36,10 +38,17 @@
         .text-danger { color: #dc2626 !important; }
         .badge-pending { background: #dc2626; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; display: none; }
 
+        /* --- STYLE REPORT CARD --- */
         .verify-card { background: #fff; border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; height: 100%; display: flex; flex-direction: column; transition: transform 0.2s; border: 1px solid #e2e8f0; }
         .verify-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .task-reject-box { background-color: #fef2f2; border: 1px solid #fecaca; padding: 15px; border-radius: 8px; margin-bottom: 15px; color: #b91c1c; }
+        .verify-header { background: #f8f9fa; border-bottom: 1px solid #e9ecef; padding: 15px 20px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .verify-body { padding: 20px; flex-grow: 1; }
+        .verify-footer { background: #fff; border-top: 1px solid #e9ecef; padding: 15px; display: flex; gap: 10px; }
         
+        .task-reject-box { background-color: #fef2f2; border: 1px solid #fecaca; padding: 15px; border-radius: 8px; margin-bottom: 15px; color: #b91c1c; }
+        .filter-label { font-size: 0.75rem; font-weight: 800; color: #000; margin-bottom: 3px; display: block; text-transform: uppercase; }
+
+        /* STYLE KHAS IMEJ (BARU) */
         .img-thumb-container { position: relative; width: 80px; height: 80px; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
         .img-thumb-container img { width: 100%; height: 100%; object-fit: cover; }
         .btn-del-img { position: absolute; top: 2px; right: 2px; background: rgba(220, 38, 38, 0.9); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -55,7 +64,7 @@
 
     <div id="loginOverlay">
         <div class="login-box">
-            <div class="brand justify-content-center mb-4"><i class="bi bi-flower1"></i> PNR DIGITAL v3.0</div>
+            <div class="brand justify-content-center mb-4"><i class="bi bi-flower1"></i> PNR DIGITAL v4.0</div>
             <h6 class="text-muted mb-4">Log Masuk Sistem</h6>
             <input type="text" id="uid" class="form-control mb-3 p-3" placeholder="ID Pengguna">
             <input type="password" id="pwd" class="form-control mb-4 p-3" placeholder="Kata Laluan">
@@ -85,33 +94,37 @@
             
             <div class="mb-3 px-2">
                 <div class="d-flex align-items-center justify-content-between mb-3">
-                    <small class="fw-bold text-dark"><i class="bi bi-funnel-fill me-1"></i> TAPISAN DATA</small>
+                    <small class="fw-bold text-dark" style="font-size:0.85rem; letter-spacing: 0.5px;"><i class="bi bi-funnel-fill me-1"></i> TAPISAN DATA</small>
                 </div>
                 
-                <div class="mb-2"><label class="small fw-bold">Negeri</label><select id="selNegeri" class="form-select form-select-sm" onchange="runFilter('n')"></select></div>
-                <div class="mb-2"><label class="small fw-bold">Daerah</label><select id="selDaerah" class="form-select form-select-sm" onchange="runFilter('d')"></select></div>
-                <div class="mb-2"><label class="small fw-bold">Tanaman</label><select id="selTanaman" class="form-select form-select-sm" onchange="runFilter('t')"></select></div>
-                <div class="mb-2"><label class="small fw-bold">Perosak</label><select id="selPerosak" class="form-select form-select-sm" onchange="runFilter('p')"></select></div>
+                <div class="mb-2"><label class="filter-label">Negeri</label><select id="selNegeri" class="form-select form-select-sm" onchange="runFilter('n')"></select></div>
+                <div class="mb-2"><label class="filter-label">Daerah</label><select id="selDaerah" class="form-select form-select-sm" onchange="runFilter('d')"></select></div>
+                <div class="mb-2"><label class="filter-label">Tanaman</label><select id="selTanaman" class="form-select form-select-sm" onchange="runFilter('t')"></select></div>
+                <div class="mb-2"><label class="filter-label">Perosak</label><select id="selPerosak" class="form-select form-select-sm" onchange="runFilter('p')"></select></div>
+                <div class="mb-2"><label class="filter-label">Kategori</label><select id="selKategori" class="form-select form-select-sm" onchange="runFilter('k')"></select></div>
                 
                 <div class="mb-3">
-                    <label class="small fw-bold">Julat Tarikh</label>
+                    <label class="filter-label">Julat Tarikh</label>
                     <div class="row g-1">
                         <div class="col-6"><input type="date" id="dS" class="form-control form-control-sm" onchange="runFilter()"></div>
                         <div class="col-6"><input type="date" id="dE" class="form-control form-control-sm" onchange="runFilter()"></div>
                     </div>
                 </div>
                 
-                <button class="btn btn-dark btn-sm w-100" onclick="resetFilter()"><i class="bi bi-arrow-counterclockwise"></i> Reset Tapisan</button>
+                <button class="btn btn-dark btn-sm w-100" onclick="resetFilter()">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset Tapisan
+                </button>
             </div>
         </div>
         
         <div class="sidebar-footer">
-            <div class="nav-item mb-3 bg-success text-white shadow-sm" onclick="switchTab('form', this)">
+            <div class="nav-item mb-3 bg-success text-white shadow-sm" onclick="switchTab('form', this)" style="cursor: pointer;">
                 <span><i class="bi bi-plus-lg me-2"></i> Tambah Data</span>
             </div>
+
             <div class="d-flex align-items-center justify-content-between px-2">
-                <div><small class="text-dark d-block fw-bold">Pengguna</small><strong id="uDisp" class="text-dark small">-</strong></div>
-                <button class="btn btn-link text-danger btn-sm p-0" onclick="doLogout()"><i class="bi bi-box-arrow-right fs-5"></i></button>
+                <div><small class="text-dark d-block" style="font-size: 0.75rem; font-weight:600;">Pengguna</small><strong id="uDisp" class="text-dark" style="font-size:0.9rem">-</strong></div>
+                <button class="btn btn-link text-danger btn-sm p-0" onclick="doLogout()" title="Log Keluar"><i class="bi bi-box-arrow-right fs-5"></i></button>
             </div>
         </div>
     </div>
@@ -124,7 +137,7 @@
 
         <div id="view-main">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-                <div><h4 class="fw-bold m-0 text-dark">Analisis Data</h4><small class="text-muted">Paparan data terkini</small></div>
+                <div><h4 class="fw-bold m-0 text-dark">Analisis Data</h4><small class="text-muted" id="lastUpdate">Data setakat: Terkini</small></div>
                 <div class="btn-group shadow-sm">
                     <button class="btn btn-white border bg-white text-secondary btn-sm px-3" onclick="initDash()"><i class="bi bi-arrow-clockwise"></i></button>
                     <button class="btn btn-success btn-sm px-3" onclick="downloadDualExcel()"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
@@ -133,18 +146,18 @@
             </div>
             
             <div class="row g-3 mb-4">
-                <div class="col-6 col-md-3"><div class="kpi-card"><div class="d-flex justify-content-between mb-2"><span class="small fw-bold">Luas Bancian</span><i class="bi bi-rulers text-success"></i></div><div class="kpi-value" id="k1">0</div><small class="text-muted fw-bold">Hektar</small></div></div>
-                <div class="col-6 col-md-3"><div class="kpi-card"><div class="d-flex justify-content-between mb-2"><span class="small fw-bold">Luas Serangan</span><i class="bi bi-bug-fill text-danger"></i></div><div class="kpi-value text-danger" id="k2">0</div><small class="text-muted fw-bold">Hektar</small></div></div>
-                <div class="col-6 col-md-3"><div class="kpi-card"><div class="d-flex justify-content-between mb-2"><span class="small fw-bold">Peratus</span><i class="bi bi-percent text-warning"></i></div><div class="kpi-value" id="k3">0%</div><small class="text-muted fw-bold">Kadar</small></div></div>
-                <div class="col-6 col-md-3"><div class="kpi-card"><div class="d-flex justify-content-between mb-2"><span class="small fw-bold">Rekod</span><i class="bi bi-file-text text-primary"></i></div><div class="kpi-value" id="k4">0</div><small class="text-muted fw-bold">Unit</small></div></div>
+                <div class="col-6 col-md-3"><div class="kpi-card"><div class="d-flex justify-content-between mb-2"><span class="kpi-title">Luas Bancian</span><div class="kpi-icon bg-success-subtle text-success"><i class="bi bi-rulers"></i></div></div><div class="kpi-value" id="k1">0</div><small class="text-muted fw-bold">Hektar</small></div></div>
+                <div class="col-6 col-md-3"><div class="kpi-card"><div class="d-flex justify-content-between mb-2"><span class="kpi-title">Luas Serangan</span><div class="kpi-icon bg-danger-subtle text-danger"><i class="bi bi-bug-fill"></i></div></div><div class="kpi-value text-danger" id="k2">0</div><small class="text-muted fw-bold">Hektar</small></div></div>
+                <div class="col-6 col-md-3"><div class="kpi-card"><div class="d-flex justify-content-between mb-2"><span class="kpi-title">Peratus Serangan</span><div class="kpi-icon bg-warning-subtle text-warning"><i class="bi bi-percent"></i></div></div><div class="kpi-value" id="k3">0%</div><small class="text-muted fw-bold">Kadar Jangkitan</small></div></div>
+                <div class="col-6 col-md-3"><div class="kpi-card"><div class="d-flex justify-content-between mb-2"><span class="kpi-title">Bil. Rekod</span><div class="kpi-icon bg-primary-subtle text-primary"><i class="bi bi-file-text"></i></div></div><div class="kpi-value" id="k4">0</div><small class="text-muted fw-bold">Unit Data</small></div></div>
             </div>
 
             <div class="row g-3 mb-4">
                 <div class="col-md-8"><div class="map-box shadow-sm" id="map"></div></div>
                 <div class="col-md-4">
                     <div class="table-box h-100 shadow-sm" style="max-height:400px; overflow-y:auto">
-                        <h6 class="fw-bold mb-3 text-danger"><i class="bi bi-fire me-2"></i>Hotspot Daerah</h6>
-                        <table class="table table-hover small mb-0"><thead class="table-light sticky-top"><tr><th>Daerah</th><th class="text-end">Luas(Ha)</th></tr></thead><tbody id="hotspotTable"></tbody></table>
+                        <h6 class="fw-bold mb-3 text-danger d-flex align-items-center"><i class="bi bi-fire me-2"></i>Hotspot Daerah</h6>
+                        <table class="table table-hover small mb-0"><thead class="table-light sticky-top"><tr><th>Daerah</th><th class="text-end">Luas Serangan (Ha)</th></tr></thead><tbody id="hotspotTable"></tbody></table>
                     </div>
                 </div>
             </div>
@@ -153,7 +166,7 @@
                 <div class="d-flex justify-content-between mb-3"><h6 class="fw-bold"><i class="bi bi-table me-2"></i>Jadual Rekod</h6><small id="pgInfo" class="text-muted"></small></div>
                 <div class="table-responsive">
                     <table class="table table-sm table-hover align-middle">
-                        <thead class="table-light"><tr><th>Tarikh</th><th>Lokasi</th><th>Tanaman</th><th>Luas(S)</th><th>Tindakan</th></tr></thead>
+                        <thead class="table-light"><tr><th>Tarikh</th><th>Negeri</th><th>Lokasi</th><th>Tanaman</th><th>Luas(S)</th><th>Tindakan</th></tr></thead>
                         <tbody id="tBody"></tbody>
                     </table>
                 </div>
@@ -164,91 +177,136 @@
             </div>
         </div>
 
+        <div id="view-verify" style="display:none">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold m-0 text-dark">Pengesahan Data</h4>
+                <div class="btn-group shadow-sm">
+                    <button class="btn btn-success btn-sm px-3 fw-bold" onclick="approveAll()"><i class="bi bi-check-all me-1"></i> Sahkan Semua</button>
+                    <button class="btn btn-primary btn-sm px-3" onclick="loadPend()"><i class="bi bi-arrow-clockwise me-1"></i> Refresh</button>
+                </div>
+            </div>
+            
+            <div id="bulkProgress" class="alert alert-info" style="display:none">
+                <div class="d-flex justify-content-between mb-1"><small>Memproses...</small><small id="progText">0%</small></div>
+                <div class="progress" style="height: 10px;"><div class="progress-bar bg-success" id="progBar" style="width: 0%"></div></div>
+            </div>
+            
+            <div id="verifyContainer" class="row g-3">
+                <div class="col-12 text-center p-5 text-muted bg-white rounded shadow-sm border border-dashed">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-3">Memuatkan senarai untuk disahkan...</p>
+                </div>
+            </div>
+        </div>
+
         <div id="view-tasks" style="display:none">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4 class="fw-bold m-0 text-dark">Tugasan Saya</h4>
                 <button class="btn btn-primary btn-sm px-3" onclick="loadMyTasks()"><i class="bi bi-arrow-clockwise me-1"></i> Refresh</button>
             </div>
-            <div id="taskContainer" class="row g-3"></div>
-        </div>
-
-        <div id="view-verify" style="display:none">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="fw-bold m-0 text-dark">Pengesahan Data</h4>
-                <button class="btn btn-success btn-sm px-3 fw-bold" onclick="approveAll()">Sahkan Semua</button>
+            <div id="taskContainer" class="row g-3">
+                <div class="col-12 text-center p-5 text-muted bg-white rounded shadow-sm border border-dashed">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-3">Memuatkan tugasan...</p>
+                </div>
             </div>
-            <div id="verifyContainer" class="row g-3"></div>
         </div>
 
         <div id="view-form" style="display:none; height: 100%;">
-            <iframe id="frameBorang" src="" style="width: 100%; height: 85vh; border: none; border-radius: 12px;"></iframe>
+            <iframe id="frameBorang" src="" style="width: 100%; height: 85vh; border: none; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></iframe>
         </div>
 
     </div>
 
-    <div class="modal fade" id="detailModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header bg-success text-white">
-                    <h6 class="modal-title fw-bold" id="modalTitle">BUTIRAN</h6>
+                    <h6 class="modal-title fw-bold" id="modalTitle"><i class="bi bi-card-heading me-2"></i>BUTIRAN REKOD</h6>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body bg-light p-4" id="detailBody"></div>
+                <div class="modal-footer bg-white">
+                    <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Tutup</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-   <script>
-        // *** SILA PASTE URL BACKEND TUAN DI SINI ***
+    <script>
+        // *** URL BACKEND BARU (SILA PASTE URL DEPLOYMENT BARU DI SINI) ***
         const API_URL = "https://script.google.com/macros/s/AKfycbx1hlsIWN5MCo7ab_ytT_d_oFqVjy1XMJwM39oBC8yPp9OLukRSbk47Ufate26quu4k/exec";
         
         const BANCIAN_URL = "https://script.google.com/macros/s/AKfycbz2hKf0rlCm8xWD_kXwEi0kYiVCOtcX1_noM6S0dHjkDJOrG6LtQ3GGt-4TT0plWVm60g/exec";
         document.getElementById('frameBorang').src = BANCIAN_URL;
 
+        // DATA DAERAH (ASAL)
         const districtData = {
-            "Johor": ["Batu Pahat", "Johor Bahru", "Kluang", "Kota Tinggi", "Kulai", "Mersing", "Muar", "Pontian", "Segamat", "Tangkak"],
-            "Kedah": ["Baling", "Bandar Baharu", "Kota Setar", "Kuala Muda", "Kubang Pasu", "Kulim", "Langkawi", "Padang Terap", "Pendang", "Pokok Sena", "Sik", "Yan"],
-            "Kelantan": ["Bachok", "Gua Musang", "Jeli", "Kota Bharu", "Kuala Krai", "Machang", "Pasir Mas", "Pasir Puteh", "Tanah Merah", "Tumpat"],
-            "Melaka": ["Alor Gajah", "Jasin", "Melaka Tengah"],
-            "Negeri Sembilan": ["Jelebu", "Jempol", "Kuala Pilah", "Port Dickson", "Rembau", "Seremban", "Tampin"],
-            "Pahang": ["Bentong", "Bera", "Cameron Highlands", "Jerantut", "Kuantan", "Lipis", "Maran", "Pekan", "Raub", "Rompin", "Temerloh"],
-            "Perak": ["Bagan Datuk", "Batang Padang", "Hilir Perak", "Hulu Perak", "Kampar", "Kerian", "Kinta", "Kuala Kangsar", "Larut, Matang dan Selama", "Manjung", "Muallim", "Perak Tengah"],
-            "Perlis": ["Perlis"],
-            "Pulau Pinang": ["Barat Daya", "Seberang Perai Selatan", "Seberang Perai Tengah", "Seberang Perai Utara", "Timur Laut"],
-            "Sabah": ["Beaufort", "Beluran", "Kalabakan", "Keningau", "Kinabatangan", "Kota Belud", "Kota Kinabalu", "Kota Marudu", "Kuala Penyu", "Kudat", "Kunak", "Lahad Datu", "Nabawan", "Papar", "Penampang", "Pitas", "Putatan", "Ranau", "Sandakan", "Semporna", "Sipitang", "Tambunan", "Tawau", "Telupid", "Tenom", "Tongod", "Tuaran"],
-            "Sarawak": ["Asajaya", "Bau", "Belaga", "Beluru", "Betong", "Bintulu", "Bukit Mabong", "Dalat", "Daro", "Julau", "Kabong", "Kanowit", "Kapit", "Kuching", "Lawas", "Limbang", "Lubok Antu", "Lundu", "Marudi", "Matu", "Meradong", "Miri", "Mukah", "Pakan", "Pusa", "Samarahan", "Saratok", "Sarikei", "Sebauh", "Selangau", "Serian", "Sibu", "Simunjan", "Song", "Sri Aman", "Subis", "Tanjung Manis", "Tatau", "Tebedu", "Telang Usan"],
-            "Selangor": ["Gombak", "Hulu Langat", "Hulu Selangor", "Klang", "Kuala Langat", "Kuala Selangor", "Petaling", "Sabak Bernam", "Sepang"],
-            "Terengganu": ["Besut", "Dungun", "Hulu Terengganu", "Kemaman", "Kuala Nerus", "Kuala Terengganu", "Marang", "Setiu"],
+            "Johor": ["Batu Pahat", "Johor Bahru", "Kluang", "Kota Tinggi", "Kulai", "Mersing", "Muar", "Pontian", "Segamat", "Tangkak"], 
+            "Kedah": ["Baling", "Bandar Baharu", "Kota Setar", "Kuala Muda", "Kubang Pasu", "Kulim", "Langkawi", "Padang Terap", "Pendang", "Pokok Sena", "Sik", "Yan"], 
+            "Kelantan": ["Bachok", "Gua Musang", "Jeli", "Kota Bharu", "Kuala Krai", "Machang", "Pasir Mas", "Pasir Puteh", "Tanah Merah", "Tumpat"], 
+            "Melaka": ["Alor Gajah", "Jasin", "Melaka Tengah"], 
+            "Negeri Sembilan": ["Jelebu", "Jempol", "Kuala Pilah", "Port Dickson", "Rembau", "Seremban", "Tampin"], 
+            "Pahang": ["Bentong", "Bera", "Cameron Highlands", "Jerantut", "Kuantan", "Lipis", "Maran", "Pekan", "Raub", "Rompin", "Temerloh"], 
+            "Perak": ["Bagan Datuk", "Batang Padang", "Hilir Perak", "Hulu Perak", "Kampar", "Kerian", "Kinta", "Kuala Kangsar", "Larut, Matang dan Selama", "Manjung", "Muallim", "Perak Tengah"], 
+            "Perlis": ["Perlis"], 
+            "Pulau Pinang": ["Barat Daya", "Seberang Perai Selatan", "Seberang Perai Tengah", "Seberang Perai Utara", "Timur Laut"], 
+            "Sabah": ["Beaufort", "Beluran", "Kalabakan", "Keningau", "Kinabatangan", "Kota Belud", "Kota Kinabalu", "Kota Marudu", "Kuala Penyu", "Kudat", "Kunak", "Lahad Datu", "Nabawan", "Papar", "Penampang", "Pitas", "Putatan", "Ranau", "Sandakan", "Semporna", "Sipitang", "Tambunan", "Tawau", "Telupid", "Tenom", "Tongod", "Tuaran"], 
+            "Sarawak": ["Asajaya", "Bau", "Belaga", "Beluru", "Betong", "Bintulu", "Bukit Mabong", "Dalat", "Daro", "Julau", "Kabong", "Kanowit", "Kapit", "Kuching", "Lawas", "Limbang", "Lubok Antu", "Lundu", "Marudi", "Matu", "Meradong", "Miri", "Mukah", "Pakan", "Pusa", "Samarahan", "Saratok", "Sarikei", "Sebauh", "Selangau", "Serian", "Sibu", "Simunjan", "Song", "Sri Aman", "Subis", "Tanjung Manis", "Tatau", "Tebedu", "Telang Usan"], 
+            "Selangor": ["Gombak", "Hulu Langat", "Hulu Selangor", "Klang", "Kuala Langat", "Kuala Selangor", "Petaling", "Sabak Bernam", "Sepang"], 
+            "Terengganu": ["Besut", "Dungun", "Hulu Terengganu", "Kemaman", "Kuala Nerus", "Kuala Terengganu", "Marang", "Setiu"], 
             "W.P. Kuala Lumpur": ["Kuala Lumpur"], "W.P. Labuan": ["Labuan"], "W.P. Putrajaya": ["Putrajaya"]
         };
 
         let mData=[], fData=[], uProf=null, map=null, layer=null, pg=1, pSize=10;
+        let currentPendingRows = [];
+        let myTasksData = [];
+        // [TAMBAHAN] Variable untuk fungsi baru
         let refPestData = null; 
-        let keptImages = []; 
+        let keptImages = [];
 
         // --- FETCHING (DIPERBETULKAN) ---
         async function postData(act, load) {
             try {
-                let payload = { action: act, ...load };
-                // PEMBETULAN: Pastikan hantar Username (ID), BUKAN Nama Penuh
-                if(uProf && uProf.token) {
-                    payload.token = uProf.token;
-                    payload.u = uProf.username; // <--- INI KUNCINYA (Kita guna 'username' yg disimpan masa login)
+                let payload;
+                if (act === 'login') { 
+                    payload = { action: act, ...load }; 
+                } else { 
+                    // PASTIKAN HANTAR USERNAME (uProf.username), BUKAN NAMA PENUH
+                    // Saya tambah fallback check
+                    let idToSend = "";
+                    if(uProf) {
+                        idToSend = uProf.username || uProf.u || ""; // Gunakan username yg disimpan
+                    }
+                    
+                    payload = { action: act, token: uProf ? uProf.token : "", u: idToSend, ...load }; 
                 }
                 
                 const res = await fetch(API_URL, { 
-                    method: "POST", 
-                    body: JSON.stringify(payload) 
+                    method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(payload) 
                 });
-                return await res.json();
+                
+                const r = JSON.parse(await res.text());
+
+                if (r.success === false && r.message) {
+                    const msgToCheck = String(r.message).toLowerCase();
+                    if (msgToCheck.includes("sesi") || msgToCheck.includes("token")) {
+                        alert("⛔ " + r.message + "\n\nSila log masuk semula.");
+                        localStorage.removeItem('pnr_session');
+                        location.reload(); 
+                        return { success: false }; 
+                    }
+                }
+                return r;
             } catch(e) { 
-                console.error("Fetch Error:", e); 
+                console.error(e); 
                 return {success:false, message:"Ralat sambungan."}; 
             }
         }
 
+        // [TAMBAHAN] LOAD DATA DROPDOWN
         async function loadRefData() {
             if(refPestData) return;
             try {
@@ -257,153 +315,304 @@
             } catch(e) { console.error("Ref Error", e); }
         }
 
-        // --- LOGIN (DIPERBETULKAN) ---
+        // --- LOGIN & SESSION (MODIFIED) ---
         async function doLogin() {
-            const u = document.getElementById('uid').value.trim(); // Trim space
-            const p = document.getElementById('pwd').value.trim();
-            const btn = document.getElementById('btnLogin');
+            const u = document.getElementById('uid').value.trim(); 
+            const p = document.getElementById('pwd').value.trim(); 
+            const btn = document.getElementById('btnLogin'); 
+            const msg = document.getElementById('loginMsg');
             
-            if(!u || !p) { alert("Sila isi ID dan Password"); return; }
+            if(!u || !p) { msg.innerText = "Sila isi ID dan Kata Laluan"; return; }
+            btn.disabled = true; btn.innerText = "Memproses...";
             
-            btn.innerText="Memproses..."; btn.disabled=true;
-            
-            // Hantar login request
             const r = await postData('login', {u, p});
-            
             if(r.success) {
-                // PEMBETULAN: Simpan 'u' (input user) sebagai username rasmi
-                uProf = { ...r, username: u }; 
+                // SIMPAN USERNAME (PENTING UNTUK TOKEN)
+                r.username = u; // Kita paksa simpan username yang ditaip
                 
-                localStorage.setItem('pnr_user', JSON.stringify(uProf));
-                applyLogin();
-            } else {
-                document.getElementById('loginMsg').innerText = r.message;
-                btn.innerText="MASUK"; btn.disabled=false;
+                const sessionData = { uProf: r, userToken: r.token, currentUserID: u };
+                localStorage.setItem('pnr_session', JSON.stringify(sessionData));
+                applyLogin(r, r.token, u);
+            } else { 
+                msg.innerText = r.message; btn.disabled = false; btn.innerText = "MASUK"; 
             }
         }
 
-        function applyLogin() {
-            if(!uProf) return;
-            document.getElementById('uDisp').innerText = uProf.name;
+        function applyLogin(r, token, uid) {
+            uProf = r; 
+            // Pastikan username wujud dlm uProf untuk postData guna nanti
+            if(!uProf.username) uProf.username = uid;
+
+            document.getElementById('uDisp').innerText = r.name; 
             document.getElementById('loginOverlay').style.display = 'none';
-            if(["ADMIN","PENYELIA"].includes(uProf.role)) document.getElementById('navVerify').style.display="flex";
-            document.getElementById('navTasks').style.display="flex";
-            loadMyTasks();
+            
+            if(["ADMIN","PENYELIA"].includes((r.role||"").toUpperCase())) { 
+                document.getElementById('navVerify').style.display = "flex"; 
+                checkPendingCount(); 
+            }
+            document.getElementById('navTasks').style.display = "flex";
+            loadMyTasks(); 
+
             initDash();
-            loadRefData();
+            loadRefData(); // Panggil data dropdown
         }
 
-        window.onload = function() {
-            const saved = localStorage.getItem('pnr_user');
-            if(saved) {
-                uProf = JSON.parse(saved);
-                // Pastikan username wujud dalam saved data (untuk user lama)
-                if(!uProf.username && uProf.token) {
-                    // Cuba ambil dari token jika username hilang
-                    uProf.username = uProf.token.split('_')[0]; 
-                }
-                applyLogin();
+        async function checkSession() {
+            const saved = localStorage.getItem('pnr_session');
+            if (saved) {
+                try {
+                    const s = JSON.parse(saved);
+                    if (s.uProf && s.userToken) {
+                        applyLogin(s.uProf, s.userToken, s.currentUserID);
+                    }
+                } catch (e) { console.error("Gagal baca session", e); }
             }
         }
+
+        function doLogout() {
+            localStorage.removeItem('pnr_session'); 
+            location.reload(); 
+        }
+
+        window.onload = checkSession;
+
+        function switchTab(t, el) {
+            document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active')); 
+            if(el && !el.classList.contains('bg-success')) el.classList.add('active');
+            
+            document.getElementById('view-main').style.display = t==='main'?'block':'none';
+            document.getElementById('view-verify').style.display = t==='verify'?'block':'none';
+            document.getElementById('view-tasks').style.display = t==='tasks'?'block':'none';
+            document.getElementById('view-form').style.display = t==='form'?'block':'none';
+
+            if(t==='verify') loadPend();
+            if(t==='tasks') loadMyTasks();
+            if(t==='main' && map) setTimeout(() => map.invalidateSize(), 300);
+        }
+
+        async function checkPendingCount() { try { const d = await postData('getPending', {state: uProf.state}); const b = document.getElementById('badgePending'); if(d.rows && d.rows.length > 0) { b.innerText = d.rows.length; b.style.display = "inline-block"; } else { b.style.display = "none"; } } catch(e){} }
 
         async function initDash() {
-            console.log("Memanggil Data Dashboard...");
-            const d = await postData('getAnalytics', {state: uProf.state});
-            
-            if(d.records) {
-                mData = d.records;
-                populateDropdown('selNegeri', mData.map(r=>r.n));
-                populateDropdown('selDaerah', mData.map(r=>r.d));
-                populateDropdown('selTanaman', mData.map(r=>r.tn));
-                
-                if(uProf.state !== "ALL") { 
-                    const sel = document.getElementById('selNegeri');
-                    for(let i=0; i<sel.options.length; i++){
-                        if(sel.options[i].value.toUpperCase() === uProf.state.toUpperCase()){
-                            sel.selectedIndex = i; break;
-                        }
-                    }
-                    sel.disabled=true; 
-                }
-                runFilter();
-            } else {
-                // Jika masih gagal session, auto logout
-                if(d.message && d.message.includes("Sesi tamat")) {
-                    alert("Sesi tamat. Sila log masuk semula.");
-                    doLogout();
-                } else {
-                    console.log("Tiada data: " + d.message);
-                }
+            document.getElementById('lastUpdate').innerText = "Sedang mengemaskini...";
+            const d = await postData('getAnalytics', {state: uProf.state}); 
+            if(!d.records) { 
+                // Handle session error or empty
+                if(d.message) console.log(d.message);
+                return; 
             }
-        }
-
-        function populateDropdown(id, arrValues) {
-            const el = document.getElementById(id);
-            const currentVal = el.value;
-            const unique = [...new Set(arrValues.filter(x => x && x !== "-"))].sort();
-            el.innerHTML = '<option value="">Semua</option>';
-            unique.forEach(v => { el.innerHTML += `<option value="${v}">${v}</option>`; });
-            el.value = currentVal;
-        }
-
-        function runFilter(src) {
-            const n = document.getElementById('selNegeri').value;
-            const d = document.getElementById('selDaerah').value;
-            const t = document.getElementById('selTanaman').value;
+            mData = d.records; 
             
-            fData = mData.filter(r => {
-                const matchN = (n === "" || r.n === n);
-                const matchD = (d === "" || r.d === d);
-                const matchT = (t === "" || r.tn === t);
-                return matchN && matchD && matchT;
+            // Auto populate dropdown filter
+            fillSel('selNegeri', mData.map(d => d.n)); 
+            if(uProf.state !== "ALL") { const s = document.getElementById('selNegeri'); s.value = uProf.state; s.disabled = true; }
+            
+            if(!map) { map = L.map('map').setView([4.2105, 101.9758], 6); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map); }
+            runFilter('n');
+            document.getElementById('lastUpdate').innerText = "Data setakat: Terkini";
+        }
+
+        function runFilter(source) {
+            const n=v('selNegeri'), d=v('selDaerah'), t=v('selTanaman'), p=v('selPerosak'), k=v('selKategori'), s=v('dS'), e=v('dE');
+            fData = mData.filter(r => { 
+                let pestOk = true;
+                if(p && r.p) { try{ pestOk = (typeof r.p==='string'?JSON.parse(r.p):r.p)[p] }catch(err){ pestOk=false } }
+                return (n===""||r.n===n) && (d===""||r.d===d) && (t===""||r.tn===t) && (k===""||r.kt===k) && pestOk && (!s||r.t>=s) && (!e||r.t<=e);
             });
             
-            if(src === 'n') {
-                populateDropdown('selDaerah', fData.map(r=>r.d));
-                populateDropdown('selTanaman', fData.map(r=>r.tn));
+            if(source === 'n' || !source) updateDropdown('selDaerah', [...new Set(mData.filter(r => n === "" || r.n === n).map(x=>x.d).filter(x=>x))].sort(), d);
+            if(source === 'd' || source === 'n' || !source) updateDropdown('selTanaman', [...new Set(mData.filter(r => (n===""||r.n===n) && (d===""||r.d===d)).map(x=>x.tn).filter(x=>x))].sort(), t);
+            if(source === 't' || source === 'd' || source === 'n' || !source) {
+                const dataRest = mData.filter(r => (n===""||r.n===n) && (d===""||r.d===d) && (t===""||r.tn===t));
+                updateDropdown('selKategori', [...new Set(dataRest.map(x=>x.kt).filter(x=>x))].sort(), k);
+                let allPests = new Set();
+                dataRest.forEach(r => { try{ let obj=typeof r.p==='string'?JSON.parse(r.p):r.p; if(obj) Object.keys(obj).forEach(x=>allPests.add(x)) }catch(e){} });
+                updateDropdown('selPerosak', [...allPests].sort(), p);
             }
-            calcUI();
+            pg = 1; calcUI();
         }
+
+        function updateDropdown(id, list, curVal) {
+            const el = document.getElementById(id); el.innerHTML = '<option value="">Semua</option>';
+            list.forEach(x => { let opt=document.createElement('option'); opt.value=x; opt.innerText=x; el.appendChild(opt); });
+            if(list.includes(curVal)) el.value = curVal; else el.value = "";
+        }
+        function v(id){ return document.getElementById(id).value; }
+        function fillSel(id, arr) { updateDropdown(id, [...new Set(arr)].sort(), ""); }
+        function resetFilter(){ document.querySelectorAll('select:not(:disabled), input[type=date]').forEach(e=>e.value=""); runFilter('n'); }
 
         function calcUI() {
-            let tt=0, ts=0; 
-            fData.forEach(r => { tt += (parseFloat(r.lt) || 0); ts += (parseFloat(r.ls) || 0); });
-            document.getElementById('k1').innerText = tt.toFixed(2);
-            document.getElementById('k2').innerText = ts.toFixed(2);
+            let tt=0, ts=0, pm={}, km={1:0,2:0,3:0,4:0,5:0}, pts=[], hData={};
+            fData.forEach(d => {
+                tt += (d.lt||0); ts += (d.ls||0);
+                try{ let p=typeof d.p==='string'?JSON.parse(d.p):d.p; if(p) Object.entries(p).forEach(([k,v])=>pm[k]=(pm[k]||0)+parseFloat(v)); else if(d.ls>0) pm["Umum"]=(pm["Umum"]||0)+d.ls; }catch(e){ if(d.ls>0) pm["Umum"]=(pm["Umum"]||0)+d.ls; }
+                let l = parseInt(d.k)||0; if(l>0 && l<=5) km[l]++;
+                if(d.c && d.c.includes(',')) { let p = d.c.split(',').map(Number); if(p.length===2 && !isNaN(p[0])) pts.push(p); }
+                if(d.ls > 0 && d.d !== "-") hData[d.d] = (hData[d.d]||0) + d.ls;
+            });
+            document.getElementById('k1').innerText = tt.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('k2').innerText = ts.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             document.getElementById('k3').innerText = tt>0 ? ((ts/tt)*100).toFixed(1)+"%" : "0%";
-            document.getElementById('k4').innerText = fData.length;
+            document.getElementById('k4').innerText = fData.length.toLocaleString('en-US');
             
-            if(!map) { map = L.map('map').setView([4.2, 101.9], 6); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map); }
-            if(layer) map.removeLayer(layer);
-            let pts=[]; 
-            fData.forEach(r=>{ if(r.c && r.c.includes(',')) { let coord = r.c.split(',').map(Number); if(!isNaN(coord[0])) pts.push(coord); } });
-            if(pts.length) { layer=L.layerGroup(pts.map(p=>L.circleMarker(p,{radius:5,color:'red',fillOpacity:0.8}))).addTo(map); map.fitBounds(L.latLngBounds(pts)); }
-
-            let h={}; fData.forEach(r=>{ if(r.ls>0) h[r.d]=(h[r.d]||0)+r.ls; });
-            document.getElementById('hotspotTable').innerHTML = Object.entries(h).sort((a,b)=>b[1]-a[1]).slice(0,5).map(x=>`<tr><td>${x[0]}</td><td class="text-end text-danger fw-bold">${x[1].toFixed(2)}</td></tr>`).join('');
-            pg=1; renTab();
+            // Map Logic
+            if(layer) map.removeLayer(layer); 
+            if(pts.length) { layer = L.layerGroup(pts.map(p => L.circleMarker(p, {radius:6, color:'#dc2626', fillOpacity:0.7, stroke:true, weight:1, color:'white', fillColor:'#dc2626'}))).addTo(map); map.fitBounds(L.latLngBounds(pts)); }
+            
+            // Hotspot Table
+            const s = Object.entries(hData).sort((a,b)=>b[1]-a[1]).slice(0,5); 
+            document.getElementById('hotspotTable').innerHTML = s.length ? s.map(x=>`<tr><td>${x[0]}</td><td class="text-end fw-bold text-danger">${x[1].toFixed(2)}</td></tr>`).join('') : '<tr><td colspan="2" class="text-center text-muted">Tiada Data</td></tr>';
+            
+            renTab();
         }
 
-        function renTab() {
-            const st = (pg-1)*pSize, dt = fData.slice(st, st+pSize);
-            const tbody = document.getElementById('tBody');
-            if(dt.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-center p-3 text-muted">Tiada Rekod</td></tr>'; return; }
-            tbody.innerHTML = dt.map((d,i) => `
-                <tr>
-                    <td>${d.t}</td>
-                    <td>${d.n}<br><small class="text-muted">${d.l}</small></td>
-                    <td>${d.tn}</td>
-                    <td class="text-danger fw-bold">${(parseFloat(d.ls)||0).toFixed(2)}</td>
+        // [MODIFIED] ADD PDF BUTTON IN TABLE
+        function renTab() { 
+            const st = (pg-1)*pSize; 
+            const dt = fData.slice(st, st+pSize); 
+            document.getElementById('tBody').innerHTML = dt.length ? dt.map((d, i) => {
+                const realIndex = st + i;
+                return `<tr>
+                    <td>${d.t}</td><td>${d.n}<br><small class="text-muted">${d.l}</small></td>
+                    <td><span class="badge bg-light text-dark border">${d.tn}</span></td>
+                    <td class="text-danger fw-bold">${d.ls.toFixed(2)}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary" onclick="viewRec(${st+i})"><i class="bi bi-eye"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="dlRowPDF(${st+i})" title="PDF Laporan"><i class="bi bi-file-pdf"></i></button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewRec(${realIndex})"><i class="bi bi-eye"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="dlRowPDF(${realIndex})" title="PDF Laporan"><i class="bi bi-file-pdf"></i></button>
                     </td>
-                </tr>`).join('');
-            document.getElementById('pgInfo').innerText = `Page ${pg}`;
-        }
-        function movePg(v){ pg=Math.max(1, pg+v); renTab(); }
+                </tr>`;
+            }).join('') : '<tr><td colspan="6" class="text-center text-muted p-4">Tiada rekod.</td></tr>'; 
+            document.getElementById('pgInfo').innerText = `Page ${pg}`; 
+        }        
+        function movePg(v) { pg = Math.max(1, pg+v); renTab(); }
 
-        // --- EDIT MODE ---
+        // --- ORIGINAL VIEW REC (RETAINED) ---
+        function viewRec(idx) {
+            const d = fData[idx]; if (!d) return;
+            const cleanImg = (raw) => { if (!raw) return []; let str = String(raw).trim().replace(/[\[\]"'\\]/g, ''); return str.split(',').map(l => l.trim()).filter(l => l.toLowerCase().startsWith('http')); };
+            let pestRows = "";
+            if (d.p && Object.keys(d.p).length > 0) { Object.keys(d.p).forEach(k => { let luasVal = d.p[k], level = 0; let badgeColor = level < 3 ? 'success' : (level < 4 ? 'warning' : 'danger'); pestRows += `<tr><td style="font-size:0.85rem" class="text-uppercase">${k}</td><td class="text-center fw-bold">${parseFloat(luasVal).toFixed(2)}</td><td class="text-center">-</td><td class="text-center">-</td></tr>`; }); } else { pestRows = `<tr><td colspan="4" class="text-center text-muted small">Tiada Data Terperinci</td></tr>`; }
+            const imgLinks = cleanImg(d.im);
+            let imgHTML = imgLinks.length > 0 ? `<div class="mt-3 pt-2 border-top"><h6 class="fw-bold text-secondary small mb-2 text-uppercase"><i class="bi bi-paperclip me-1"></i> LAMPIRAN GAMBAR</h6><div class="d-flex flex-wrap gap-2">` + imgLinks.map((lnk,i)=>`<a href="${lnk}" target="_blank" class="btn btn-sm btn-outline-primary bg-white shadow-sm text-truncate fw-bold" style="max-width:140px;"><i class="bi bi-image me-1"></i> Gambar ${i+1}</a>`).join('') + `</div></div>` : `<div class="mt-3 pt-2 border-top"><small class="text-muted fst-italic text-uppercase"><i class="bi bi-slash-circle me-1"></i> TIADA GAMBAR</small></div>`;
+            
+            const html = `
+            <div class="verify-card bg-white rounded-3 shadow-sm border h-100 position-relative">
+                <div class="p-3 border-bottom bg-light d-flex justify-content-between align-items-start">
+                    <div><div class="small text-muted mb-1"><i class="bi bi-calendar3 me-1"></i> ${d.t}</div><div class="fw-bold text-uppercase text-dark">${d.pg}</div><div class="small text-muted fst-italic">${d.em}</div></div><span class="badge bg-success text-white shadow-sm">DISAHKAN</span>
+                </div>
+                <div class="p-3 pb-0">
+                    <h6 class="fw-bold text-success mb-3 small border-bottom pb-2 text-uppercase"><i class="bi bi-info-circle-fill me-1"></i> LOKASI & TANAMAN</h6>
+                    <div class="row g-2 mb-1" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">NEGERI:</div><div class="col-8 fw-bold text-dark">${d.n}</div></div>
+                    <div class="row g-2 mb-1" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">DAERAH:</div><div class="col-8 fw-bold text-dark">${d.d}</div></div>
+                    <div class="row g-2 mb-1" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">LOKASI:</div><div class="col-8 fw-bold text-dark">${d.l}</div></div>
+                    <div class="row g-2 mb-3" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">LUAS TANAMAN:</div><div class="col-8 text-dark">${d.lt.toFixed(2)} HA</div></div>
+                </div>
+                <div class="px-3"><h6 class="fw-bold text-success mb-2 small text-uppercase"><i class="bi bi-bug-fill me-1"></i> DATA SERANGAN</h6><div class="table-responsive border rounded mb-2"><table class="table table-sm table-striped mb-0" style="font-size:0.8rem"><thead class="table-light"><tr><th>PEROSAK</th><th class="text-center">LUAS (HA)</th><th class="text-center">%</th><th class="text-center">TAHAP</th></tr></thead><tbody>${pestRows}</tbody></table></div><div class="alert alert-warning border-warning mb-0 py-2 px-3 small"><i class="bi bi-lightbulb-fill text-warning me-1"></i> <strong>SYOR:</strong> ${d.s}</div>${imgHTML}</div>
+                <div class="p-3 mt-auto"><div class="bg-success bg-opacity-10 border border-success rounded p-2 text-center"><small class="text-success fw-bold text-uppercase mb-1 d-block">DISAHKAN OLEH:</small><div class="text-dark small fw-bold">${d.vb}</div></div></div>
+            </div>`;
+            
+            document.getElementById('detailBody').innerHTML = html;
+            document.getElementById('modalTitle').innerText = "BUTIRAN REKOD DISAHKAN";
+            new bootstrap.Modal(document.getElementById('detailModal')).show();
+        }
+
+        // --- ORIGINAL TASK & VERIFY LOGIC (DIPERBETULKAN CUMA TOKEN) ---
+        
+        async function loadMyTasks() {
+            const container = document.getElementById('taskContainer');
+            container.innerHTML = '<div class="col-12 text-center p-5"><div class="spinner-border text-primary"></div></div>';
+            
+            try {
+                const d = await postData('getMyTasks', { name: uProf.name });
+                myTasksData = d.rows || [];
+                const b = document.getElementById('badgeTask');
+                if(myTasksData.length > 0) { b.innerText = myTasksData.length; b.style.display = "inline-block"; } else { b.style.display = "none"; }
+
+                if (!myTasksData.length) {
+                    container.innerHTML = '<div class="col-12 text-center p-5 text-muted bg-white rounded border border-dashed"><i class="bi bi-check2-circle fs-3 text-success d-block mb-2"></i>Tiada tugasan aktif.</div>';
+                    return;
+                }
+
+                container.innerHTML = "";
+                // Mapping index manual spt asal (boleh diperbaiki jika header dynamic)
+                myTasksData.forEach((r) => {
+                    // Index row data mungkin berbeza, kita anggap standard
+                    const date = r.data[3] || r.data[4];
+                    const loc = r.data[6] || r.data[7];
+                    const crop = r.data[9] || r.data[10];
+                    const reason = r.data[21] || "Sila semak data";
+
+                    const cardHTML = `
+                    <div class="col-md-6 col-xl-4">
+                        <div class="verify-card bg-white rounded-3 shadow-sm border mb-3 h-100 border-danger">
+                            <div class="p-3 border-bottom bg-danger bg-opacity-10 d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="small text-danger fw-bold mb-1">PERLU TINDAKAN</div>
+                                    <div class="fw-bold text-dark">${loc}</div>
+                                    <div class="small text-muted text-uppercase fw-bold" style="font-size:0.8rem">${crop}</div>
+                                    <div class="small text-muted mt-1">${date}</div>
+                                </div>
+                                <span class="badge bg-danger">DITOLAK</span>
+                            </div>
+                            <div class="p-3">
+                                <div class="task-reject-box"><i class="bi bi-exclamation-triangle-fill me-2"></i> <strong>Sebab:</strong> ${reason}</div>
+                                <button class="btn btn-danger w-100 fw-bold" onclick='openTaskEdit(${JSON.stringify(r)})'>KEMASKINI SEKARANG</button>
+                            </div>
+                        </div>
+                    </div>`;
+                    container.innerHTML += cardHTML;
+                });
+            } catch(e) { console.error(e); container.innerHTML = "Ralat memuatkan tugasan."; }
+        }
+
+        async function loadPend() { 
+            const container = document.getElementById('verifyContainer'); 
+            container.innerHTML = '<div class="col-12 text-center p-5"><div class="spinner-border text-primary"></div></div>'; 
+            try { 
+                const d = await postData('getPending', {state: uProf.state}); 
+                currentPendingRows = d.rows || []; 
+                if(!d.rows || !d.rows.length) { container.innerHTML = '<div class="col-12 text-center p-5 text-muted bg-white rounded border border-dashed"><i class="bi bi-check-circle fs-3 text-success d-block mb-2"></i>Tiada data baru untuk disahkan.</div>'; return; } 
+                container.innerHTML = ""; 
+                
+                // Gunakan logic paparan asal Tuan (Verify Card)
+                d.rows.forEach((r) => { 
+                    const date = r.data[3] || r.data[4];
+                    const name = r.data[1];
+                    const email = r.data[2];
+                    const loc = r.data[6] || r.data[7];
+                    const crop = r.data[9] || r.data[10];
+                    const ls = r.data[14] || "{}";
+                    
+                    const cardHTML = `
+                    <div class="col-md-6 col-xl-4">
+                        <div class="verify-card bg-white rounded-3 shadow-sm border mb-3 h-100">
+                            <div class="p-3 border-bottom bg-light d-flex justify-content-between align-items-start">
+                                <div><div class="small text-muted mb-1"><i class="bi bi-calendar3 me-1"></i> ${date}</div><div class="fw-bold text-uppercase text-dark">${name}</div><div class="small text-muted fst-italic">${email}</div></div><span class="badge bg-warning text-dark shadow-sm">BARU</span>
+                            </div>
+                            <div class="p-3">
+                                <h6 class="fw-bold text-success mb-2 small text-uppercase">Lokasi: ${loc}</h6>
+                                <p class="small mb-1">Tanaman: <b>${crop}</b></p>
+                                <p class="small text-muted">Data Serangan: ${ls}</p>
+                                <div class="d-flex gap-2 mt-3">
+                                    <button class="btn btn-outline-danger flex-grow-1 fw-bold text-uppercase" onclick="subVer(${r.row},'REJECT')">TOLAK</button>
+                                    <button class="btn btn-success flex-grow-1 fw-bold shadow-sm text-uppercase" onclick="subVer(${r.row},'APPROVE')">SAHKAN</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`; 
+                    container.innerHTML += cardHTML; 
+                }); 
+            } catch(e) { console.error(e); container.innerHTML='<div class="col-12 text-center p-5 text-danger">Ralat memuatkan data.</div>'; } 
+        }
+
+        async function subVer(row, act) { let re = ""; if(act==='REJECT'){ re=prompt("Sebab:"); if(!re) return; } else if(!confirm("Sahkan data ini?")) return; const r = await postData('submitVerify', {row:row, act:act, reason:re, name:uProf.name}); alert(r.message); if(r.success) { loadPend(); checkPendingCount(); initDash(); } }
+        async function approveAll() { if(!currentPendingRows || currentPendingRows.length === 0) { alert("Tiada data."); return; } if(!confirm(`Sahkan SEMUA ${currentPendingRows.length} rekod?`)) return; const prog = document.getElementById('bulkProgress'); const bar = document.getElementById('progBar'); const txt = document.getElementById('progText'); prog.style.display = 'block'; let count = 0; for (const r of currentPendingRows) { await postData('submitVerify', {row: r.row, act: 'APPROVE', reason: 'Bulk Approval', name: uProf.name}); count++; let pct = Math.round((count / currentPendingRows.length) * 100); bar.style.width = pct + "%"; txt.innerText = `${count} / ${currentPendingRows.length}`; } alert("✅ Selesai!"); prog.style.display = 'none'; loadPend(); initDash(); checkPendingCount(); }
+
+        // --- NEW FEATURES (EDIT & PDF) ---
+
+        function openTaskEdit(taskObj) {
+            renderEditForm(taskObj.row, taskObj.data);
+        }
+
         async function renderEditForm(rowID, rowData) {
             if(!refPestData) await loadRefData();
             const d = rowData;
@@ -445,6 +654,8 @@
             document.getElementById('detailBody').innerHTML = html;
             document.getElementById('modalTitle').innerText = "KEMASKINI TUGASAN";
             const setV = (id, v) => { if(document.getElementById(id)) document.getElementById(id).value = v||""; };
+            
+            // Populate values (Logic dipendekkan tapi berfungsi sama)
             setV('fe_tarikh', d[3] ? new Date(d[3]).toISOString().split('T')[0] : "");
             setV('fe_lokasi', d[6]); setV('fe_coord', d[7]);
             
@@ -545,21 +756,6 @@
             if(r.success) { alert("✅ Berjaya!"); bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide(); loadMyTasks(); initDash(); } else { alert("Ralat: " + r.message); btn.innerHTML="SIMPAN & HANTAR"; btn.disabled=false; }
         }
 
-        async function loadMyTasks() {
-            const c = document.getElementById('taskContainer'); c.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-primary"></div></div>';
-            const d = await postData('getMyTasks', {name: uProf.name});
-            const tasks = d.rows || [];
-            document.getElementById('badgeTask').innerText = tasks.length; document.getElementById('badgeTask').style.display = tasks.length ? 'inline-block' : 'none';
-            if(!tasks.length) { c.innerHTML='<div class="col-12 text-center p-5 text-muted">Tiada tugasan.</div>'; return; }
-            c.innerHTML = "";
-            tasks.forEach(t => {
-                const loc = t.data[6] || t.data[7] || "Lokasi?"; const crop = t.data[9] || t.data[10] || "Tanaman?"; const date = t.data[3] || t.data[4] || "-"; const reason = t.data[21] || "Sila semak data";
-                c.innerHTML += `<div class="col-md-6 col-xl-4"><div class="verify-card bg-white rounded-3 shadow-sm border mb-3 h-100 border-danger"><div class="p-3 border-bottom bg-danger bg-opacity-10"><div class="fw-bold text-dark">${loc}</div><small class="text-muted">${crop} | ${date}</small><span class="badge bg-danger float-end">DITOLAK</span></div><div class="p-3"><div class="task-reject-box p-2 mb-3 small"><i class="bi bi-info-circle me-1"></i> ${reason}</div><button class="btn btn-danger w-100 btn-sm fw-bold" onclick='openTaskEdit(${JSON.stringify(t)})'>KEMASKINI</button></div></div></div>`;
-            });
-        }
-
-        function openTaskEdit(taskObj) { renderEditForm(taskObj.row, taskObj.data); }
-
         async function dlRowPDF(idx) {
             const rData = fData[idx]; if(!rData) return;
             const btn = event.target.closest('button'); const orig = btn.innerHTML; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>'; btn.disabled = true;
@@ -583,14 +779,7 @@
             const s = document.getElementById(sId).value; const t = document.getElementById(tId); t.innerHTML = '<option value="">- Pilih -</option>';
             if(s && districtData[s]) districtData[s].forEach(x=>t.innerHTML+=`<option value="${x}">${x}</option>`);
         }
-        function switchTab(t, el) {
-            document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active')); if(el) el.classList.add('active');
-            ['main','tasks','verify','form'].forEach(v => document.getElementById('view-'+v).style.display = (v===t?'block':'none'));
-            if(t==='main' && map) setTimeout(()=>map.invalidateSize(),300); if(t==='verify') loadPend();
-        }
-        function doLogout() { localStorage.removeItem('pnr_user'); location.reload(); }
         function formatSyorPerenggan(t) { if(!t)return ""; return String(t).split(/[;\n]+/).map(s=>s.trim()).filter(s=>s).map(s=>(s[0].toUpperCase()+s.slice(1)).replace(/\.+$/,'')+'.').join(' '); }
-        function resetFilter() { document.querySelectorAll('select:not(:disabled), input[type=date]').forEach(e=>e.value=""); runFilter(); }
     </script>
 </body>
 </html>
