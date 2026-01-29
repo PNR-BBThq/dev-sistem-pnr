@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem PNR Digital</title>
+    <title>Sistem PNR Digital - FIXED DESIGN</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
@@ -38,7 +38,7 @@
         .text-danger { color: #dc2626 !important; }
         .badge-pending { background: #dc2626; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; display: none; }
 
-        /* --- STYLE REPORT CARD (KEKAL ASAL) --- */
+        /* --- STYLE REPORT CARD (DIKEMASKINI) --- */
         .verify-card { background: #fff; border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; height: 100%; display: flex; flex-direction: column; transition: transform 0.2s; border: 1px solid #e2e8f0; }
         .verify-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .verify-header { background: #f8f9fa; border-bottom: 1px solid #e9ecef; padding: 15px 20px; display: flex; justify-content: space-between; align-items: flex-start; }
@@ -52,7 +52,7 @@
         .v-label { width: 130px; font-weight: 700; color: #000; flex-shrink: 0; font-size: 0.85rem; }
         .v-val { flex-grow: 1; color: #1e293b; font-weight: 500; word-break: break-word; }
         
-        /* TABLE MINI DALAM KAD (KEKAL ASAL) */
+        /* TABLE MINI DALAM KAD (HEADER UPDATED) */
         .mini-table { width: 100%; font-size: 0.8rem; border-collapse: collapse; margin-top: 5px; margin-bottom: 15px; }
         .mini-table th { background: #f1f5f9; text-transform: uppercase; font-size: 0.7rem; color: #475569; padding: 8px; border: 1px solid #e2e8f0; font-weight: 800; }
         .mini-table td { padding: 8px; border: 1px solid #e2e8f0; vertical-align: middle; }
@@ -62,13 +62,8 @@
 
         .filter-label { font-size: 0.75rem; font-weight: 800; color: #000; margin-bottom: 3px; display: block; text-transform: uppercase; }
 
-        /* STYLE KHAS UNTUK TUGASAN (KEKAL ASAL) */
+        /* STYLE KHAS UNTUK TUGASAN */
         .task-reject-box { background-color: #fef2f2; border: 1px solid #fecaca; padding: 15px; border-radius: 8px; margin-bottom: 15px; color: #b91c1c; }
-
-        /* --- STYLE BARU UNTUK EDIT GAMBAR SAHAJA --- */
-        .img-thumb-container { position: relative; width: 80px; height: 80px; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
-        .img-thumb-container img { width: 100%; height: 100%; object-fit: cover; }
-        .btn-del-img { position: absolute; top: 2px; right: 2px; background: rgba(220, 38, 38, 0.9); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
@@ -237,7 +232,7 @@
                 <div class="d-flex justify-content-between mb-3"><h6 class="fw-bold"><i class="bi bi-table me-2"></i>Jadual Rekod</h6><small id="pgInfo" class="text-muted"></small></div>
                 <div class="table-responsive">
                     <table class="table table-sm table-hover align-middle">
-                        <thead class="table-light"><tr><th>Tarikh</th><th>Negeri</th><th>Lokasi</th><th>Tanaman</th><th>Luas Bancian</th><th>Luas Serangan</th></tr></thead>
+                        <thead class="table-light"><tr><th>Tarikh</th><th>Negeri</th><th>Lokasi</th><th>Tanaman</th><th>Luas(S)</th><th>Tindakan</th></tr></thead>
                         <tbody id="tBody"></tbody>
                     </table>
                 </div>
@@ -314,8 +309,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // *** GANTI URL BACKEND TUAN DI SINI ***
-        const API_URL = "https://script.google.com/macros/s/AKfycbx1hlsIWN5MCo7ab_ytT_d_oFqVjy1XMJwM39oBC8yPp9OLukRSbk47Ufate26quu4k/exec";
+        // *** SILA PASTE URL DEPLOYMENT BACKEND TERBARU DI SINI ***
+        const API_URL = "https://script.google.com/macros/s/AKfycbyKB5-TBuZ8JXs1pz9s7LBCT5stsFaNP8fMzw8UvbPYbKCWuus8mSuDdaLFaK1PNDG8/exec";
         
         const BANCIAN_URL = "https://script.google.com/macros/s/AKfycbz2hKf0rlCm8xWD_kXwEi0kYiVCOtcX1_noM6S0dHjkDJOrG6LtQ3GGt-4TT0plWVm60g/exec";
         const RPW_URL = "https://www.appsheet.com/start/55b088df-3ec1-469a-b5c6-1fca48052906";
@@ -343,7 +338,8 @@
         let userToken = "";
         let currentUserID = "";
         let myTasksData = [];
-        // [BARU]
+        
+        // [TAMBAHAN: Variable untuk fungsi baru]
         let refPestData = null;
         let keptImages = [];
 
@@ -390,6 +386,7 @@
             } catch(e) { console.error("Ref Error", e); }
         }
 
+        // --- LOGIN & SESSION (MODIFIED) ---
         async function doLogin() {
             const u = document.getElementById('uid').value.trim();
             const p = document.getElementById('pwd').value.trim();
@@ -412,7 +409,6 @@
 
         function applyLogin(r, token, uid) {
             uProf = r; userToken = token; currentUserID = uid;
-            // Fallback username
             if(!uProf.username) uProf.username = uid;
 
             document.getElementById('uDisp').innerText = r.name;
@@ -435,8 +431,6 @@
                     const s = JSON.parse(saved);
                     if (s.uProf && s.userToken) {
                         applyLogin(s.uProf, s.userToken, s.currentUserID);
-                        // Log (Optional)
-                        // postData('logSession', ...);
                     }
                 } catch (e) { console.error("Gagal baca session", e); }
             }
@@ -629,6 +623,7 @@
                 if(!d.rows || !d.rows.length) { container.innerHTML = '<div class="col-12 text-center p-5 text-muted bg-white rounded border border-dashed"><i class="bi bi-check-circle fs-3 text-success d-block mb-2"></i>Tiada data baru untuk disahkan.</div>'; return; } 
                 container.innerHTML = ""; 
                 
+                // --- INI ADALAH LOGIC PAPARAN KAD ORIGINAL YANG TUAN MAHU KEKALKAN ---
                 d.rows.forEach((r) => { 
                     const getVal = (key) => { const i = d.headers.findIndex(h => h.toLowerCase().includes(key.toLowerCase())); return i > -1 ? r.data[i] : ""; };
                     const tarikh = getVal('Tarikh') || getVal('Date');
@@ -653,6 +648,7 @@
                         if(Object.keys(lsObj).length > 0) { Object.keys(lsObj).forEach(k => { let level = kObj[k] || 0; let badgeColor = level < 3 ? 'success' : (level < 4 ? 'warning' : 'danger'); pestRows += `<tr><td style="font-size:0.85rem">${k}</td><td class="text-center fw-bold">${lsObj[k]}</td><td class="text-center small">${pctObj[k]||0}%</td><td class="text-center"><span class="badge bg-${badgeColor}">T${level}</span></td></tr>`; }); } else { pestRows = `<tr><td colspan="4" class="text-center text-muted small">Tiada Serangan</td></tr>`; } 
                     } catch(e) { pestRows = `<tr><td colspan="4" class="text-center text-muted small">Ralat Data</td></tr>`; } 
                     
+                    // --- KEKALKAN CARA PAPARAN GAMBAR LINK ORIGINAL ---
                     const rawImg = getVal('IMAGE LINKS (COMMA SEPARATED)') || getVal('Gambar') || getVal('Image') || getVal('Foto');
                     const cleanImageLink = (raw) => { if (!raw) return []; let str = String(raw).trim(); if(str.length < 5) return []; str = str.replace(/[\[\]"'\\]/g, ''); return str.split(',').map(l => l.trim()).filter(l => l.toLowerCase().startsWith('http')); };
                     const imgLinks = cleanImageLink(rawImg);
@@ -803,9 +799,12 @@
                 <h6 class="text-primary border-bottom pb-2 mt-3">C. Data Serangan</h6>
                 <table class="table table-sm table-bordered" id="fe_pestTable"><thead class="table-light"><tr><th>Perosak</th><th width="70">Luas(Ha)</th><th width="70">Tahap</th><th width="30"></th></tr></thead><tbody></tbody></table>
                 <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-3" onclick="addPestRow()">+ Tambah Perosak</button>
-                <h6 class="text-primary border-bottom pb-2 mt-3">D. Gambar</h6>
-                <div class="mb-2"><label class="small fw-bold mb-2">Gambar Sedia Ada:</label><div id="existingImgContainer" class="d-flex flex-wrap gap-2"></div></div>
+                
+                <h6 class="text-primary border-bottom pb-2 mt-3">D. Gambar & Keterangan</h6>
+                <div class="mb-2"><label class="small fw-bold mb-2">Gambar Sedia Ada:</label><div id="existingImgContainer"></div></div>
                 <div class="mb-3"><label class="small fw-bold">Muat Naik Gambar Baru:</label><input type="file" id="fe_newImages" class="form-control form-control-sm" multiple accept="image/*"></div>
+                <div class="mb-3"><label class="small fw-bold">Keterangan Gambar</label><textarea id="fe_caption" class="form-control" rows="2" placeholder="Masukkan kapsyen gambar..."></textarea></div>
+
                 <h6 class="text-primary border-bottom pb-2 mt-3">E. Syor</h6>
                 <div class="mb-3"><textarea id="fe_syor" class="form-control" rows="4"></textarea></div>
                 <button class="btn btn-success w-100 py-2 fw-bold" onclick="saveFullEdit()">SIMPAN & HANTAR</button>
@@ -815,8 +814,9 @@
             document.getElementById('modalTitle').innerText = "KEMASKINI TUGASAN";
             const setV = (id, v) => { if(document.getElementById(id)) document.getElementById(id).value = v||""; };
             
+            // Populate values (Logic dipendekkan tapi berfungsi sama)
             setV('fe_pegawai', d[1]);
-            setV('fe_tarikh', formatDateForInput(d[3]));
+            setV('fe_tarikh', d[3] ? new Date(d[3]).toISOString().split('T')[0] : "");
             setV('fe_lokasi', d[6]); setV('fe_coord', d[7]);
             
             const smartSet = (elId, val, options) => {
@@ -844,7 +844,14 @@
             if(pList.length===0 && d[13]) addPestRow(d[13], d[14], d[16]);
             else pList.forEach(p => addPestRow(p, luasObj[p], sevObj[p]));
             if(pList.length===0) addPestRow();
-            renderKeptImages(); setV('fe_syor', d[17]);
+            
+            // Render Gambar
+            renderKeptImages(); 
+            
+            // Render Caption (Kalau ada data caption di row hujung, masukkan sini. Buat masa ni kosongkan)
+            // setV('fe_caption', d[21]); // Jika backend hantar caption
+            
+            setV('fe_syor', d[17]);
             new bootstrap.Modal(document.getElementById('detailModal')).show();
         }
 
@@ -881,13 +888,33 @@
             tbody.appendChild(tr);
         }
 
+        // [MODIFIED] GUNA LINK & BUTTON DELETE
         function renderKeptImages() {
             const c = document.getElementById('existingImgContainer'); if(!c) return;
-            c.innerHTML = ""; keptImages.forEach((url, idx) => { c.innerHTML += `<div class="img-thumb-container"><img src="${url}"><button class="btn-del-img" onclick="removeImage(${idx})"><i class="bi bi-x"></i></button></div>`; });
-            if(keptImages.length === 0) c.innerHTML = "<small class='text-muted fst-italic'>Tiada gambar.</small>";
+            c.innerHTML = ""; 
+            if(keptImages.length === 0) {
+                c.innerHTML = "<small class='text-muted fst-italic'>Tiada gambar sedia ada.</small>";
+            } else {
+                keptImages.forEach((url, idx) => { 
+                    c.innerHTML += `
+                    <div class="d-flex align-items-center justify-content-between border rounded p-2 mb-2 bg-white">
+                        <a href="${url}" target="_blank" class="btn btn-sm btn-outline-primary fw-bold">
+                            <i class="bi bi-image me-1"></i> Lihat Gambar ${idx+1}
+                        </a>
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeImage(${idx})" title="Padam Gambar">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>`; 
+                });
+            }
         }
 
-        function removeImage(idx) { keptImages.splice(idx, 1); renderKeptImages(); }
+        function removeImage(idx) { 
+            if(confirm("Padam gambar ini dari senarai?")) {
+                keptImages.splice(idx, 1); 
+                renderKeptImages(); 
+            }
+        }
 
         async function saveFullEdit() {
             if(!confirm("Hantar kemaskini?")) return;
@@ -910,7 +937,10 @@
                 negeri: document.getElementById('fe_negeri').value, daerah: document.getElementById('fe_daerah').value, lokasi: document.getElementById('fe_lokasi').value,
                 coord: document.getElementById('fe_coord').value, kategori: document.getElementById('fe_kategori').value, tanaman: document.getElementById('fe_tanaman').value,
                 varieti: document.getElementById('fe_varieti').value, luasT: lt, luasS: luasS, keterukan: sevS, peratus: pctS,
-                syor: formatSyorPerenggan(document.getElementById('fe_syor').value), keptImages: keptImages, newImages: newImages
+                syor: formatSyorPerenggan(document.getElementById('fe_syor').value), 
+                keptImages: keptImages, // Array gambar lama (yg belum delete)
+                newImages: newImages,   // Gambar baru
+                caption: document.getElementById('fe_caption').value // Caption
             };
             const r = await postData('updateEntry', payload);
             if(r.success) { alert("✅ Berjaya!"); bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide(); loadMyTasks(); initDash(); } else { alert("Ralat: " + r.message); btn.innerHTML="SIMPAN & HANTAR"; btn.disabled=false; }
