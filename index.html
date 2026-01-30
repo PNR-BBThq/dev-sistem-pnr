@@ -3,304 +3,404 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Borang PNR Digital</title>
+<title>PNR Digital Dashboard</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
-body{background:#f3f4f6}
-.container{max-width:720px;background:#fff;padding:25px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.1)}
-.perosak-item{border:1px solid #e5e7eb;padding:15px;border-radius:10px;margin-bottom:15px;position:relative}
-.preview-img{max-width:90px;max-height:90px;border:1px solid #ddd;border-radius:6px;object-fit:cover}
-.loader{position:fixed;inset:0;background:rgba(255,255,255,.9);z-index:9999;display:none;align-items:center;justify-content:center;flex-direction:column}
+:root{
+  --primary:#064e3b;
+  --accent:#10b981;
+  --bg:#f3f4f6;
+}
+body{background:var(--bg);margin:0;font-family:Segoe UI,sans-serif}
+.sidebar{
+  width:260px;height:100vh;position:fixed;left:0;top:0;
+  background:#e8f5e9;border-right:1px solid #c6e7ce;
+  padding:20px;display:flex;flex-direction:column;z-index:100
+}
+.brand{font-weight:900;font-size:1.3rem;color:#000;margin-bottom:20px}
+.nav-item{
+  padding:12px 15px;border-radius:8px;margin-bottom:5px;
+  cursor:pointer;font-weight:600;display:flex;align-items:center;gap:10px
+}
+.nav-item:hover{background:#c8e6c9}
+.nav-item.active{background:#1b5e20;color:#fff}
+.main{
+  margin-left:260px;padding:25px;transition:.3s
+}
+.view{display:none}
+.view.active{display:block}
+.loader{
+  position:fixed;inset:0;background:rgba(255,255,255,.9);
+  display:none;align-items:center;justify-content:center;
+  flex-direction:column;z-index:9999
+}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.active{transform:translateX(0)}
+  .main{margin-left:0}
+}
 </style>
 </head>
 
 <body>
 
+<!-- LOADER -->
 <div class="loader" id="loader">
   <div class="spinner-border text-success"></div>
   <strong class="mt-2">Memproses...</strong>
 </div>
 
-<div class="container mt-4 mb-5">
-<h3 class="text-success fw-bold text-center mb-4">🌱 Borang Pemantauan PNR</h3>
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="brand"><i class="bi bi-flower1"></i> PNR DIGITAL</div>
 
-<form id="pnrForm">
+  <div class="nav-item active" onclick="switchView('dashboard',this)">
+    <i class="bi bi-grid-1x2-fill"></i> Dashboard
+  </div>
 
-<!-- A. MAKLUMAT AM -->
-<h5 class="text-primary border-bottom pb-2">A. Maklumat Am</h5>
+  <div class="nav-item" onclick="switchView('tasks',this)">
+    <i class="bi bi-list-task"></i> Tugasan Saya
+    <span class="badge bg-danger ms-auto d-none" id="taskBadge">0</span>
+  </div>
+
+  <div class="nav-item" onclick="switchView('verify',this)">
+    <i class="bi bi-check-circle-fill"></i> Pengesahan
+    <span class="badge bg-danger ms-auto d-none" id="verifyBadge">0</span>
+  </div>
+
+  <hr>
+
+  <div class="nav-item bg-success text-white"
+       onclick="openFormTambah()">
+    <i class="bi bi-plus-lg"></i> Tambah Data
+  </div>
+
+  <div class="mt-auto small">
+    <div><b id="userName">-</b></div>
+    <div class="text-danger" style="cursor:pointer"
+         onclick="logout()">Log Keluar</div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+<!-- MOBILE HEADER -->
+<div class="d-md-none mb-3 d-flex justify-content-between align-items-center bg-white p-3 rounded shadow-sm">
+  <b class="text-success"><i class="bi bi-flower1"></i> PNR</b>
+  <button class="btn btn-light btn-sm border"
+    onclick="document.getElementById('sidebar').classList.toggle('active')">
+    <i class="bi bi-list"></i>
+  </button>
+</div>
+
+<!-- DASHBOARD VIEW -->
+<div id="view-dashboard" class="view active">
+  <h4 class="fw-bold mb-3">Dashboard Analisis</h4>
+
+  <div class="alert alert-info">
+    <i class="bi bi-info-circle"></i>
+    Data analisis, KPI, carta & peta akan dipaparkan di sini
+  </div>
+</div>
+
+<!-- TASK VIEW -->
+<div id="view-tasks" class="view">
+  <h4 class="fw-bold mb-3">Tugasan Saya</h4>
+  <div id="taskContainer"
+       class="text-muted bg-white p-4 rounded shadow-sm">
+    Tiada tugasan dimuatkan.
+  </div>
+</div>
+
+<!-- VERIFY VIEW -->
+<div id="view-verify" class="view">
+  <h4 class="fw-bold mb-3">Pengesahan Data</h4>
+  <div id="verifyContainer"
+       class="text-muted bg-white p-4 rounded shadow-sm">
+    Tiada data untuk disahkan.
+  </div>
+</div>
+
+<div id="view-form" class="view">
+
+<h4 class="fw-bold mb-3">
+  <i class="bi bi-ui-checks"></i> Borang Pemantauan Perosak
+</h4>
+
+<div id="editAlert"></div>
+
+<form id="monitorForm" class="bg-white p-4 rounded shadow-sm">
+
+<!-- ================= A. MAKLUMAT AM ================= -->
+<h6 class="fw-bold text-success border-bottom pb-1 mb-3">A. Maklumat Am</h6>
 
 <div class="mb-3">
-<label class="fw-bold">Nama Pegawai</label>
-<input list="userList" id="namaPegawai" class="form-control" required>
-<datalist id="userList"></datalist>
+  <label class="fw-bold">Nama Pegawai</label>
+  <input type="text" class="form-control" id="namaPegawai" list="userList">
+  <datalist id="userList"></datalist>
 </div>
 
 <div class="mb-3">
-<label class="fw-bold">Email</label>
-<input type="email" id="email" class="form-control">
+  <label class="fw-bold">Email</label>
+  <input type="email" class="form-control" id="email">
 </div>
 
 <div class="mb-3">
-<label class="fw-bold">Tarikh Bancian</label>
-<input type="date" id="tarikh" class="form-control" required>
+  <label class="fw-bold">Tarikh Bancian</label>
+  <input type="date" class="form-control" id="tarikhBancian">
 </div>
 
 <div class="row">
-<div class="col-6 mb-3">
-<label class="fw-bold">Negeri</label>
-<select id="negeri" class="form-select" required></select>
-</div>
-<div class="col-6 mb-3">
-<label class="fw-bold">Daerah</label>
-<select id="daerah" class="form-select" required></select>
-</div>
-</div>
-
-<div class="mb-3">
-<label class="fw-bold">Lokasi / Kebun</label>
-<input id="lokasi" class="form-control" required>
+  <div class="col-md-6 mb-3">
+    <label class="fw-bold">Negeri</label>
+    <select class="form-select" id="negeriSelect" onchange="updateDaerah()"></select>
+  </div>
+  <div class="col-md-6 mb-3">
+    <label class="fw-bold">Daerah</label>
+    <select class="form-select" id="daerahSelect"></select>
+  </div>
 </div>
 
 <div class="mb-3">
-<label class="fw-bold">Koordinat GPS</label>
-<div class="input-group">
-<input id="koordinat" class="form-control">
-<button class="btn btn-secondary" type="button" onclick="getLocation()">📍</button>
+  <label class="fw-bold">Lokasi / Kebun</label>
+  <input type="text" class="form-control" id="lokasi">
 </div>
-</div>
-
-<!-- B. TANAMAN -->
-<h5 class="text-primary border-bottom pb-2 mt-4">B. Maklumat Tanaman</h5>
 
 <div class="mb-3">
-<label class="fw-bold">Kategori</label>
-<select id="kategori" class="form-select" required></select>
+  <label class="fw-bold">Koordinat GPS</label>
+  <input type="text" class="form-control" id="koordinat">
+</div>
+
+<!-- ================= B. TANAMAN ================= -->
+<h6 class="fw-bold text-success border-bottom pb-1 mt-4 mb-3">B. Maklumat Tanaman</h6>
+
+<div class="mb-3">
+  <label class="fw-bold">Kategori</label>
+  <select class="form-select" id="kategoriSelect" onchange="updateTanamanList()"></select>
 </div>
 
 <div class="row">
-<div class="col-6 mb-3">
-<label class="fw-bold">Tanaman</label>
-<select id="tanaman" class="form-select" required></select>
-</div>
-<div class="col-6 mb-3">
-<label class="fw-bold">Varieti</label>
-<input id="varieti" class="form-control">
-</div>
-</div>
-
-<div class="row">
-<div class="col-6 mb-3">
-<label class="fw-bold">Umur Tanaman</label>
-<input id="umur" class="form-control">
-</div>
-<div class="col-6 mb-3">
-<label class="fw-bold">Luas Bertanam (Ha)</label>
-<input type="number" step="0.01" id="luasTanam" class="form-control" required oninput="recalcPct()">
-</div>
+  <div class="col-md-6 mb-3">
+    <label class="fw-bold">Nama Tanaman</label>
+    <select class="form-select" id="tanamanSelect" onchange="updatePestDatalist()"></select>
+  </div>
+  <div class="col-md-6 mb-3">
+    <label class="fw-bold">Varieti</label>
+    <input type="text" class="form-control" id="varieti">
+  </div>
 </div>
 
-<!-- C. PEROSAK -->
-<h5 class="text-primary border-bottom pb-2 mt-4">C. Perosak & Penyakit</h5>
+<div class="mb-3">
+  <label class="fw-bold">Luas Bertanam (Ha)</label>
+  <input type="number" step="0.001" class="form-control" id="luasBertanam">
+</div>
+
+<!-- ================= C. PEROSAK ================= -->
+<h6 class="fw-bold text-success border-bottom pb-1 mt-4 mb-3">C. Perosak & Penyakit</h6>
+
 <datalist id="pestList"></datalist>
-
 <div id="perosakContainer"></div>
 
-<button type="button" class="btn btn-outline-primary w-100 mb-3" onclick="addPest()">+ Tambah Perosak</button>
+<button type="button"
+ class="btn btn-sm btn-outline-success w-100"
+ onclick="addPerosakRow()">+ Tambah Perosak</button>
 
-<!-- D. SYOR -->
-<div class="mb-3">
-<label class="fw-bold text-success">Syor Kawalan</label>
-<div id="syorBox" class="border rounded p-2" style="max-height:150px;overflow-y:auto"></div>
-<textarea id="syorExtra" class="form-control mt-2" placeholder="Tambah syor lain..."></textarea>
+<!-- ================= D. GAMBAR ================= -->
+<h6 class="fw-bold text-success border-bottom pb-1 mt-4 mb-3">D. Gambar</h6>
+
+<div id="oldImages" class="mb-3"></div>
+
+<input type="file" class="form-control mb-2" id="imageInput" multiple>
+<div id="imagePreview" class="d-flex flex-wrap"></div>
+
+<!-- ================= SUBMIT ================= -->
+<div class="mt-4 d-flex gap-2">
+  <button type="submit" class="btn btn-success w-100">
+    <i class="bi bi-save"></i> Simpan Data
+  </button>
+  <button type="button" class="btn btn-outline-secondary"
+          onclick="switchView('dashboard')">
+    Batal
+  </button>
 </div>
-
-<!-- E. GAMBAR -->
-<h5 class="text-primary border-bottom pb-2 mt-4">D. Gambar</h5>
-
-<div class="mb-2">
-<input id="caption" class="form-control" placeholder="Keterangan gambar (max 30)">
-</div>
-
-<div class="mb-3">
-<input type="file" id="images" multiple class="form-control" onchange="previewImages()">
-<div id="preview" class="d-flex flex-wrap mt-2 gap-2"></div>
-</div>
-
-<button class="btn btn-success w-100 fw-bold py-2" type="submit">
-HANTAR LAPORAN
-</button>
 
 </form>
+</div>
+
+
 </div>
 
 <script>
 /* ================= CONFIG ================= */
 const API_URL = "https://script.google.com/macros/s/AKfycbx1hlsIWN5MCo7ab_ytT_d_oFqVjy1XMJwM39oBC8yPp9OLukRSbk47Ufate26quu4k/exec";
 
-/* ================= STATE ================= */
-let pestTree={}, syorList=[], users=[];
-let files=[];
+/* ================= VIEW SWITCH ================= */
+function switchView(v,el){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
 
-/* ================= INIT ================= */
-window.onload = async ()=>{
-  const ref = await api("getAllReferenceData");
-  pestTree = ref.pestTree;
-  syorList = ref.syorList;
-  users = ref.userList;
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  if(el) el.classList.add('active');
 
-  // User list
-  const dl=document.getElementById("userList");
-  users.forEach(u=>dl.appendChild(new Option(u,u)));
-
-  // Negeri
-  const negeriSel=document.getElementById("negeri");
-  Object.keys(ref.districtData||{}).forEach(n=>negeriSel.add(new Option(n,n)));
-
-  // Kategori
-  const katSel=document.getElementById("kategori");
-  katSel.innerHTML="<option value=''>- Pilih -</option>";
-  Object.keys(pestTree).sort().forEach(k=>katSel.add(new Option(k,k)));
-
-  // Syor
-  const sb=document.getElementById("syorBox");
-  syorList.forEach(s=>{
-    sb.innerHTML+=`<div class="form-check">
-      <input class="form-check-input syor" type="checkbox" value="${s}">
-      <label class="form-check-label">${s}</label>
-    </div>`;
-  });
-
-  addPest();
-};
-
-/* ================= UI ================= */
-document.getElementById("kategori").onchange=()=>{
-  const k=document.getElementById("kategori").value;
-  const t=document.getElementById("tanaman");
-  t.innerHTML="<option value=''>- Pilih -</option>";
-  if(pestTree[k]) Object.keys(pestTree[k]).forEach(x=>t.add(new Option(x,x)));
-};
-
-document.getElementById("tanaman").onchange=()=>{
-  const k=document.getElementById("kategori").value;
-  const t=document.getElementById("tanaman").value;
-  const dl=document.getElementById("pestList");
-  dl.innerHTML="";
-  if(pestTree[k]&&pestTree[k][t]){
-    pestTree[k][t].forEach(p=>dl.appendChild(new Option(p,p)));
-  }
-};
-
-function addPest(){
-  const div=document.createElement("div");
-  div.className="perosak-item";
-  div.innerHTML=`
-  <button type="button" class="btn-close position-absolute top-0 end-0 m-2"
-    onclick="this.parentElement.remove()"></button>
-  <input list="pestList" class="form-control mb-2 pname" placeholder="Perosak">
-  <div class="row g-2">
-    <div class="col-4"><input type="number" step="0.01" class="form-control luas" placeholder="Luas" oninput="calc(this)"></div>
-    <div class="col-4"><input class="form-control pct" readonly placeholder="%"></div>
-    <div class="col-4">
-      <select class="form-select sev">
-        <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
-      </select>
-    </div>
-  </div>`;
-  document.getElementById("perosakContainer").appendChild(div);
+  if(v==="dashboard") loadDashboard();
+  if(v==="tasks") loadTasks();
+  if(v==="verify") loadVerify();
 }
 
-function calc(el){
-  const luasT=parseFloat(luasTanam.value)||0;
-  const luasS=parseFloat(el.value)||0;
-  el.parentElement.parentElement.querySelector(".pct").value=
-    luasT>0?((luasS/luasT)*100).toFixed(2):0;
+/* ================= OPEN FORM ================= */
+function openFormTambah(){
+  switchView('form');
+  initFormTambah(); // function akan datang PART B
 }
-function recalcPct(){
-  document.querySelectorAll(".luas").forEach(calc);
-}
-
-/* ================= IMAGE ================= */
-function previewImages(){
-  files=[...images.files];
-  preview.innerHTML="";
-  files.forEach(f=>{
-    const r=new FileReader();
-    r.onload=e=>preview.innerHTML+=`<img src="${e.target.result}" class="preview-img">`;
-    r.readAsDataURL(f);
-  });
-}
-
-/* ================= GPS ================= */
-function getLocation(){
-  navigator.geolocation.getCurrentPosition(p=>{
-    koordinat.value=p.coords.latitude.toFixed(5)+", "+p.coords.longitude.toFixed(5);
-  });
-}
-
-/* ================= SUBMIT ================= */
-pnrForm.onsubmit=async e=>{
-  e.preventDefault();
-  loader.style.display="flex";
-
-  const luasS={}, pctS={}, sevS={}, names=[];
-  document.querySelectorAll(".perosak-item").forEach(r=>{
-    const n=r.querySelector(".pname").value;
-    if(n){
-      names.push(n);
-      luasS[n]=parseFloat(r.querySelector(".luas").value)||0;
-      pctS[n]=r.querySelector(".pct").value||0;
-      sevS[n]=r.querySelector(".sev").value;
-    }
-  });
-
-  const imgs = await Promise.all(files.map(f=>new Promise(res=>{
-    const r=new FileReader();
-    r.onload=()=>res({name:f.name,dataUrl:r.result});
-    r.readAsDataURL(f);
-  })));
-
-  const payload={
-    namaPegawai:namaPegawai.value,
-    email:email.value,
-    tarikhBancian:tarikh.value,
-    negeri:negeri.value,
-    daerah:daerah.value,
-    lokasi:lokasi.value,
-    koordinat:koordinat.value,
-    kategori:kategori.value,
-    namaTanaman:tanaman.value,
-    varieti:varieti.value,
-    umurTanaman:umur.value,
-    luasBertanam:luasTanam.value,
-    senaraiPerosak:names.join(", "),
-    luasSerangan:luasS,
-    peratusSerangan:pctS,
-    keterukan:sevS,
-    syor:[...document.querySelectorAll(".syor:checked")].map(x=>x.value).join("; "),
-    images:JSON.stringify(imgs),
-    captionGambar:caption.value
-  };
-
-  await api("submitData",payload);
-  loader.style.display="none";
-
-  Swal.fire("Berjaya","Data berjaya dihantar","success")
-    .then(()=>window.parent?.postMessage("BORANG_SELESAI","*"));
-};
 
 /* ================= API ================= */
 async function api(action,data={}){
-  const r=await fetch(API_URL,{
+  loader.style.display="flex";
+  const r = await fetch(API_URL,{
     method:"POST",
-    headers:{"Content-Type":"application/json"},
+    headers:{ "Content-Type":"application/json" },
     body:JSON.stringify({action,...data})
   });
+  loader.style.display="none";
   return r.json();
 }
+
+/* ================= PLACEHOLDER ================= */
+function loadDashboard(){}
+function loadTasks(){}
+function loadVerify(){}
+function initFormTambah(){}
+function logout(){ location.reload(); }
+</script>
+<script>
+/* ========== GLOBAL FORM STATE ========== */
+let FORM_MODE = "ADD";
+let EDIT_ROW = null;
+let PEST_TREE = {};
+let USERS = [];
+let FILES = [];
+
+/* ========== INIT FORM ========== */
+async function initFormTambah(){
+  FORM_MODE="ADD";
+  EDIT_ROW=null;
+  document.getElementById('monitorForm').reset();
+  document.getElementById('perosakContainer').innerHTML="";
+  document.getElementById('oldImages').innerHTML="";
+  document.getElementById('editAlert').innerHTML="";
+  addPerosakRow();
+
+  const ref = await api("getAllReferenceData");
+  PEST_TREE = ref.pestTree;
+  USERS = ref.userList;
+
+  loadKategori();
+  loadUsers();
+  loadNegeri();
+}
+
+/* ========== EDIT MODE ========== */
+async function openEdit(row, sebab){
+  FORM_MODE="EDIT";
+  EDIT_ROW=row;
+  switchView("form");
+
+  document.getElementById('editAlert').innerHTML =
+    `<div class="alert alert-danger fw-bold">
+      Data DITOLAK. Sebab: ${sebab}
+    </div>`;
+
+  const ref = await api("getAllReferenceData");
+  PEST_TREE = ref.pestTree;
+  loadKategori(); loadUsers(); loadNegeri();
+
+  const d = await api("getDataByRow",{row});
+  fillForm(d);
+}
+
+/* ========== FILL FORM ========== */
+function fillForm(d){
+  namaPegawai.value=d.namaPegawai;
+  email.value=d.email;
+  tarikhBancian.value=d.tarikhBancian;
+  negeriSelect.value=d.negeri;
+  updateDaerah();
+  daerahSelect.value=d.daerah;
+  lokasi.value=d.lokasi;
+  koordinat.value=d.koordinat;
+  kategoriSelect.value=d.kategori;
+  updateTanamanList();
+  tanamanSelect.value=d.namaTanaman;
+  varieti.value=d.varieti;
+  luasBertanam.value=d.luasBertanam;
+
+  // Perosak
+  perosakContainer.innerHTML="";
+  const luas=JSON.parse(d.luasSerangan||"{}");
+  Object.keys(luas).forEach(p=>{
+    addPerosakRow(p,luas[p]);
+  });
+
+  // Gambar lama
+  if(d.gambar){
+    d.gambar.split(",").forEach(url=>{
+      oldImages.innerHTML+=
+       `<a href="${url}" target="_blank">
+         <img src="${url}" class="m-1" style="height:80px;border:1px solid #ccc">
+       </a>`;
+    });
+  }
+}
+
+/* ========== PEROSAK ROW ========== */
+function addPerosakRow(name="",luas=""){
+  const div=document.createElement("div");
+  div.className="border rounded p-2 mb-2";
+  div.innerHTML=`
+    <input class="form-control mb-1 pest-name" list="pestList" value="${name}">
+    <input type="number" step="0.001" class="form-control pest-luas" value="${luas}">
+  `;
+  perosakContainer.appendChild(div);
+}
+
+/* ========== SUBMIT ========== */
+monitorForm.onsubmit=async e=>{
+  e.preventDefault();
+
+  const data={
+    row:EDIT_ROW,
+    namaPegawai:namaPegawai.value,
+    email:email.value,
+    tarikhBancian:tarikhBancian.value,
+    negeri:negeriSelect.value,
+    daerah:daerahSelect.value,
+    lokasi:lokasi.value,
+    koordinat:koordinat.value,
+    kategori:kategoriSelect.value,
+    namaTanaman:tanamanSelect.value,
+    varieti:varieti.value,
+    luasBertanam:luasBertanam.value,
+    luasSerangan:{}
+  };
+
+  document.querySelectorAll(".pest-name").forEach((el,i)=>{
+    const l=document.querySelectorAll(".pest-luas")[i].value;
+    if(el.value) data.luasSerangan[el.value]=l;
+  });
+
+  if(FORM_MODE==="ADD")
+    await api("submitData",data);
+  else
+    await api("handleUpdate",data);
+
+  Swal.fire("Berjaya","Data disimpan","success");
+  switchView("dashboard");
+};
 </script>
 
 </body>
