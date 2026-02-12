@@ -318,7 +318,10 @@
         let userToken = ""; 
         let currentUserID = "";
         let myTasksData = [];
-        let currentFile = null; // VARIABLE GLOBAL GAMBAR
+        let currentFile = null; 
+        
+        // --- [BARU] Variable untuk simpan Header Data secara global ---
+        let currentHeaders = []; 
 
         // --- FUNGSI POST DATA ---
         async function postData(act, load) {
@@ -573,6 +576,11 @@
             try {
                 const d = await postData('getMyTasks', { name: uProf.name });
                 myTasksData = d.rows || [];
+                
+                // --- [BARU] SIMPAN HEADER KE VARIABLE GLOBAL ---
+                currentHeaders = d.headers || []; 
+                // -----------------------------------------------
+
                 const b = document.getElementById('badgeTask');
                 if(myTasksData.length > 0) { b.innerText = myTasksData.length; b.style.display = "inline-block"; } else { b.style.display = "none"; }
 
@@ -657,128 +665,141 @@
             }
         }
 
-        // --- RENDER EDIT FORM (FULL: GAMBAR + UMUR + KATEGORI) ---
-       // --- RENDER EDIT FORM (FULL: GAMBAR + KAPSYEN + DATA) ---
-function renderEditForm(rowID, rowData) {
-    currentFile = null; // Reset gambar
-    const d = rowData;
-    
-    // --- SETTING INDEX DATA (SILA PERIKSA SUSUNAN DATA ANDA) ---
-    // Contoh: d[18] adalah Caption. Ubah nombor ini jika perlu.
-    const valCaption = d[21] || ""; // <--- UBAH INDEX INI IKUT DATA ANDA
-    // -----------------------------------------------------------
-
-    let html = `
-    <div id="fullEditForm">
-        <input type="hidden" id="fe_row" value="${rowID}">
-        
-        <h6 class="text-primary border-bottom pb-2">A. Lokasi</h6>
-        <div class="row g-2 mb-2">
-            <div class="col-6">
-                <label class="small fw-bold">Negeri</label>
-                <select id="fe_negeri" class="form-select form-select-sm" onchange="updateDistricts('fe_negeri','fe_daerah')">
-                    <option value="">- Pilih -</option>
-                    ${Object.keys(districtData).sort().map(n => `<option value="${n}">${n}</option>`).join('')}
-                </select>
-            </div>
-            <div class="col-6"><label class="small fw-bold">Daerah</label><select id="fe_daerah" class="form-select form-select-sm"></select></div>
-        </div>
-        <div class="mb-2"><label class="small fw-bold">Lokasi/Kebun</label><input type="text" id="fe_lokasi" class="form-control form-control-sm"></div>
-        <div class="mb-2"><label class="small fw-bold">Koordinat</label><input type="text" id="fe_coord" class="form-control form-control-sm"></div>
-        <div class="row g-2 mb-2">
-            <div class="col-6"><label class="small fw-bold">Tarikh</label><input type="date" id="fe_tarikh" class="form-control form-control-sm"></div>
-            <div class="col-6"><label class="small fw-bold">Nama Pegawai</label><input type="text" id="fe_pegawai" class="form-control form-control-sm" readonly></div>
-        </div>
-
-        <h6 class="text-primary border-bottom pb-2 mt-3">B. Tanaman</h6>
-        <div class="row g-2 mb-2">
-            <div class="col-6"><label class="small fw-bold">Kategori</label><input type="text" id="fe_kategori" class="form-control form-control-sm"></div>
-            <div class="col-6"><label class="small fw-bold">Tanaman</label><input type="text" id="fe_tanaman" class="form-control form-control-sm"></div>
-        </div>
-        <div class="row g-2 mb-2">
-            <div class="col-6"><label class="small fw-bold">Varieti</label><input type="text" id="fe_varieti" class="form-control form-control-sm"></div>
-            <div class="col-6"><label class="small fw-bold">Umur Tanaman</label><input type="text" id="fe_umur" class="form-control form-control-sm"></div>
-        </div>
-        <div class="mb-2"><label class="small fw-bold">Luas Bertanam (Ha)</label><input type="number" id="fe_luasT" class="form-control form-control-sm"></div>
-
-        <h6 class="text-primary border-bottom pb-2 mt-3">C. Data Serangan</h6>
-        <table class="table table-sm table-bordered" id="fe_pestTable">
-            <thead class="table-light"><tr><th>Perosak</th><th width="70">Luas(Ha)</th><th width="70">Tahap(1-5)</th><th width="30"></th></tr></thead>
-            <tbody></tbody>
-        </table>
-        <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-3" onclick="addPestRow()">+ Tambah Perosak</button>
-
-        <h6 class="text-primary border-bottom pb-2 mt-3">D. Bukti / Gambar</h6>
-        <div class="mb-3 p-3 bg-white border rounded">
+        // --- RENDER EDIT FORM (FULL: GAMBAR + KAPSYEN + DATA DINAMIK) ---
+        function renderEditForm(rowID, rowData) {
+            currentFile = null; // Reset gambar
+            const d = rowData;
             
-            <label class="small fw-bold mb-1">Tajuk / Kapsyen Gambar</label>
-            <input type="text" id="fe_caption" class="form-control form-control-sm mb-3" value="${valCaption}" placeholder="Contoh: Serangan Ulat pada Daun">
+            // --- [BARU] FUNGSI CARI COLUMN SECARA DINAMIK (ELAK TERSILAP KOLUM) ---
+            const getIdx = (key) => { 
+                if(!currentHeaders || currentHeaders.length === 0) return -1;
+                // Cari header yang mengandungi perkataan kunci
+                return currentHeaders.findIndex(h => h.toUpperCase().includes(key.toUpperCase()));
+            };
+
+            const getV = (key) => {
+                const i = getIdx(key);
+                return i > -1 ? d[i] : "";
+            };
+            // ---------------------------------------------------------------------
+
+            const valCaption = getV('CAPTION') || getV('TAJUK GAMBAR') || getV('FILE NAME') || ""; 
+
+            let html = `
+            <div id="fullEditForm">
+                <input type="hidden" id="fe_row" value="${rowID}">
+                
+                <h6 class="text-primary border-bottom pb-2">A. Lokasi</h6>
+                <div class="row g-2 mb-2">
+                    <div class="col-6">
+                        <label class="small fw-bold">Negeri</label>
+                        <select id="fe_negeri" class="form-select form-select-sm" onchange="updateDistricts('fe_negeri','fe_daerah')">
+                            <option value="">- Pilih -</option>
+                            ${Object.keys(districtData).sort().map(n => `<option value="${n}">${n}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="col-6"><label class="small fw-bold">Daerah</label><select id="fe_daerah" class="form-select form-select-sm"></select></div>
+                </div>
+                <div class="mb-2"><label class="small fw-bold">Lokasi/Kebun</label><input type="text" id="fe_lokasi" class="form-control form-control-sm"></div>
+                <div class="mb-2"><label class="small fw-bold">Koordinat</label><input type="text" id="fe_coord" class="form-control form-control-sm"></div>
+                <div class="row g-2 mb-2">
+                    <div class="col-6"><label class="small fw-bold">Tarikh</label><input type="date" id="fe_tarikh" class="form-control form-control-sm"></div>
+                    <div class="col-6"><label class="small fw-bold">Nama Pegawai</label><input type="text" id="fe_pegawai" class="form-control form-control-sm" readonly></div>
+                </div>
+
+                <h6 class="text-primary border-bottom pb-2 mt-3">B. Tanaman</h6>
+                <div class="row g-2 mb-2">
+                    <div class="col-6"><label class="small fw-bold">Kategori</label><input type="text" id="fe_kategori" class="form-control form-control-sm"></div>
+                    <div class="col-6"><label class="small fw-bold">Tanaman</label><input type="text" id="fe_tanaman" class="form-control form-control-sm"></div>
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-6"><label class="small fw-bold">Varieti</label><input type="text" id="fe_varieti" class="form-control form-control-sm"></div>
+                    <div class="col-6"><label class="small fw-bold">Umur Tanaman</label><input type="text" id="fe_umur" class="form-control form-control-sm"></div>
+                </div>
+                <div class="mb-2"><label class="small fw-bold">Luas Bertanam (Ha)</label><input type="number" id="fe_luasT" class="form-control form-control-sm"></div>
+
+                <h6 class="text-primary border-bottom pb-2 mt-3">C. Data Serangan</h6>
+                <table class="table table-sm table-bordered" id="fe_pestTable">
+                    <thead class="table-light"><tr><th>Perosak</th><th width="70">Luas(Ha)</th><th width="70">Tahap(1-5)</th><th width="30"></th></tr></thead>
+                    <tbody></tbody>
+                </table>
+                <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-3" onclick="addPestRow()">+ Tambah Perosak</button>
+
+                <h6 class="text-primary border-bottom pb-2 mt-3">D. Bukti / Gambar</h6>
+                <div class="mb-3 p-3 bg-white border rounded">
+                    <label class="small fw-bold mb-1">Tajuk / Kapsyen Gambar</label>
+                    <input type="text" id="fe_caption" class="form-control form-control-sm mb-3" value="${valCaption}" placeholder="Contoh: Serangan Ulat pada Daun">
+                    
+                    <label class="small fw-bold mb-2 d-block">Muat Naik Gambar Baru (Pilihan)</label>
+                    <input type="file" id="fe_fileInput" class="form-control form-control-sm mb-2" accept="image/*" onchange="handleFileSelect(this)">
+                    <small id="fe_fileLabel" class="text-muted d-block fst-italic mb-2">Tiada gambar baru dipilih.</small>
+                    <img id="fe_imgPreview" src="" style="max-height: 150px; display: none; border: 1px solid #ccc; padding: 2px; border-radius: 4px;">
+                    
+                    <div class="alert alert-info py-1 px-2 mt-2 mb-0" style="font-size: 0.75rem;">
+                        <i class="bi bi-info-circle me-1"></i> Tajuk gambar di Google Drive akan menggunakan kapsyen di atas.
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold text-success">Syor Kawalan</label>
+                    <textarea id="fe_syor" class="form-control" rows="4"></textarea>
+                </div>
+
+                <button class="btn btn-success w-100 py-2 fw-bold shadow-sm" onclick="saveFullEdit()">SIMPAN PERUBAHAN & HANTAR</button>
+            </div>`;
+
+            document.getElementById('detailBody').innerHTML = html;
             
-            <label class="small fw-bold mb-2 d-block">Muat Naik Gambar Baru (Pilihan)</label>
-            <input type="file" id="fe_fileInput" class="form-control form-control-sm mb-2" accept="image/*" onchange="handleFileSelect(this)">
-            <small id="fe_fileLabel" class="text-muted d-block fst-italic mb-2">Tiada gambar baru dipilih.</small>
-            <img id="fe_imgPreview" src="" style="max-height: 150px; display: none; border: 1px solid #ccc; padding: 2px; border-radius: 4px;">
-            
-            <div class="alert alert-info py-1 px-2 mt-2 mb-0" style="font-size: 0.75rem;">
-                <i class="bi bi-info-circle me-1"></i> Tajuk gambar di Google Drive akan menggunakan kapsyen di atas.
-            </div>
-        </div>
+            // --- POPULATE DATA (MENGGUNAKAN DINAMIK MAPPING) ---
+            try {
+                const setV = (id, val) => { const el = document.getElementById(id); if(el) el.value = val || ""; };
+                const findMatch = (arr, val) => { if(!val) return ""; const found = arr.find(opt => String(opt).toUpperCase() === String(val).trim().toUpperCase()); return found || val; };
 
-        <div class="mb-3">
-            <label class="small fw-bold text-success">Syor Kawalan</label>
-            <textarea id="fe_syor" class="form-control" rows="4"></textarea>
-        </div>
+                // Menggunakan fungsi getV() yang dinamik
+                setV('fe_pegawai', getV('PEGAWAI') || getV('NAMA')); 
+                setV('fe_tarikh', formatDateForInput(getV('TARIKH') || getV('DATE'))); 
+                setV('fe_lokasi', getV('LOKASI') || getV('KEBUN'));
+                setV('fe_coord', getV('KOORDINAT') || getV('GPS'));
 
-        <button class="btn btn-success w-100 py-2 fw-bold shadow-sm" onclick="saveFullEdit()">SIMPAN PERUBAHAN & HANTAR</button>
-    </div>`;
+                // Logic Negeri/Daerah
+                const listNegeri = Object.keys(districtData);
+                const realNegeri = findMatch(listNegeri, getV('NEGERI'));
+                const elNegeri = document.getElementById('fe_negeri');
+                if(elNegeri) {
+                    elNegeri.value = realNegeri;
+                    updateDistricts('fe_negeri','fe_daerah'); 
+                    const elDaerah = document.getElementById('fe_daerah');
+                    const optsDaerah = Array.from(elDaerah.options).map(o => o.value);
+                    elDaerah.value = findMatch(optsDaerah, getV('DAERAH'));
+                }
 
-    document.getElementById('detailBody').innerHTML = html;
-    
-    // --- POPULATE DATA ---
-    try {
-        const setV = (id, val) => { const el = document.getElementById(id); if(el) el.value = val || ""; };
-        const findMatch = (arr, val) => { if(!val) return ""; const found = arr.find(opt => String(opt).toUpperCase() === String(val).trim().toUpperCase()); return found || val; };
+                setV('fe_kategori', getV('KATEGORI')); 
+                setV('fe_tanaman', getV('NAMA TANAMAN') || getV('TANAMAN'));
+                setV('fe_varieti', getV('VARIETI'));
+                setV('fe_umur', getV('UMUR')); 
+                setV('fe_luasT', getV('LUAS BERTANAM') || getV('LUAS'));
+                setV('fe_syor', getV('SYOR') || getV('KAWALAN'));
 
-        setV('fe_pegawai', d[1]); 
-        setV('fe_tarikh', formatDateForInput(d[3])); 
-        setV('fe_lokasi', d[6]);
-        setV('fe_coord', d[7]);
+                let luasObj = {}, sevObj = {};
+                try { luasObj = JSON.parse(getV('LUAS SERANGAN') || getV('SERANGAN')); } catch(e) {}
+                try { sevObj = JSON.parse(getV('KETERUKAN')); } catch(e) {}
+                const pests = Object.keys(luasObj);
+                
+                const pestNameDefault = getV('PEROSAK'); // Jika bukan JSON
+                
+                if(pests.length === 0 && pestNameDefault) {
+                    addPestRow(pestNameDefault, getV('LUAS SERANGAN'), getV('KETERUKAN'));
+                } else {
+                    pests.forEach(p => addPestRow(p, luasObj[p], sevObj[p]));
+                }
+                if(pests.length === 0 && !pestNameDefault) addPestRow(); 
 
-        // Logic Negeri/Daerah
-        const listNegeri = Object.keys(districtData);
-        const realNegeri = findMatch(listNegeri, d[4]);
-        const elNegeri = document.getElementById('fe_negeri');
-        if(elNegeri) {
-            elNegeri.value = realNegeri;
-            updateDistricts('fe_negeri','fe_daerah'); 
-            const elDaerah = document.getElementById('fe_daerah');
-            const optsDaerah = Array.from(elDaerah.options).map(o => o.value);
-            elDaerah.value = findMatch(optsDaerah, d[5]);
+            } catch(e) { console.error("Error populating form", e); }
+
+            document.getElementById('modalTitle').innerText = "KEMASKINI & MUAT NAIK";
+            new bootstrap.Modal(document.getElementById('detailModal')).show();
         }
 
-        setV('fe_kategori', d[8]); 
-        setV('fe_tanaman', d[9]);
-        setV('fe_varieti', d[11]);
-        setV('fe_umur', d[10]); 
-        setV('fe_luasT', d[12]);
-        setV('fe_syor', d[17]);
-
-        let luasObj = {}, sevObj = {};
-        try { luasObj = JSON.parse(d[14]); } catch(e) {}
-        try { sevObj = JSON.parse(d[16]); } catch(e) {}
-        const pests = Object.keys(luasObj);
-        if(pests.length === 0 && d[13]) {
-            addPestRow(d[13], d[14], d[16]);
-        } else {
-            pests.forEach(p => addPestRow(p, luasObj[p], sevObj[p]));
-        }
-        if(pests.length === 0) addPestRow(); 
-
-    } catch(e) { console.error("Error populating form", e); }
-
-    document.getElementById('modalTitle').innerText = "KEMASKINI & MUAT NAIK";
-    new bootstrap.Modal(document.getElementById('detailModal')).show();
-}
         function formatDateForInput(dateStr) {
             if(!dateStr) return "";
             const d = new Date(dateStr);
@@ -807,89 +828,89 @@ function renderEditForm(rowID, rowData) {
             tbody.appendChild(tr);
         }
 
-        // --- SAVE FULL EDIT (FINAL: GAMBAR + DATA) ---
-       // --- SAVE FULL EDIT (FINAL: GAMBAR + KAPSYEN DINAMIK) ---
-async function saveFullEdit() {
-    if(!confirm("Hantar kemaskini ini? Status akan bertukar kepada BARU.")) return;
-    
-    const rowID = document.getElementById('fe_row').value;
-    const captionVal = document.getElementById('fe_caption').value.trim(); // Ambil nilai kapsyen
-    
-    // Kumpul Data Perosak
-    const luasS = {}, sevS = {}, pctS = {};
-    const luasT = parseFloat(document.getElementById('fe_luasT').value) || 0;
-    document.querySelectorAll('#fe_pestTable tbody tr').forEach(tr => {
-        const n = tr.querySelector('.p-name').value.trim();
-        const a = parseFloat(tr.querySelector('.p-area').value) || 0;
-        const s = tr.querySelector('.p-sev').value;
-        if(n) {
-            luasS[n] = a; sevS[n] = s; pctS[n] = luasT > 0 ? ((a/luasT)*100).toFixed(2) : 0;
-        }
-    });
+        // --- SAVE FULL EDIT (FINAL: GAMBAR + KAPSYEN DINAMIK) ---
+        async function saveFullEdit() {
+            if(!confirm("Hantar kemaskini ini? Status akan bertukar kepada BARU.")) return;
+            
+            const rowID = document.getElementById('fe_row').value;
+            const captionVal = document.getElementById('fe_caption').value.trim(); // Ambil nilai kapsyen
+            
+            // Kumpul Data Perosak
+            const luasS = {}, sevS = {}, pctS = {};
+            const luasT = parseFloat(document.getElementById('fe_luasT').value) || 0;
+            document.querySelectorAll('#fe_pestTable tbody tr').forEach(tr => {
+                const n = tr.querySelector('.p-name').value.trim();
+                const a = parseFloat(tr.querySelector('.p-area').value) || 0;
+                const s = tr.querySelector('.p-sev').value;
+                if(n) {
+                    luasS[n] = a; sevS[n] = s; pctS[n] = luasT > 0 ? ((a/luasT)*100).toFixed(2) : 0;
+                }
+            });
 
-    const payload = {
-        row: rowID,
-        // ... data asas ...
-        tarikh: document.getElementById('fe_tarikh').value,
-        pegawai: document.getElementById('fe_pegawai').value,
-        negeri: document.getElementById('fe_negeri').value,
-        daerah: document.getElementById('fe_daerah').value,
-        lokasi: document.getElementById('fe_lokasi').value,
-        coord: document.getElementById('fe_coord').value,
-        kategori: document.getElementById('fe_kategori').value, 
-        tanaman: document.getElementById('fe_tanaman').value,
-        varieti: document.getElementById('fe_varieti').value,
-        umurT: document.getElementById('fe_umur').value,
-        luasT: luasT,
-        luasS: luasS, 
-        keterukan: sevS,
-        peratus: pctS,
-        syor: document.getElementById('fe_syor').value,
-        name: uProf.name,
-        
-        // Hantar kapsyen ke backend (untuk simpan dalam Excel)
-        caption: captionVal 
-    };
+            const payload = {
+                row: rowID,
+                // ... data asas ...
+                tarikh: document.getElementById('fe_tarikh').value,
+                pegawai: document.getElementById('fe_pegawai').value,
+                negeri: document.getElementById('fe_negeri').value,
+                daerah: document.getElementById('fe_daerah').value,
+                lokasi: document.getElementById('fe_lokasi').value,
+                coord: document.getElementById('fe_coord').value,
+                kategori: document.getElementById('fe_kategori').value, 
+                tanaman: document.getElementById('fe_tanaman').value,
+                varieti: document.getElementById('fe_varieti').value,
+                umurT: document.getElementById('fe_umur').value,
+                luasT: luasT,
+                luasS: luasS, 
+                keterukan: sevS,
+                peratus: pctS,
+                syor: document.getElementById('fe_syor').value,
+                name: uProf.name,
+                
+                // Hantar kapsyen ke backend (untuk simpan dalam Excel)
+                caption: captionVal 
+            };
 
-    // --- LOGIK RENAME GAMBAR ---
-    if (currentFile) {
-        payload.imgData = currentFile.data;
-        payload.imgType = currentFile.type;
-        
-        // Gunakan Kapsyen sebagai nama fail jika ada
-        if (captionVal) {
-            // Dapatkan extension asal (cth: .jpg)
-            // Kalau nama asal: "image123.png", ext = ".png"
-            let ext = ".jpg"; 
-            if(currentFile.name.includes('.')) {
-                ext = currentFile.name.substring(currentFile.name.lastIndexOf('.'));
+            // --- LOGIK RENAME GAMBAR ---
+            if (currentFile) {
+                payload.imgData = currentFile.data;
+                payload.imgType = currentFile.type;
+                
+                // Gunakan Kapsyen sebagai nama fail jika ada
+                if (captionVal) {
+                    // Dapatkan extension asal (cth: .jpg)
+                    // Kalau nama asal: "image123.png", ext = ".png"
+                    let ext = ".jpg"; 
+                    if(currentFile.name.includes('.')) {
+                        ext = currentFile.name.substring(currentFile.name.lastIndexOf('.'));
+                    }
+                    // Nama Baru: "Serangan Ulat.jpg"
+                    payload.imgName = captionVal + ext;
+                } else {
+                    // Jika user tak isi kapsyen, guna nama file asal
+                    payload.imgName = currentFile.name;
+                }
             }
-            // Nama Baru: "Serangan Ulat.jpg"
-            payload.imgName = captionVal + ext;
-        } else {
-            // Jika user tak isi kapsyen, guna nama file asal
-            payload.imgName = currentFile.name;
+
+            const btn = event.target; 
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Menghantar...'; 
+            btn.disabled = true;
+
+            const r = await postData('updateEntry', payload);
+            
+            if(r.success) {
+                alert("✅ Kemaskini berjaya disimpan!");
+                bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
+                currentFile = null;
+                if(document.getElementById('view-tasks').style.display !== 'none') { loadMyTasks(); } else { initDash(); }
+                checkPendingCount();
+            } else {
+                alert("❌ Ralat: " + r.message);
+                btn.innerHTML = "SIMPAN PERUBAHAN & HANTAR"; 
+                btn.disabled = false;
+            }
         }
-    }
 
-    const btn = event.target; 
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Menghantar...'; 
-    btn.disabled = true;
-
-    const r = await postData('updateEntry', payload);
-    
-    if(r.success) {
-        alert("✅ Kemaskini berjaya disimpan!");
-        bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
-        currentFile = null;
-        if(document.getElementById('view-tasks').style.display !== 'none') { loadMyTasks(); } else { initDash(); }
-        checkPendingCount();
-    } else {
-        alert("❌ Ralat: " + r.message);
-        btn.innerHTML = "SIMPAN PERUBAHAN & HANTAR"; 
-        btn.disabled = false;
-    }
-}
         function viewRec(idx) {
             const d = fData[idx]; if (!d) return;
             const cleanImg = (raw) => { if (!raw) return []; let str = String(raw).trim().replace(/[\[\]"'\\]/g, ''); return str.split(',').map(l => l.trim()).filter(l => l.toLowerCase().startsWith('http')); };
@@ -948,6 +969,11 @@ async function saveFullEdit() {
             try { 
                 const d = await postData('getPending', {state: uProf.state}); 
                 currentPendingRows = d.rows || []; 
+                
+                // --- [BARU] SIMPAN HEADER JIKA ADA ---
+                if(d.headers) currentHeaders = d.headers;
+                // -------------------------------------
+
                 if(!d.rows || !d.rows.length) { container.innerHTML = '<div class="col-12 text-center p-5 text-muted bg-white rounded border border-dashed"><i class="bi bi-check-circle fs-3 text-success d-block mb-2"></i>Tiada data baru untuk disahkan.</div>'; return; } 
                 container.innerHTML = ""; 
                 const cleanImageLink = (raw) => { if (!raw) return []; let str = String(raw).trim(); if(str.length < 5) return []; str = str.replace(/[\[\]"'\\]/g, ''); return str.split(',').map(l => l.trim()).filter(l => l.toLowerCase().startsWith('http')); }; 
