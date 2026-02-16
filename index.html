@@ -407,7 +407,22 @@
                 msg.innerText = r.message; btn.disabled = false; btn.innerText = "MASUK"; 
             }
         }
-
+// --- FUNGSI SEMAK DATA PENDING (WAJIB ADA) ---
+        async function checkPendingCount() { 
+            try { 
+                // Hanya jalankan jika user adalah ADMIN atau PENYELIA
+                if(["ADMIN","PENYELIA"].includes((uProf.role||"").toUpperCase())) {
+                    const d = await postData('getPending', {state: uProf.state}); 
+                    const b = document.getElementById('badgePending'); 
+                    if(d.rows && d.rows.length > 0) { 
+                        b.innerText = d.rows.length; 
+                        b.style.display = "inline-block"; 
+                    } else { 
+                        b.style.display = "none"; 
+                    } 
+                }
+            } catch(e){ console.error("Error checking pending:", e); } 
+        }
         function applyLogin(r, token, uid) {
             uProf = r; userToken = token; currentUserID = uid;
             document.getElementById('uDisp').innerText = r.name; 
