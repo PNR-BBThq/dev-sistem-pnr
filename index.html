@@ -426,16 +426,41 @@
             if(t==='main' && map) setTimeout(() => map.invalidateSize(), 300);
         }
 
-        // --- FORMAT DATE HELPER (DD/MM/YYYY) ---
+                // --- FUNGSI TARIKH MUKTAMAD (MANUAL PARSING) ---
         function formatDateDisplay(dateStr) {
-            if (!dateStr) return "-";
+            if (!dateStr || dateStr === "-") return "-";
+
+            // Tukar jadi string dulu kalau ia object
+            let str = String(dateStr).trim();
+
+            // KES 1: Jika format Google Sheet standard (YYYY-MM-DD...)
+            // Contoh: "2026-02-11T16:00:00.000Z" atau "2026-02-11"
+            if (str.includes('-')) {
+                const parts = str.split('T')[0].split('-'); 
+                // parts[0] = 2026, parts[1] = 02, parts[2] = 11
+                if (parts.length === 3) {
+                    return `${parts[2]}/${parts[1]}/${parts[0]}`; // Pusing jadi 11/02/2026
+                }
+            }
+
+            // KES 2: Jika format sudah ada slash (DD/MM/YYYY atau MM/DD/YYYY)
+            // Kita ANGGAP data dari database anda sentiasa betul (DD/MM/YYYY)
+            if (str.includes('/')) {
+                // Jangan ubah apa-apa, paparkan terus apa yang database bagi
+                // Ini elak browser 'memandai-mandai' terbalikkan bulan
+                return str; 
+            }
+
+            // KES 3: Fallback (Jika format pelik sangat, baru guna Date object)
             const d = new Date(dateStr);
-            if (isNaN(d)) return dateStr; 
+            if (isNaN(d)) return str; // Kalau rosak, papar asal
+            
             const day = String(d.getDate()).padStart(2, '0');
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const year = d.getFullYear();
             return `${day}/${month}/${year}`;
         }
+
 
         async function initDash() {
             document.getElementById('smartSummary').innerHTML = '<div class="d-flex align-items-center"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Sedang menganalisis data...</div>';
