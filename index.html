@@ -58,7 +58,7 @@
 
     <div id="loginOverlay">
         <div class="login-box">
-            <div class="brand justify-content-center mb-4"><i class="bi bi-flower1"></i> PNR DIGITA - TEST MODEL</div>
+            <div class="brand justify-content-center mb-4"><i class="bi bi-flower1"></i> PNR DIGITAL</div>
             <h6 class="text-muted mb-4">Log Masuk Sistem</h6>
             <input type="text" id="uid" class="form-control mb-3 p-3" placeholder="ID Pengguna">
             <input type="password" id="pwd" class="form-control mb-4 p-3" placeholder="Kata Laluan">
@@ -313,7 +313,7 @@
             "W.P. Kuala Lumpur": ["Kuala Lumpur"], "W.P. Labuan": ["Labuan"], "W.P. Putrajaya": ["Putrajaya"]
         };
 
-        // --- VARIABLE GLOBAL ---
+        // --- GLOBAL VARIABLES ---
         let mData=[], fData=[], uProf=null, map=null, layer=null, pg=1, pSize=10, charts={};
         let currentPendingRows = []; 
         let userToken = ""; 
@@ -321,7 +321,6 @@
         let myTasksData = [];
         let currentFile = null; 
         
-        // --- VARIABLE BARU (PASTIKAN HANYA ADA SEKALI SAHAJA DI SINI) ---
         let currentHeaders = []; 
         let pestMasterData = {}; 
 
@@ -350,7 +349,7 @@
             } catch(e) { console.error(e); return {success:false, message:"Ralat sambungan."}; }
         }
 
-        // --- LOAD MASTER DATA (BERSIH) ---
+        // --- LOAD MASTER DATA ---
         async function loadMasterData() {
             try {
                 const r = await postData('getTanamanList', {});
@@ -361,7 +360,6 @@
                     delete clean.success; delete clean.message;
                     pestMasterData = clean;
                 }
-                console.log("Master Data:", pestMasterData);
             } catch(e) { console.error("Gagal load pest data", e); }
         }
 
@@ -442,7 +440,7 @@
             if(t==='main' && map) setTimeout(() => map.invalidateSize(), 300);
         }
 
-        // ... (Dashboard Functions) ...
+        // --- DASHBOARD FUNCTIONS ---
         async function initDash() {
             const d = await postData('getAnalytics', {state: uProf.state}); 
             if(!d.records) { return; }
@@ -493,9 +491,10 @@
                 if(d.c && d.c.includes(',')) { let p = d.c.split(',').map(Number); if(p.length===2 && !isNaN(p[0])) pts.push({ coord: p, data: d }); }
                 if(d.ls > 0 && d.d !== "-") hData[d.d] = (hData[d.d]||0) + d.ls;
             });
-            document.getElementById('k1').innerText = tt.toLocaleString(); document.getElementById('k2').innerText = ts.toLocaleString();
+            document.getElementById('k1').innerText = tt.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('k2').innerText = ts.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             document.getElementById('k3').innerText = tt>0 ? ((ts/tt)*100).toFixed(1)+"%" : "0%";
-            document.getElementById('k4').innerText = fData.length.toLocaleString();
+            document.getElementById('k4').innerText = fData.length.toLocaleString('en-US');
             
             updateCharts(pm, km); updateMap(pts); updateHotspot(hData); genSummary(pm, tt, ts); renTab();
         } 
@@ -885,7 +884,6 @@
         async function approveAll() { if(!confirm("Sahkan SEMUA?")) return; const d = await postData('getPending', {state: uProf.state}); if(!d.rows.length) return; for (const r of d.rows) { await postData('submitVerify', {row: r.row, act: 'APPROVE', reason: 'Bulk', name: uProf.name}); } alert("Selesai"); loadPend(); initDash(); }
         async function downloadDualExcel() { if (!fData.length) { alert("Tiada data!"); return; } const workbook = new ExcelJS.Workbook(); const worksheet = workbook.addWorksheet('Laporan Penuh'); worksheet.columns = [{ header: 'ID', key: 'id', width: 6 }, { header: 'Nama Pegawai', key: 'pg', width: 25 }, { header: 'Tarikh', key: 't', width: 12 }, { header: 'Negeri', key: 'n', width: 15 }, { header: 'Daerah', key: 'd', width: 15 }, { header: 'Lokasi', key: 'l', width: 22 }, { header: 'Koordinat', key: 'c', width: 22 }, { header: 'Kategori', key: 'kt', width: 18 }, { header: 'Tanaman', key: 'tn', width: 18 }, { header: 'Luas Bancian (Ha)', key: 'lt', width: 18 }, { header: 'Perosak', key: 'p', width: 20 }, { header: 'Keterukan', key: 'k', width: 15 }, { header: 'Luas Serangan (Ha)', key: 'ls', width: 18 }, { header: '% Serangan', key: 'pct', width: 15 }, { header: 'Syor Kawalan', key: 's', width: 50 }]; worksheet.getRow(1).font = { bold: true }; worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' }; let rowIndex = 2; fData.forEach(d => { let pestEntries = (d.p && Object.keys(d.p).length > 0) ? Object.entries(d.p) : [["TIADA", 0]]; let startRow = rowIndex; let luasTanam = parseFloat(d.lt) || 0; pestEntries.forEach(([pName, pArea]) => { let luasSerang = parseFloat(pArea) || 0; let pctVal = (luasTanam > 0) ? ((luasSerang / luasTanam) * 100).toFixed(2) + '%' : "0%"; const row = worksheet.getRow(rowIndex); row.values = { id: d.id, pg: d.pg || "-", t: d.t, n: d.n, d: d.d, l: d.l, c: d.c || "-", kt: d.kt || "-", tn: d.tn, lt: luasTanam, p: pName, k: d.k, ls: luasSerang, pct: pctVal, s: d.s }; row.eachCell({ includeEmpty: true }, (cell) => { cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} }; cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }; }); rowIndex++; }); if (pestEntries.length > 1) { for (let c = 1; c <= 10; c++) { worksheet.mergeCells(startRow, c, rowIndex - 1, c); } worksheet.mergeCells(startRow, 15, rowIndex - 1, 15); } }); const buffer = await workbook.xlsx.writeBuffer(); const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }); const url = window.URL.createObjectURL(blob); const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'PNR_Laporan_Lengkap.xlsx'; anchor.click(); window.URL.revokeObjectURL(url); }
         async function dlPDF() { const btn = document.querySelector('button[onclick="dlPDF()"]'); btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Jana...'; btn.disabled = true; let dateLabel = "Terkini"; if (fData.length > 0) { const sortedDates = fData.map(d => d.t).sort(); const fmt = (d) => d.split('-').reverse().join('/'); dateLabel = fmt(sortedDates[0]) === fmt(sortedDates[sortedDates.length - 1]) ? fmt(sortedDates[0]) : `${fmt(sortedDates[0])} - ${fmt(sortedDates[sortedDates.length - 1])}`; } try { let targetName = document.getElementById('selNegeri').value; if (uProf && uProf.state === "CAMERON HIGHLANDS") { targetName = "PAHANG"; } else if (uProf && uProf.state !== "ALL") { targetName = uProf.state; } if (!targetName) targetName = "SEMUA"; const m = { user: uProf.name, negeri: targetName, dates: dateLabel }; const r = await postData('genPDF', { data: fData, meta: m }); if (r.success) { const a = document.createElement('a'); a.href = "data:application/pdf;base64," + r.base64; a.download = r.filename; a.click(); } else { alert("Gagal menjana PDF: " + r.message); } } catch (e) { console.error(e); alert("Ralat sistem semasa menjana PDF."); } btn.innerHTML = '<i class="bi bi-file-earmark-pdf"></i> PDF'; btn.disabled = false; }
-         }    
     </script>
 </body>
 </html>
