@@ -325,28 +325,52 @@
         let pestMasterData = {}; 
 
         // --- FUNGSI POST DATA ---
+      // --- FUNGSI POST DATA (VERSI DEBUG) ---
         async function postData(act, load) {
             try {
+                console.log("Memanggil API: " + act); // 1. Kita tengok dia panggil apa
+                
                 let payload;
                 if (act === 'login') { 
                     payload = { action: act, ...load }; 
                 } else { 
                     payload = { action: act, token: userToken, u: currentUserID, ...load }; 
                 }
+                
                 const res = await fetch(`${API_URL}?action=${act}`, { 
                     method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(payload) 
                 });
-                const r = JSON.parse(await res.text());
+                
+                // --- INI BAHAGIAN PENTING UNTUK CHECK ERROR ---
+                const textResult = await res.text();
+                // console.log("Respon Server:", textResult); // Buka ini kalau nak tengok semua
 
-                if (r.success === false && r.message) {
-                    const msgToCheck = String(r.message).toLowerCase();
-                    if (msgToCheck.includes("sesi") || msgToCheck.includes("token")) {
-                        alert("⛔ Sesi tamat. Sila log masuk semula.");
-                        localStorage.removeItem('pnr_session'); location.reload(); return { success: false }; 
+                try {
+                    const r = JSON.parse(textResult); // Cuba tukar jadi JSON
+                    
+                    if (r.success === false && r.message) {
+                        const msgToCheck = String(r.message).toLowerCase();
+                        if (msgToCheck.includes("sesi") || msgToCheck.includes("token")) {
+                            alert("⛔ Sesi tamat. Sila log masuk semula.");
+                            localStorage.removeItem('pnr_session');
+                            location.reload(); 
+                            return { success: false }; 
+                        }
                     }
+                    return r;
+
+                } catch (jsonError) {
+                    // JIKA SANGKUT SINI, MAKSUDNYA ADA ERROR PADA GOOGLE SCRIPT
+                    console.error("❌ BUKAN JSON! Server balas HTML Error:", textResult);
+                    alert("Ralat Sistem! Sila lihat Console (F12) untuk detail.");
+                    throw new Error("Server returned HTML instead of JSON");
                 }
-                return r;
-            } catch(e) { console.error(e); return {success:false, message:"Ralat sambungan."}; }
+                // ------------------------------------------------
+
+            } catch(e) { 
+                console.error("🔥 FETCH ERROR:", e); 
+                return {success:false, message:"Ralat sambungan."}; 
+            }
         }
 
         // --- LOAD MASTER DATA (BERSIH) ---
