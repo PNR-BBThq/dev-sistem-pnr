@@ -522,7 +522,7 @@
         
         function renTab() { 
             const st = (pg-1)*pSize; const dt = fData.slice(st, st+pSize); 
-            document.getElementById('tBody').innerHTML = dt.length ? dt.map((d, i) => { const realIndex = st + i; return `<tr onclick="viewRec(${realIndex})" style="cursor: pointer;" title="Klik untuk lihat butiran"><td>${d.t}</td><td>${d.n}</td><td>${d.l}</td><td><span class="badge bg-light text-dark border">${d.tn}</span></td><td>${d.lt.toFixed(2)}</td><td class="text-danger fw-bold">${d.ls.toFixed(2)}</td></tr>`; }).join('') : '<tr><td colspan="6" class="text-center text-muted p-4">Tiada rekod.</td></tr>'; 
+            document.getElementById('tBody').innerHTML = dt.length ? dt.map((d, i) => { const realIndex = st + i; return `<tr onclick="viewRec(${realIndex})" style="cursor: pointer;" title="Klik untuk lihat butiran"><td>${formatDateDisplay(d.t)}</td><td>${d.n}</td><td>${d.l}</td><td><span class="badge bg-light text-dark border">${d.tn}</span></td><td>${d.lt.toFixed(2)}</td><td class="text-danger fw-bold">${d.ls.toFixed(2)}</td></tr>`; }).join('') : '<tr><td colspan="6" class="text-center text-muted p-4">Tiada rekod.</td></tr>'; 
             document.getElementById('pgInfo').innerText = `Page ${pg}`; 
         }        
 
@@ -614,7 +614,8 @@
             const getV = (key) => { const i = currentHeaders.findIndex(h => h.toUpperCase().includes(key.toUpperCase())); return i > -1 ? r.data[i] : ""; };
             const lokasi = getV('LOKASI') || getV('KEBUN');
             const tanaman = getV('NAMA TANAMAN') || getV('TANAMAN');
-            const kategori = getV('KATEGORI') || "-";
+            const rawDate = getV('TARIKH') || "";
+            const tarikh = formatDateDisplay(rawDate);
             const tarikh = getV('TARIKH') || "";
             const log = getV('LOG') || "";
             let btnAction = "";
@@ -838,7 +839,7 @@
                 <div class="p-3 pb-0">
                     <div id="view_info_${d.id}">
                         <h6 class="fw-bold text-success mb-3 small border-bottom pb-2 text-uppercase"><i class="bi bi-info-circle-fill me-1"></i> LOKASI & TANAMAN</h6>
-                        <div class="row g-2 mb-1" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">TARIKH BANCIAN:</div><div class="col-8 fw-bold text-primary">${d.t}</div></div>
+                        <div class="row g-2 mb-1" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">TARIKH BANCIAN:</div><div class="col-8 fw-bold text-primary">${formatDateDisplay(d.t)}</div></div>
                         <div class="row g-2 mb-1" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">NEGERI:</div><div class="col-8 fw-bold text-dark">${d.n}</div></div>
                         <div class="row g-2 mb-1" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">DAERAH:</div><div class="col-8 fw-bold text-dark">${d.d}</div></div>
                         <div class="row g-2 mb-1" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">LOKASI:</div><div class="col-8 fw-bold text-dark">${d.l}</div></div>
@@ -866,6 +867,18 @@
             document.getElementById('modalTitle').innerText = "BUTIRAN REKOD DISAHKAN";
             new bootstrap.Modal(document.getElementById('detailModal')).show();
         }
+        // --- [BARU] FORMAT TARIKH PAPARAN (DD/MM/YYYY) ---
+function formatDateDisplay(dateStr) {
+    if (!dateStr) return "-";
+    const d = new Date(dateStr);
+    if (isNaN(d)) return dateStr; // Kalau bukan tarikh valid, return asal
+    
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    
+    return `${day}/${month}/${year}`;
+}
         function enableEditMode(id) { document.getElementById(`view_info_${id}`).style.display = 'none'; document.getElementById(`view_pest_${id}`).style.display = 'none'; document.getElementById(`edit_mode_${id}`).style.display = 'block'; }
         function cancelEdit(id) { document.getElementById(`view_info_${id}`).style.display = 'block'; document.getElementById(`view_pest_${id}`).style.display = 'block'; document.getElementById(`edit_mode_${id}`).style.display = 'none'; }
         async function doDeleteRec(rowID) { if(!confirm("Padam rekod ini?")) return; const btn = event.target.closest('button'); btn.innerHTML='...'; btn.disabled=true; const r = await postData('deleteEntry', {row:rowID}); alert(r.message); if(r.success) location.reload(); }
