@@ -359,31 +359,16 @@
       // --- [DIKEMASKINI] LOAD MASTER DATA (BERSIHKAN DARI 'SUCCESS'/'MESSAGE') ---
 async function loadMasterData() {
     try {
+        console.log("Sedang tarik data tanaman...");
         const r = await postData('getTanamanList', {});
         
-        // Kita perlu pastikan kita hanya ambil Data Tanaman, bukan status API
-        let cleanData = {};
-
-        // Senario 1: Jika data sebenar dibungkus dalam 'data' atau 'list'
-        if (r.data && typeof r.data === 'object') {
-            cleanData = r.data;
-        } else if (r.list && typeof r.list === 'object') {
-            cleanData = r.list;
-        } 
-        // Senario 2: Data bercampur (Flat), kita buang keyword sistem
-        else {
-            cleanData = Object.assign({}, r); // Clone object asal
-            delete cleanData.success;
-            delete cleanData.message;
-            delete cleanData.token;
-            delete cleanData.action;
-            delete cleanData.result;
+        // Ambil bahagian .data sahaja
+        if (r && r.data) {
+            pestMasterData = r.data;
+            console.log("✅ Data Tanaman Berjaya:", pestMasterData);
+        } else {
+            console.error("❌ Format data salah:", r);
         }
-
-        // Simpan data yang bersih ke variable global
-        pestMasterData = cleanData; 
-        console.log("Master Data Bersih:", pestMasterData); // Semak di Console (F12)
-
     } catch(e) { 
         console.error("Gagal load pest data", e); 
     }
@@ -790,20 +775,45 @@ async function loadMasterData() {
             if(neg && districtData[neg]) { districtData[neg].forEach(d => { let opt = document.createElement('option'); opt.value=d; opt.innerText=d; el.appendChild(opt); }); }
         }
 
-        function updateTanamanList() {
-            const kat = document.getElementById('fe_kategori').value;
-            const el = document.getElementById('fe_tanaman'); el.innerHTML = '<option value="">- Pilih -</option>';
-            if(kat && pestMasterData[kat]) { Object.keys(pestMasterData[kat]).sort().forEach(t => { let opt = document.createElement('option'); opt.value=t; opt.innerText=t; el.appendChild(opt); }); }
-        }
+       function updateTanamanList() {
+    const elKat = document.getElementById('fe_kategori');
+    const elTan = document.getElementById('fe_tanaman');
+    
+    // Ambil nilai kategori yang dipilih
+    const selectedKat = elKat.value; 
+    
+    // Reset dropdown tanaman
+    elTan.innerHTML = '<option value="">- Pilih Tanaman -</option>';
+    
+    // Pastikan data wujud & kategori dipilih
+    if (selectedKat && pestMasterData[selectedKat]) {
+        // Loop setiap tanaman dalam kategori tersebut
+        const listTanaman = Object.keys(pestMasterData[selectedKat]).sort();
+        
+        listTanaman.forEach(t => {
+            let opt = document.createElement('option');
+            opt.value = t; 
+            opt.innerText = t; 
+            elTan.appendChild(opt);
+        });
+    } else {
+        console.log("Tiada data untuk kategori:", selectedKat);
+    }
+}
 
         function resetPestTable() {}
 
-        function getPestListForCurrentCrop() {
-            const kat = document.getElementById('fe_kategori').value;
-            const tan = document.getElementById('fe_tanaman').value;
-            if(kat && tan && pestMasterData[kat] && pestMasterData[kat][tan]) { return pestMasterData[kat][tan]; }
-            return [];
-        }
+      // 3. DAPATKAN LIST PEROSAK (Helper untuk Table)
+function getPestListForCurrentCrop() {
+    const kat = document.getElementById('fe_kategori').value;
+    const tan = document.getElementById('fe_tanaman').value;
+    
+    // Pastikan keys wujud sebelum akses array
+    if(kat && tan && pestMasterData[kat] && pestMasterData[kat][tan]) {
+        return pestMasterData[kat][tan]; // Array [Ulat, Kumbang, ...]
+    }
+    return [];
+}
 
         function addPestRow(name="", area="", sev="") {
             const tbody = document.querySelector('#fe_pestTable tbody');
