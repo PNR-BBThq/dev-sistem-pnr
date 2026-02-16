@@ -1,9 +1,9 @@
-const CACHE_NAME = 'pnr-v2'; // Tukar nama ni kalau update file nanti (v2, v3...)
+const CACHE_NAME = 'pnr-v3-safe'; // Tukar versi
 const ASSETS = [
   './',
   './index.html',
-  './form.html',          // <--- PENTING: Borang offline anda
-  './manifest.json',      // <--- PENTING: Untuk install app
+  './form.html',
+  './manifest.json',
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
   'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css',
   'https://cdn.jsdelivr.net/npm/chart.js',
@@ -11,43 +11,37 @@ const ASSETS = [
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
   'https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js',
   'https://cdn.jsdelivr.net/npm/sweetalert2@11'
+  // SAYA DAH BUANG ICON DARI SINI SUPAYA TAK ERROR JIKA GAMBAR TIADA
 ];
 
-// 1. INSTALL: Simpan fail dalam telefon
 self.addEventListener('install', (e) => {
-  console.log('[Service Worker] Install');
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Caching all: app shell and content');
+      console.log('Caching assets...');
       return cache.addAll(ASSETS);
     })
   );
 });
 
-// 2. FETCH: Guna fail dalam telefon kalau tiada internet
 self.addEventListener('fetch', (e) => {
   e.respondWith(
-    caches.match(e.request).then((r) => {
-      console.log('[Service Worker] Fetching resource: '+e.request.url);
-      return r || fetch(e.request).then((response) => {
-        return caches.open(CACHE_NAME).then((cache) => {
-          // Cache resource baru yang belum ada
-          cache.put(e.request, response.clone());
-          return response;
-        });
+    caches.match(e.request).then((res) => {
+      // Kalau ada dalam cache, guna cache. Kalau takda, tarik internet.
+      return res || fetch(e.request).catch(() => {
+        // Kalau internet pun takda (Offline), dan user minta page utama
+        if (e.request.mode === 'navigate') {
+            return caches.match('./index.html');
+        }
       });
     })
   );
 });
 
-// 3. ACTIVATE: Buang cache lama bila update version (v1 -> v2)
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keyList) => {
       return Promise.all(keyList.map((key) => {
-        if (key !== CACHE_NAME) {
-          return caches.delete(key);
-        }
+        if (key !== CACHE_NAME) return caches.delete(key);
       }));
     })
   );
