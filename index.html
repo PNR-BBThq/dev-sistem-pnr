@@ -356,14 +356,38 @@
             }
         }
 
-        // --- LOAD MASTER DATA ---
-        async function loadMasterData() {
-            try {
-                const r = await postData('getTanamanList', {});
-                pestMasterData = r; 
-                console.log("Master Data Loaded.");
-            } catch(e) { console.error("Gagal load pest data", e); }
+      // --- [DIKEMASKINI] LOAD MASTER DATA (BERSIHKAN DARI 'SUCCESS'/'MESSAGE') ---
+async function loadMasterData() {
+    try {
+        const r = await postData('getTanamanList', {});
+        
+        // Kita perlu pastikan kita hanya ambil Data Tanaman, bukan status API
+        let cleanData = {};
+
+        // Senario 1: Jika data sebenar dibungkus dalam 'data' atau 'list'
+        if (r.data && typeof r.data === 'object') {
+            cleanData = r.data;
+        } else if (r.list && typeof r.list === 'object') {
+            cleanData = r.list;
+        } 
+        // Senario 2: Data bercampur (Flat), kita buang keyword sistem
+        else {
+            cleanData = Object.assign({}, r); // Clone object asal
+            delete cleanData.success;
+            delete cleanData.message;
+            delete cleanData.token;
+            delete cleanData.action;
+            delete cleanData.result;
         }
+
+        // Simpan data yang bersih ke variable global
+        pestMasterData = cleanData; 
+        console.log("Master Data Bersih:", pestMasterData); // Semak di Console (F12)
+
+    } catch(e) { 
+        console.error("Gagal load pest data", e); 
+    }
+}
 
         async function doLogin() {
             const u = document.getElementById('uid').value; 
