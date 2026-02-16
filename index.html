@@ -399,17 +399,30 @@
             initDash();
         }
 
+       // --- CHECK SESSION (OFFLINE FRIENDLY) ---
         async function checkSession() {
             const saved = localStorage.getItem('pnr_session');
             if (saved) {
                 try {
                     const s = JSON.parse(saved);
+                    // Jika ada data user, terus bagi masuk (tak kira online/offline)
                     if (s.uProf && s.userToken) {
                         applyLogin(s.uProf, s.userToken, s.currentUserID);
-                        const p = { action: 'logSession', token: s.userToken, u: s.currentUserID, name: s.uProf.name, role: s.uProf.role };
-                        fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(p) }).catch(e=>{});
+                        
+                        // Cuma hantar log jika ada internet (background)
+                        if (navigator.onLine) {
+                            const p = { action: 'logSession', token: s.userToken, u: s.currentUserID, name: s.uProf.name, role: s.uProf.role };
+                            fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(p) }).catch(e=>{});
+                        } else {
+                            console.log("Offline Login: Menggunakan sesi simpanan.");
+                            // Tunjuk notifikasi kecil bahawa user offline
+                            const summary = document.getElementById('smartSummary');
+                            if(summary) summary.innerHTML = `<div class="alert alert-warning mb-0"><i class="bi bi-wifi-off"></i> Mod Offline: Anda sedang menggunakan data simpanan.</div>`;
+                        }
                     }
-                } catch (e) {}
+                } catch (e) {
+                    console.error("Session rosak", e);
+                }
             }
         }
         function doLogout() { localStorage.removeItem('pnr_session'); location.reload(); }
@@ -461,7 +474,17 @@
         }
 
 
-        async function initDash() {
+       async function initDash() {
+            // Cek offline dulu
+            if (!navigator.onLine) {
+                document.getElementById('smartSummary').innerHTML = '<div class="alert alert-warning"><i class="bi bi-wifi-off"></i> Tiada Internet. Paparan Dashboard tidak dapat dikemaskini.</div>';
+                // Kalau ada cache lama dalam variable mData, mungkin boleh guna, tapi buat masa ni kita stop sini.
+                
+                // SETUP MAP (Walaupun offline, setup frame dulu)
+                if(!map) { map = L.map('map').setView([4.2105, 101.9758], 6); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map); }
+                return;
+            }
+
             document.getElementById('smartSummary').innerHTML = '<div class="d-flex align-items-center"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Sedang menganalisis data...</div>';
             const d = await postData('getAnalytics', {state: uProf.state}); 
             if(!d.records) { document.getElementById('smartSummary').innerText="Tiada data."; return; }
