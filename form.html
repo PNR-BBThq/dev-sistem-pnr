@@ -269,20 +269,37 @@
         }
     }
 
-    async function fetchMasterData() {
+   async function fetchMasterData() {
         try {
-            const res = await fetch(`${API_URL}?action=getTanamanList`);
+            // KITA TUKAR KE 'POST' SUPAYA MASUK KE doPost(e) GOOGLE SCRIPT
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify({ action: 'getTanamanList' })
+            });
+            
             const json = await res.json();
             
             // Simpan data bersih (pestTree, userList, syorList)
+            // Backend hantar structure: { data: { pestTree:..., userList:... } }
             const cleanData = json.data || json; 
             
+            // Semak jika data kosong
+            if (!cleanData || Object.keys(cleanData).length === 0) {
+                console.warn("Data master kosong dari server.");
+                return;
+            }
+
             cachedMasterData = cleanData; // Update global
             localStorage.setItem('pnr_masterData', JSON.stringify(cleanData)); // Save to cache
             
             populateMasterData(cleanData); // Refresh UI
-            console.log("Master Data updated from server.");
-        } catch(e) { console.error("Gagal tarik data master", e); }
+            console.log("✅ Master Data berjaya ditarik.");
+            
+        } catch(e) { 
+            console.error("Gagal tarik data master:", e); 
+            // Jika gagal, pastikan dropdown tak kosong (guna fallback jika ada)
+        }
     }
 
     // --- 2. LOGIK UI BORANG ---
