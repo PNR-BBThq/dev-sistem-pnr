@@ -551,6 +551,7 @@
             } catch(e) { container.innerHTML = "Ralat memuatkan tugasan."; }
         }
 
+      // --- KEMASKINI: FUNGSI LOAD PENDING (FIX DATE) ---
         async function loadPend() { 
             const container = document.getElementById('verifyContainer'); 
             container.innerHTML = '<div class="col-12 text-center p-5"><div class="spinner-border text-primary"></div></div>'; 
@@ -558,25 +559,75 @@
                 const d = await postData('getPending', {state: uProf.state}); 
                 currentPendingRows = d.rows || []; 
                 
-                // --- [BARU] SIMPAN HEADER JIKA ADA ---
-                if(d.headers) currentHeaders = d.headers;
-                // -------------------------------------
+                // Simpan header untuk mapping
+                if(d.headers) currentHeaders = d.headers; 
+                
+                const b = document.getElementById('badgePending');
+                b.innerText = currentPendingRows.length; 
+                b.style.display = currentPendingRows.length ? "inline-block" : "none";
 
-                if(!d.rows || !d.rows.length) { container.innerHTML = '<div class="col-12 text-center p-5 text-muted bg-white rounded border border-dashed"><i class="bi bi-check-circle fs-3 text-success d-block mb-2"></i>Tiada data baru untuk disahkan.</div>'; return; } 
+                if(!d.rows || !d.rows.length) { 
+                    container.innerHTML = '<div class="col-12 text-center p-5 text-muted bg-white rounded border border-dashed"><i class="bi bi-check-circle fs-3 text-success d-block mb-2"></i>Tiada data baru untuk disahkan.</div>'; 
+                    return; 
+                } 
+                
                 container.innerHTML = ""; 
+                
+                // Helper Images
                 const cleanImageLink = (raw) => { if (!raw) return []; let str = String(raw).trim(); if(str.length < 5) return []; str = str.replace(/[\[\]"'\\]/g, ''); return str.split(',').map(l => l.trim()).filter(l => l.toLowerCase().startsWith('http')); }; 
                 const toViewLink = (link) => { const idMatch = link.match(/[-\w]{25,}/); if(idMatch) return `https://drive.google.com/file/d/${idMatch[0]}/view?usp=sharing`; return link; };
-                const formatTkh = (t) => { if(!t) return "-"; const d = new Date(t); if (isNaN(d)) return t; const day = d.getDate().toString().padStart(2, '0'); const month = (d.getMonth() + 1).toString().padStart(2, '0'); const year = d.getFullYear().toString().slice(-2); return `${day}/${month}/${year}`; };
 
                 d.rows.forEach((r) => { 
                     const getVal = (key) => { const i = d.headers.findIndex(h => h.toLowerCase().includes(key.toLowerCase())); return i > -1 ? r.data[i] : ""; }; 
-                    const timestamp = getVal('Timestamp'); const tkhHantar = formatTkh(timestamp); const tarikhBancian = formatTkh(getVal('Tarikh Bancian') || getVal('Tarikh') || getVal('Date')); 
-                    const nama = getVal('Nama') || getVal('Pegawai'); const email = getVal('Email') || "-"; const negeri = getVal('Negeri') || "-"; const daerah = getVal('Daerah') || "-"; const lokasi = getVal('Lokasi') || getVal('Kebun') || "-"; const koordinat = getVal('Koordinat') || "-"; const tanaman = getVal('Nama Tanaman') || getVal('Tanaman') || "-"; const varieti = getVal('Varieti') || "-"; const umur = getVal('Umur') || "-"; const kategori = getVal('Kategori') || "-"; const luasTanam = getVal('Luas Bertanam') || getVal('Luas') || "-"; const syor = getVal('Syor') || "-"; 
                     
-                    let btnMap = ""; if(koordinat && koordinat.includes(',') && koordinat.length > 5) { const cleanCoord = koordinat.trim().replace(/\s/g, ''); const mapUrl = `https://www.google.com/maps/search/?api=1&query=$${cleanCoord}`; btnMap = `<a href="${mapUrl}" target="_blank" class="btn btn-sm btn-outline-primary border-0 py-0 px-1 ms-2" title="Lihat di Google Maps" style="line-height:1;"><i class="bi bi-geo-alt-fill"></i></a>`; }
+                    // --- PEMBETULAN TARIKH DI SINI ---
+                    // Kita guna formatDateDisplay (Global Function) dan bukan formatTkh (Local Function lama)
+                    const timestamp = getVal('Timestamp'); 
+                    const tkhHantar = formatDateDisplay(timestamp); 
+                    
+                    const rawTarikhBancian = getVal('Tarikh Bancian') || getVal('Tarikh') || getVal('Date');
+                    const tarikhBancian = formatDateDisplay(rawTarikhBancian);
+                    // ---------------------------------
 
-                    let pestRows = ""; try { const lsObj = JSON.parse(getVal('Luas Serangan') || "{}"); const pctObj = JSON.parse(getVal('Peratus') || "{}"); const kObj = JSON.parse(getVal('Keterukan') || "{}"); if(Object.keys(lsObj).length > 0) { Object.keys(lsObj).forEach(k => { let level = kObj[k] || 0; let badgeColor = level < 3 ? 'success' : (level < 4 ? 'warning' : 'danger'); pestRows += `<tr><td class="text-start text-uppercase" style="font-size:0.8rem; vertical-align:middle;">${k}</td><td class="text-center fw-bold" style="vertical-align:middle;">${lsObj[k]}</td><td class="text-center small" style="vertical-align:middle;">${pctObj[k]||0}%</td><td class="text-center" style="vertical-align:middle;"><span class="badge bg-${badgeColor}">T${level}</span></td></tr>`; }); } else { pestRows = `<tr><td colspan="4" class="text-center text-muted fst-italic small">Tiada Serangan</td></tr>`; } } catch(e) { pestRows = `<tr><td colspan="4" class="text-center text-muted small">Ralat Data</td></tr>`; } 
-                    const rawImg = getVal('IMAGE LINKS (COMMA SEPARATED)') || getVal('Gambar') || getVal('Image') || getVal('Foto'); const imgLinks = cleanImageLink(rawImg); 
+                    const nama = getVal('Nama') || getVal('Pegawai'); 
+                    const email = getVal('Email') || "-"; 
+                    const negeri = getVal('Negeri') || "-"; 
+                    const daerah = getVal('Daerah') || "-"; 
+                    const lokasi = getVal('Lokasi') || getVal('Kebun') || "-"; 
+                    const koordinat = getVal('Koordinat') || "-"; 
+                    const tanaman = getVal('Nama Tanaman') || getVal('Tanaman') || "-"; 
+                    const varieti = getVal('Varieti') || "-"; 
+                    const umur = getVal('Umur') || "-"; 
+                    const kategori = getVal('Kategori') || "-"; 
+                    const luasTanam = getVal('Luas Bertanam') || getVal('Luas') || "-"; 
+                    const syor = getVal('Syor') || "-"; 
+                    
+                    let btnMap = ""; 
+                    if(koordinat && koordinat.includes(',') && koordinat.length > 5) { 
+                        const cleanCoord = koordinat.trim().replace(/\s/g, ''); 
+                        const mapUrl = `https://www.google.com/maps/search/?api=1&query=$${cleanCoord}`; 
+                        btnMap = `<a href="${mapUrl}" target="_blank" class="btn btn-sm btn-outline-primary border-0 py-0 px-1 ms-2" title="Lihat di Google Maps" style="line-height:1;"><i class="bi bi-geo-alt-fill"></i></a>`; 
+                    }
+
+                    let pestRows = ""; 
+                    try { 
+                        const lsObj = JSON.parse(getVal('Luas Serangan') || "{}"); 
+                        const pctObj = JSON.parse(getVal('Peratus') || "{}"); 
+                        const kObj = JSON.parse(getVal('Keterukan') || "{}"); 
+                        if(Object.keys(lsObj).length > 0) { 
+                            Object.keys(lsObj).forEach(k => { 
+                                let level = kObj[k] || 0; 
+                                let badgeColor = level < 3 ? 'success' : (level < 4 ? 'warning' : 'danger'); 
+                                pestRows += `<tr><td class="text-start text-uppercase" style="font-size:0.8rem; vertical-align:middle;">${k}</td><td class="text-center fw-bold" style="vertical-align:middle;">${lsObj[k]}</td><td class="text-center small" style="vertical-align:middle;">${pctObj[k]||0}%</td><td class="text-center" style="vertical-align:middle;"><span class="badge bg-${badgeColor}">T${level}</span></td></tr>`; 
+                            }); 
+                        } else { 
+                            pestRows = `<tr><td colspan="4" class="text-center text-muted fst-italic small">Tiada Serangan</td></tr>`; 
+                        } 
+                    } catch(e) { pestRows = `<tr><td colspan="4" class="text-center text-muted small">Ralat Data</td></tr>`; } 
+                    
+                    const rawImg = getVal('IMAGE LINKS (COMMA SEPARATED)') || getVal('Gambar') || getVal('Image') || getVal('Foto'); 
+                    const imgLinks = cleanImageLink(rawImg); 
+                    
                     let imgHTML = imgLinks.length > 0 ? `<div class="mt-3 pt-2 border-top"><h6 class="fw-bold text-secondary small mb-2 text-uppercase"><i class="bi bi-images me-1"></i> LAMPIRAN GAMBAR (${imgLinks.length})</h6><div class="d-flex flex-wrap gap-2">` + imgLinks.map((lnk, i) => `<a href="${toViewLink(lnk)}" target="_blank" class="btn btn-sm btn-outline-primary bg-white shadow-sm text-truncate fw-bold" style="max-width: 140px; font-size:0.75rem"><i class="bi bi-eye me-1"></i> Gambar ${i+1}</a>`).join('') + `</div></div>` : `<div class="mt-3 pt-2 border-top"><small class="text-muted fst-italic small text-uppercase"><i class="bi bi-slash-circle me-1"></i> TIADA GAMBAR</small></div>`; 
                     
                     const cardHTML = `
@@ -620,7 +671,6 @@
                 }); 
             } catch(e) { console.error(e); container.innerHTML='<div class="col-12 text-center p-5 text-danger">Ralat memuatkan data.</div>'; } 
         }
-
 
         function renderCard(r, container, type) {
             const getV = (key) => { const i = currentHeaders.findIndex(h => h.toUpperCase().includes(key.toUpperCase())); return i > -1 ? r.data[i] : ""; };
