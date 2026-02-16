@@ -313,7 +313,6 @@
             "W.P. Kuala Lumpur": ["Kuala Lumpur"], "W.P. Labuan": ["Labuan"], "W.P. Putrajaya": ["Putrajaya"]
         };
 
-        // --- GLOBAL VARIABLES ---
         let mData=[], fData=[], uProf=null, map=null, layer=null, pg=1, pSize=10, charts={};
         let currentPendingRows = []; 
         let userToken = ""; 
@@ -324,57 +323,44 @@
         let currentHeaders = []; 
         let pestMasterData = {}; 
 
-        // --- FUNGSI POST DATA ---
         async function postData(act, load) {
             try {
                 let payload;
-                if (act === 'login') { 
-                    payload = { action: act, ...load }; 
-                } else { 
-                    payload = { action: act, token: userToken, u: currentUserID, ...load }; 
-                }
-                const res = await fetch(`${API_URL}?action=${act}`, { 
-                    method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(payload) 
-                });
+                if (act === 'login') { payload = { action: act, ...load }; } 
+                else { payload = { action: act, token: userToken, u: currentUserID, ...load }; }
+                
+                const res = await fetch(`${API_URL}?action=${act}`, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(payload) });
                 const r = JSON.parse(await res.text());
 
-                if (r.success === false && r.message) {
-                    const msgToCheck = String(r.message).toLowerCase();
-                    if (msgToCheck.includes("sesi") || msgToCheck.includes("token")) {
-                        alert("⛔ Sesi tamat. Sila log masuk semula.");
-                        localStorage.removeItem('pnr_session'); location.reload(); return { success: false }; 
-                    }
+                if (r.success === false && r.message && (r.message.includes("sesi") || r.message.includes("token"))) {
+                    alert("⛔ Sesi tamat. Sila log masuk semula."); localStorage.removeItem('pnr_session'); location.reload(); return { success: false }; 
                 }
                 return r;
             } catch(e) { console.error(e); return {success:false, message:"Ralat sambungan."}; }
         }
 
-        // --- LOAD MASTER DATA ---
         async function loadMasterData() {
             try {
                 const r = await postData('getTanamanList', {});
-                if (r.data) pestMasterData = r.data;
-                else if (r.success === undefined) pestMasterData = r; 
+                let clean = {};
+                // Handle different JSON structures safely
+                if (r.data) clean = r.data;
+                else if (r.success === undefined && Object.keys(r).length > 0) clean = r; 
                 else {
-                    let clean = Object.assign({}, r);
+                    clean = Object.assign({}, r);
                     delete clean.success; delete clean.message;
-                    pestMasterData = clean;
                 }
+                pestMasterData = clean;
+                console.log("Master Data:", pestMasterData);
             } catch(e) { console.error("Gagal load pest data", e); }
         }
 
-        // --- CHECK PENDING ---
         async function checkPendingCount() { 
             try { 
                 if(["ADMIN","PENYELIA"].includes((uProf.role||"").toUpperCase())) {
                     const d = await postData('getPending', {state: uProf.state}); 
                     const b = document.getElementById('badgePending'); 
-                    if(d.rows && d.rows.length > 0) { 
-                        b.innerText = d.rows.length; 
-                        b.style.display = "inline-block"; 
-                    } else { 
-                        b.style.display = "none"; 
-                    } 
+                    if(d.rows && d.rows.length > 0) { b.innerText = d.rows.length; b.style.display = "inline-block"; } else { b.style.display = "none"; } 
                 }
             } catch(e){ console.error("Error checking pending:", e); } 
         }
@@ -440,67 +426,39 @@
             if(t==='main' && map) setTimeout(() => map.invalidateSize(), 300);
         }
 
-        // --- DASHBOARD FUNCTIONS ---
-       // --- KEMASKINI 2: INISIALISASI DASHBOARD ---
-async function initDash() {
-    // Tunjuk spinner
-    document.getElementById('smartSummary').innerHTML = '<div class="d-flex align-items-center"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Sedang menganalisis data...</div>';
-    
-    const d = await postData('getAnalytics', {state: uProf.state}); 
-    if(!d.records) { 
-        document.getElementById('smartSummary').innerText = "Tiada data ditemui.";
-        return; 
-    }
-    
-    mData = d.records; 
-    
-    // Setup Filter Dropdown
-    const currentN = document.getElementById('selNegeri').value;
-    fillSel('selNegeri', mData.map(d => d.n).filter((v, i, a) => a.indexOf(v) === i).sort()); 
-    if(currentN) document.getElementById('selNegeri').value = currentN;
-    if(uProf.state !== "ALL") { const s = document.getElementById('selNegeri'); s.value = uProf.state; s.disabled = true; }
-    
-    // --- PENTING: CIPTA PETA JIKA BELUM ADA ---
-    try {
-        if(!map) { 
-            map = L.map('map').setView([4.2105, 101.9758], 6); 
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map); 
+        async function initDash() {
+            document.getElementById('smartSummary').innerHTML = '<div class="d-flex align-items-center"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Sedang menganalisis data...</div>';
+            const d = await postData('getAnalytics', {state: uProf.state}); 
+            if(!d.records) { document.getElementById('smartSummary').innerText="Tiada data."; return; }
+            mData = d.records; 
+            const currentN = document.getElementById('selNegeri').value;
+            fillSel('selNegeri', mData.map(d => d.n).filter((v, i, a) => a.indexOf(v) === i).sort()); 
+            if(currentN) document.getElementById('selNegeri').value = currentN;
+            if(uProf.state !== "ALL") { const s = document.getElementById('selNegeri'); s.value = uProf.state; s.disabled = true; }
+            
+            // Fix Map Initialization
+            if(!map) { map = L.map('map').setView([4.2105, 101.9758], 6); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map); }
+            
+            runFilter('n');
         }
-    } catch(e) {
-        console.error("Gagal initialize peta:", e);
-    }
-    // -----------------------------------------
 
-    runFilter('n');
-}
         function runFilter(source) {
             const n=v('selNegeri'), d=v('selDaerah'), t=v('selTanaman'), p=v('selPerosak'), k=v('selKategori'), s=v('dS'), e=v('dE');
             fData = mData.filter(r => { 
                 let pestOk = true; if(p && r.p) { try{ pestOk = (typeof r.p==='string'?JSON.parse(r.p):r.p)[p] }catch(err){ pestOk=false } }
                 return (n===""||r.n===n) && (d===""||r.d===d) && (t===""||r.tn===t) && (k===""||r.kt===k) && pestOk && (!s||r.t>=s) && (!e||r.t<=e);
             });
-            if(source === 'n' || !source) {
-                const dataD = mData.filter(r => n === "" || r.n === n);
-                updateDropdown('selDaerah', [...new Set(dataD.map(x=>x.d).filter(x=>x))].sort(), d);
-            }
-            if(source === 'd' || source === 'n' || !source) {
-                const dataT = mData.filter(r => (n===""||r.n===n) && (d===""||r.d===d));
-                updateDropdown('selTanaman', [...new Set(dataT.map(x=>x.tn).filter(x=>x))].sort(), t);
-            }
+            if(source === 'n' || !source) { const dataD = mData.filter(r => n === "" || r.n === n); updateDropdown('selDaerah', [...new Set(dataD.map(x=>x.d).filter(x=>x))].sort(), d); }
+            if(source === 'd' || source === 'n' || !source) { const dataT = mData.filter(r => (n===""||r.n===n) && (d===""||r.d===d)); updateDropdown('selTanaman', [...new Set(dataT.map(x=>x.tn).filter(x=>x))].sort(), t); }
             if(source === 't' || source === 'd' || source === 'n' || !source) {
                 const dataRest = mData.filter(r => (n===""||r.n===n) && (d===""||r.d===d) && (t===""||r.tn===t));
                 updateDropdown('selKategori', [...new Set(dataRest.map(x=>x.kt).filter(x=>x))].sort(), k);
-                let allPests = new Set();
-                dataRest.forEach(r => { try{ let obj=typeof r.p==='string'?JSON.parse(r.p):r.p; if(obj) Object.keys(obj).forEach(x=>allPests.add(x)) }catch(e){} });
+                let allPests = new Set(); dataRest.forEach(r => { try{ let obj=typeof r.p==='string'?JSON.parse(r.p):r.p; if(obj) Object.keys(obj).forEach(x=>allPests.add(x)) }catch(e){} });
                 updateDropdown('selPerosak', [...allPests].sort(), p);
             }
             pg = 1; calcUI();
         }
-        function updateDropdown(id, list, curVal) {
-            const el = document.getElementById(id); el.innerHTML = '<option value="">Semua</option>';
-            list.forEach(x => { let opt=document.createElement('option'); opt.value=x; opt.innerText=x; el.appendChild(opt); });
-            if(list.includes(curVal)) el.value = curVal; else el.value = "";
-        }
+        function updateDropdown(id, list, curVal) { const el = document.getElementById(id); el.innerHTML = '<option value="">Semua</option>'; list.forEach(x => { let opt=document.createElement('option'); opt.value=x; opt.innerText=x; el.appendChild(opt); }); if(list.includes(curVal)) el.value = curVal; else el.value = ""; }
         function v(id){ return document.getElementById(id).value; }
         function fillSel(id, arr) { updateDropdown(id, arr, ""); }
         function resetFilter(){ document.querySelectorAll('select:not(:disabled), input[type=date]').forEach(e=>e.value=""); runFilter('n'); }
@@ -517,16 +475,12 @@ async function initDash() {
             document.getElementById('k2').innerText = ts.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             document.getElementById('k3').innerText = tt>0 ? ((ts/tt)*100).toFixed(1)+"%" : "0%";
             document.getElementById('k4').innerText = fData.length.toLocaleString('en-US');
-            
             updateCharts(pm, km); updateMap(pts); updateHotspot(hData); genSummary(pm, tt, ts); renTab();
         } 
         function genSummary(pm, tt, ts) {
             const el = document.getElementById('smartSummary');
             if (!el) return;
-            if (ts === 0 || fData.length === 0) {
-                el.innerHTML = `<div class="d-flex align-items-center"><div class="bg-light rounded-circle p-3 me-3 text-secondary"><i class="bi bi-robot fs-2"></i></div><div><h6 class="text-primary fw-bold mb-1">Analisis Pintar</h6><span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Tiada rekod serangan dilaporkan setakat ini.</span></div></div>`;
-                return;
-            }
+            if (ts === 0 || fData.length === 0) { el.innerHTML = `<div class="d-flex align-items-center"><div class="bg-light rounded-circle p-3 me-3 text-secondary"><i class="bi bi-robot fs-2"></i></div><div><h6 class="text-primary fw-bold mb-1">Analisis Pintar</h6><span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Tiada rekod serangan dilaporkan setakat ini.</span></div></div>`; return; }
             let locGroups = {};
             fData.forEach(d => {
                 const locKey = d.l; const ls = parseFloat(d.ls) || 0; const lt = parseFloat(d.lt) || 0;
@@ -549,58 +503,29 @@ async function initDash() {
         }
         function updateCharts(pm, km) { const tp = Object.entries(pm).sort((a,b)=>b[1]-a[1]).slice(0,10); if(charts.b) charts.b.destroy(); charts.b = new Chart(document.getElementById('cBar'), { type: 'bar', data: { labels: tp.map(x=>x[0]), datasets: [{ label: 'Ha', data: tp.map(x=>x[1]), backgroundColor: '#10b981', borderRadius:4 }] }, options: { indexAxis: 'y', maintainAspectRatio: false, plugins:{legend:{display:false}} } }); if(charts.p) charts.p.destroy(); charts.p = new Chart(document.getElementById('cPie'), { type: 'doughnut', data: { labels: ['T1','T2','T3','T4','T5'], datasets: [{ data: Object.values(km), backgroundColor: ['#22c55e','#84cc16','#eab308','#f97316','#ef4444'], borderWidth:0 }] }, options: { maintainAspectRatio: false, plugins:{legend:{position:'right'}} } }); }
         
-     // --- KEMASKINI 3: CEGAH ERROR JIKA PETA TIADA ---
-function updateMap(pts) { 
-    // SAFETY CHECK: Kalau peta tak wujud, jangan buat apa-apa (elak crash)
-    if (!map) return; 
-
-    if(layer) map.removeLayer(layer); 
-    
-    if(pts.length) { 
-        const markers = pts.map(item => {
-            const p = item.coord; 
-            const d = item.data;  
-            let pestHTML = "";
-            let pestObj = {};
-            try { pestObj = typeof d.p === 'string' ? JSON.parse(d.p) : d.p; } catch(e) { pestObj = {}; }
-            
-            if (pestObj && Object.keys(pestObj).length > 0) {
-                pestHTML = `<div style="margin-top:5px; border-top:1px dashed #ccc; padding-top:5px;"><small class="fw-bold text-muted">PERINCIAN PEROSAK:</small><ul style="padding-left: 15px; margin-bottom: 0; font-size: 0.8rem;">`;
-                Object.entries(pestObj).forEach(([nama, luas]) => { pestHTML += `<li>${nama}: <b class="text-danger">${parseFloat(luas).toFixed(2)} Ha</b></li>`; });
-                pestHTML += `</ul></div>`;
-            } else { 
-                pestHTML = `<div class="mt-2 text-muted small fst-italic">- Tiada data perosak terperinci -</div>`; 
-            }
-            
-            const popupContent = `<div style="font-family: sans-serif; font-size: 0.85rem; min-width: 200px;"><div style="background-color: #f8f9fa; padding: 5px; border-bottom: 1px solid #ddd; margin-bottom: 5px;"><b class="text-success text-uppercase">${d.tn}</b></div><div class="mb-1"><i class="bi bi-geo-alt-fill text-danger"></i> <b>${d.l}</b><br><span class="text-muted small">${d.d}, ${d.n}</span></div><div class="d-flex justify-content-between bg-light border rounded p-1 mb-2" style="font-size: 0.8rem;"><div><span class="d-block text-muted" style="font-size:0.7rem">LUAS TANAM</span><b>${d.lt.toFixed(2)} Ha</b></div><div class="text-end border-start ps-2"><span class="d-block text-muted" style="font-size:0.7rem">JUMLAH SERANGAN</span><b class="text-danger">${d.ls.toFixed(2)} Ha</b></div></div>${pestHTML}<div class="text-end mt-2"><small class="text-muted" style="font-size: 0.7rem;">Tarikh: ${d.t}</small></div></div>`;
-            
-            const marker = L.circleMarker(p, { radius: 6, color: 'white', weight: 1, fillColor: '#dc2626', fillOpacity: 0.8 });
-            marker.bindPopup(popupContent);
-            marker.bindTooltip(`<b>${d.tn}</b>: ${d.l}`, { direction: 'top', offset: [0, -5], opacity: 0.9 });
-            return marker;
-        });
-        
-        layer = L.layerGroup(markers).addTo(map); 
-        
-        // Auto-zoom ke lokasi marker
-        if (markers.length > 0) {
-            try { map.fitBounds(L.latLngBounds(pts.map(x => x.coord))); } catch(e){}
+        function updateMap(pts) { 
+            if(!map) return;
+            if(layer) map.removeLayer(layer); 
+            if(pts.length) { 
+                const markers = pts.map(item => {
+                    const p = item.coord; const d = item.data; let pestHTML = ""; let pestObj = {}; try { pestObj = typeof d.p === 'string' ? JSON.parse(d.p) : d.p; } catch(e) { pestObj = {}; }
+                    if (pestObj && Object.keys(pestObj).length > 0) { pestHTML = `<div style="margin-top:5px; border-top:1px dashed #ccc; padding-top:5px;"><small class="fw-bold text-muted">PERINCIAN PEROSAK:</small><ul style="padding-left: 15px; margin-bottom: 0; font-size: 0.8rem;">`; Object.entries(pestObj).forEach(([nama, luas]) => { pestHTML += `<li>${nama}: <b class="text-danger">${parseFloat(luas).toFixed(2)} Ha</b></li>`; }); pestHTML += `</ul></div>`; } else { pestHTML = `<div class="mt-2 text-muted small fst-italic">- Tiada data perosak terperinci -</div>`; }
+                    const popupContent = `<div style="font-family: sans-serif; font-size: 0.85rem; min-width: 200px;"><div style="background-color: #f8f9fa; padding: 5px; border-bottom: 1px solid #ddd; margin-bottom: 5px;"><b class="text-success text-uppercase">${d.tn}</b></div><div class="mb-1"><i class="bi bi-geo-alt-fill text-danger"></i> <b>${d.l}</b><br><span class="text-muted small">${d.d}, ${d.n}</span></div><div class="d-flex justify-content-between bg-light border rounded p-1 mb-2" style="font-size: 0.8rem;"><div><span class="d-block text-muted" style="font-size:0.7rem">LUAS TANAM</span><b>${d.lt.toFixed(2)} Ha</b></div><div class="text-end border-start ps-2"><span class="d-block text-muted" style="font-size:0.7rem">JUMLAH SERANGAN</span><b class="text-danger">${d.ls.toFixed(2)} Ha</b></div></div>${pestHTML}<div class="text-end mt-2"><small class="text-muted" style="font-size: 0.7rem;">Tarikh: ${d.t}</small></div></div>`;
+                    const marker = L.circleMarker(p, { radius: 6, color: 'white', weight: 1, fillColor: '#dc2626', fillOpacity: 0.8 });
+                    marker.bindPopup(popupContent); marker.bindTooltip(`<b>${d.tn}</b>: ${d.l}`, { direction: 'top', offset: [0, -5], opacity: 0.9 }); return marker;
+                });
+                layer = L.layerGroup(markers).addTo(map); 
+                try { map.fitBounds(L.latLngBounds(pts.map(x => x.coord))); } catch(e){}
+            } 
         }
-    } 
-}
         function updateHotspot(hData) { const s = Object.entries(hData).sort((a,b)=>b[1]-a[1]).slice(0,5); document.getElementById('hotspotTable').innerHTML = s.length ? s.map(x=>`<tr><td>${x[0]}</td><td class="text-end fw-bold text-danger">${x[1].toFixed(2)}</td></tr>`).join('') : '<tr><td colspan="2" class="text-center text-muted">Tiada Data</td></tr>'; }
         
         function renTab() { 
-            const st = (pg-1)*pSize; 
-            const dt = fData.slice(st, st+pSize); 
-            document.getElementById('tBody').innerHTML = dt.length ? dt.map((d, i) => {
-                const realIndex = st + i;
-                return `<tr onclick="viewRec(${realIndex})" style="cursor: pointer;" title="Klik untuk lihat butiran"><td>${d.t}</td><td>${d.n}</td><td>${d.l}</td><td><span class="badge bg-light text-dark border">${d.tn}</span></td><td>${d.lt.toFixed(2)}</td><td class="text-danger fw-bold">${d.ls.toFixed(2)}</td></tr>`;
-            }).join('') : '<tr><td colspan="6" class="text-center text-muted p-4">Tiada rekod.</td></tr>'; 
+            const st = (pg-1)*pSize; const dt = fData.slice(st, st+pSize); 
+            document.getElementById('tBody').innerHTML = dt.length ? dt.map((d, i) => { const realIndex = st + i; return `<tr onclick="viewRec(${realIndex})" style="cursor: pointer;" title="Klik untuk lihat butiran"><td>${d.t}</td><td>${d.n}</td><td>${d.l}</td><td><span class="badge bg-light text-dark border">${d.tn}</span></td><td>${d.lt.toFixed(2)}</td><td class="text-danger fw-bold">${d.ls.toFixed(2)}</td></tr>`; }).join('') : '<tr><td colspan="6" class="text-center text-muted p-4">Tiada rekod.</td></tr>'; 
             document.getElementById('pgInfo').innerText = `Page ${pg}`; 
         }        
 
-        // --- LOAD TASKS & PENDING ---
         async function loadMyTasks() {
             const container = document.getElementById('taskContainer');
             container.innerHTML = '<div class="col-12 text-center p-5"><div class="spinner-border text-primary"></div></div>';
@@ -608,16 +533,10 @@ function updateMap(pts) {
                 const d = await postData('getMyTasks', { name: uProf.name });
                 myTasksData = d.rows || [];
                 currentHeaders = d.headers || []; 
-                
                 const b = document.getElementById('badgeTask');
                 b.innerText = myTasksData.length; b.style.display = myTasksData.length ? "inline-block" : "none";
-
-                if (!myTasksData.length) {
-                    container.innerHTML = '<div class="col-12 text-center p-5 text-muted bg-white rounded border border-dashed">Tiada tugasan aktif.</div>';
-                    return;
-                }
-                container.innerHTML = "";
-                myTasksData.forEach(r => renderCard(r, container, 'TASK'));
+                if (!myTasksData.length) { container.innerHTML = '<div class="col-12 text-center p-5 text-muted bg-white rounded border border-dashed">Tiada tugasan aktif.</div>'; return; }
+                container.innerHTML = ""; myTasksData.forEach(r => renderCard(r, container, 'TASK'));
             } catch(e) { container.innerHTML = "Ralat memuatkan tugasan."; }
         }
 
@@ -626,69 +545,29 @@ function updateMap(pts) {
             container.innerHTML = '<div class="col-12 text-center p-5"><div class="spinner-border text-primary"></div></div>'; 
             try { 
                 const d = await postData('getPending', {state: uProf.state}); 
-                currentPendingRows = d.rows || []; 
-                
-                // --- [BARU] SIMPAN HEADER JIKA ADA ---
-                if(d.headers) currentHeaders = d.headers;
-                // -------------------------------------
+                currentPendingRows = d.rows || []; currentHeaders = d.headers || []; 
+                const b = document.getElementById('badgePending');
+                b.innerText = currentPendingRows.length; b.style.display = currentPendingRows.length ? "inline-block" : "none";
+                if(!d.rows || !d.rows.length) { container.innerHTML = '<div class="col-12 text-center p-5 text-muted bg-white rounded border border-dashed">Tiada data baru.</div>'; return; } 
+                container.innerHTML = ""; d.rows.forEach(r => renderCard(r, container, 'VERIFY'));
+            } catch(e) { container.innerHTML='<div class="col-12 text-center p-5 text-danger">Ralat memuatkan data.</div>'; } 
+        }
 
-                if(!d.rows || !d.rows.length) { container.innerHTML = '<div class="col-12 text-center p-5 text-muted bg-white rounded border border-dashed"><i class="bi bi-check-circle fs-3 text-success d-block mb-2"></i>Tiada data baru untuk disahkan.</div>'; return; } 
-                container.innerHTML = ""; 
-                const cleanImageLink = (raw) => { if (!raw) return []; let str = String(raw).trim(); if(str.length < 5) return []; str = str.replace(/[\[\]"'\\]/g, ''); return str.split(',').map(l => l.trim()).filter(l => l.toLowerCase().startsWith('http')); }; 
-                const toViewLink = (link) => { const idMatch = link.match(/[-\w]{25,}/); if(idMatch) return `https://drive.google.com/file/d/${idMatch[0]}/view?usp=sharing`; return link; };
-                const formatTkh = (t) => { if(!t) return "-"; const d = new Date(t); if (isNaN(d)) return t; const day = d.getDate().toString().padStart(2, '0'); const month = (d.getMonth() + 1).toString().padStart(2, '0'); const year = d.getFullYear().toString().slice(-2); return `${day}/${month}/${year}`; };
-
-                d.rows.forEach((r) => { 
-                    const getVal = (key) => { const i = d.headers.findIndex(h => h.toLowerCase().includes(key.toLowerCase())); return i > -1 ? r.data[i] : ""; }; 
-                    const timestamp = getVal('Timestamp'); const tkhHantar = formatTkh(timestamp); const tarikhBancian = formatTkh(getVal('Tarikh Bancian') || getVal('Tarikh') || getVal('Date')); 
-                    const nama = getVal('Nama') || getVal('Pegawai'); const email = getVal('Email') || "-"; const negeri = getVal('Negeri') || "-"; const daerah = getVal('Daerah') || "-"; const lokasi = getVal('Lokasi') || getVal('Kebun') || "-"; const koordinat = getVal('Koordinat') || "-"; const tanaman = getVal('Nama Tanaman') || getVal('Tanaman') || "-"; const varieti = getVal('Varieti') || "-"; const umur = getVal('Umur') || "-"; const kategori = getVal('Kategori') || "-"; const luasTanam = getVal('Luas Bertanam') || getVal('Luas') || "-"; const syor = getVal('Syor') || "-"; 
-                    
-                    let btnMap = ""; if(koordinat && koordinat.includes(',') && koordinat.length > 5) { const cleanCoord = koordinat.trim().replace(/\s/g, ''); const mapUrl = `https://www.google.com/maps/search/?api=1&query=$${cleanCoord}`; btnMap = `<a href="${mapUrl}" target="_blank" class="btn btn-sm btn-outline-primary border-0 py-0 px-1 ms-2" title="Lihat di Google Maps" style="line-height:1;"><i class="bi bi-geo-alt-fill"></i></a>`; }
-
-                    let pestRows = ""; try { const lsObj = JSON.parse(getVal('Luas Serangan') || "{}"); const pctObj = JSON.parse(getVal('Peratus') || "{}"); const kObj = JSON.parse(getVal('Keterukan') || "{}"); if(Object.keys(lsObj).length > 0) { Object.keys(lsObj).forEach(k => { let level = kObj[k] || 0; let badgeColor = level < 3 ? 'success' : (level < 4 ? 'warning' : 'danger'); pestRows += `<tr><td class="text-start text-uppercase" style="font-size:0.8rem; vertical-align:middle;">${k}</td><td class="text-center fw-bold" style="vertical-align:middle;">${lsObj[k]}</td><td class="text-center small" style="vertical-align:middle;">${pctObj[k]||0}%</td><td class="text-center" style="vertical-align:middle;"><span class="badge bg-${badgeColor}">T${level}</span></td></tr>`; }); } else { pestRows = `<tr><td colspan="4" class="text-center text-muted fst-italic small">Tiada Serangan</td></tr>`; } } catch(e) { pestRows = `<tr><td colspan="4" class="text-center text-muted small">Ralat Data</td></tr>`; } 
-                    const rawImg = getVal('IMAGE LINKS (COMMA SEPARATED)') || getVal('Gambar') || getVal('Image') || getVal('Foto'); const imgLinks = cleanImageLink(rawImg); 
-                    let imgHTML = imgLinks.length > 0 ? `<div class="mt-3 pt-2 border-top"><h6 class="fw-bold text-secondary small mb-2 text-uppercase"><i class="bi bi-images me-1"></i> LAMPIRAN GAMBAR (${imgLinks.length})</h6><div class="d-flex flex-wrap gap-2">` + imgLinks.map((lnk, i) => `<a href="${toViewLink(lnk)}" target="_blank" class="btn btn-sm btn-outline-primary bg-white shadow-sm text-truncate fw-bold" style="max-width: 140px; font-size:0.75rem"><i class="bi bi-eye me-1"></i> Gambar ${i+1}</a>`).join('') + `</div></div>` : `<div class="mt-3 pt-2 border-top"><small class="text-muted fst-italic small text-uppercase"><i class="bi bi-slash-circle me-1"></i> TIADA GAMBAR</small></div>`; 
-                    
-                    const cardHTML = `
-                    <div class="col-md-6 col-xl-4">
-                        <div class="verify-card bg-white rounded-3 shadow-sm border mb-3 h-100 d-flex flex-column">
-                            <div class="p-3 border-bottom bg-light d-flex justify-content-between align-items-start">
-                                <div style="overflow:hidden;"><div class="small text-muted mb-1"><i class="bi bi-clock me-1"></i> Tarikh Hantar: ${tkhHantar}</div><div class="fw-bold text-uppercase text-dark text-truncate">${nama}</div><div class="small text-muted fst-italic text-truncate">${email}</div></div>
-                                <span class="badge bg-warning text-dark shadow-sm flex-shrink-0 ms-2">BARU</span>
-                            </div>
-                            <div class="p-3 flex-grow-1">
-                                <div class="mb-4">
-                                    <h6 class="fw-bold text-success mb-3 small border-bottom pb-2 text-uppercase"><i class="bi bi-info-circle-fill me-1"></i> LOKASI & TANAMAN</h6>
-                                    <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">TARIKH BANCIAN:</div><div class="col-8 fw-bold text-primary">${tarikhBancian}</div></div>
-                                    <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">NEGERI:</div><div class="col-8 fw-bold text-dark">${negeri}</div></div>
-                                    <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">DAERAH:</div><div class="col-8 fw-bold text-dark">${daerah}</div></div>
-                                    <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">LOKASI:</div><div class="col-8 fw-bold text-dark text-break">${lokasi}</div></div>
-                                    <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">KOORDINAT:</div><div class="col-8 font-monospace text-muted small d-flex align-items-center"><span>${koordinat}</span>${btnMap}</div></div>
-                                    <hr class="my-2 text-muted opacity-25">
-                                    <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">KATEGORI TANAMAN:</div><div class="col-8 fw-bold text-dark text-uppercase">${kategori}</div></div>
-                                    <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">TANAMAN:</div><div class="col-8 fw-bold text-success text-uppercase">${tanaman}</div></div>
-                                    <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">VARIETI:</div><div class="col-8 text-uppercase">${varieti}</div></div>
-                                    <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">UMUR TANAMAN:</div><div class="col-8 text-uppercase">${umur}</div></div>
-                                    <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">LUAS TANAMAN:</div><div class="col-8 text-dark fw-bold">${luasTanam} HA</div></div>
-                                </div>
-                                <div>
-                                    <h6 class="fw-bold text-danger mb-2 small border-bottom pb-1 text-uppercase"><i class="bi bi-bug-fill me-1"></i> DATA SERANGAN</h6>
-                                    <div class="table-responsive border rounded bg-white"><table class="table table-sm table-striped mb-0" style="font-size:0.75rem"><thead class="table-light"><tr><th class="text-start ps-2 text-uppercase">Perosak Dikesan</th><th class="text-center text-wrap text-uppercase">Luas Serangan(Ha)</th><th class="text-center text-wrap uppercase">Peratus serangan</th><th class="text-center text-wrap uppercase">Keterukan Serangan</th></tr></thead><tbody>${pestRows}</tbody></table></div>
-                                    ${imgHTML}
-                                </div>
-                            </div>
-                            <div class="p-3 mt-auto border-top">
-                                <div class="alert alert-warning border-warning mb-3 py-2 px-3 small d-flex align-items-start"><i class="bi bi-lightbulb-fill text-warning me-2 mt-1"></i> <div><strong class="text-uppercase d-block mb-1">SYOR KAWALAN:</strong><span class="text-dark">${syor}</span></div></div>
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-outline-danger flex-grow-1 fw-bold text-uppercase btn-sm py-2" onclick="subVer(${r.row},'REJECT')"><i class="bi bi-x-lg me-1"></i> TOLAK</button>
-                                    <button class="btn btn-success flex-grow-1 fw-bold shadow-sm text-uppercase btn-sm py-2" onclick="subVer(${r.row},'APPROVE')"><i class="bi bi-check-lg me-1"></i> SAHKAN</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`; 
-                    container.innerHTML += cardHTML; 
-                }); 
-            } catch(e) { console.error(e); container.innerHTML='<div class="col-12 text-center p-5 text-danger">Ralat memuatkan data.</div>'; } 
+        function renderCard(r, container, type) {
+            const getV = (key) => { const i = currentHeaders.findIndex(h => h.toUpperCase().includes(key.toUpperCase())); return i > -1 ? r.data[i] : ""; };
+            const lokasi = getV('LOKASI') || getV('KEBUN');
+            const tanaman = getV('NAMA TANAMAN') || getV('TANAMAN');
+            const kategori = getV('KATEGORI') || "-";
+            const tarikh = getV('TARIKH') || "";
+            const log = getV('LOG') || "";
+            let btnAction = "";
+            if (type === 'TASK') {
+                let reason = log.includes("DITOLAK") ? log.split("Sebab:").pop() : "Sila semak log.";
+                btnAction = `<div class="task-reject-box p-2 mb-2 small"><i class="bi bi-exclamation-triangle-fill"></i> ${reason}</div><button class="btn btn-danger w-100 fw-bold btn-sm" onclick="openTaskEdit(${r.row})">KEMASKINI</button>`;
+            } else {
+                btnAction = `<div class="d-flex gap-2"><button class="btn btn-outline-danger flex-grow-1 btn-sm fw-bold" onclick="subVer(${r.row},'REJECT')">TOLAK</button><button class="btn btn-success flex-grow-1 btn-sm fw-bold" onclick="subVer(${r.row},'APPROVE')">SAHKAN</button></div>`;
+            }
+            container.innerHTML += `<div class="col-md-6 col-xl-4"><div class="verify-card bg-white rounded-3 shadow-sm border mb-3 h-100 border-${type==='TASK'?'danger':'primary'}"><div class="p-3 border-bottom bg-${type==='TASK'?'danger':'light'} bg-opacity-10 d-flex justify-content-between"><div><div class="fw-bold text-dark">${lokasi}</div><div class="small text-muted">${kategori} - ${tanaman}</div></div><span class="badge bg-${type==='TASK'?'danger':'warning text-dark'}">${type==='TASK'?'DITOLAK':'BARU'}</span></div><div class="p-3">${btnAction}</div></div></div>`;
         }
 
         async function openTaskEdit(rowId) {
