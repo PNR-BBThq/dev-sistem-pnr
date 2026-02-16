@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem PNR Digital VERSI TESTING</title>
+    <title>Sistem PNR Digital</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
@@ -313,7 +313,7 @@
             "W.P. Kuala Lumpur": ["Kuala Lumpur"], "W.P. Labuan": ["Labuan"], "W.P. Putrajaya": ["Putrajaya"]
         };
 
-        let mData=[], fData=[], uProf=null, map=null, layer=null, pg=1, pSize=10;
+        let mData=[], fData=[], uProf=null, map=null, layer=null, pg=1, pSize=10, charts={};
         let currentPendingRows = []; 
         let userToken = ""; 
         let currentUserID = "";
@@ -325,52 +325,28 @@
         let pestMasterData = {}; 
 
         // --- FUNGSI POST DATA ---
-      // --- FUNGSI POST DATA (VERSI DEBUG) ---
         async function postData(act, load) {
             try {
-                console.log("Memanggil API: " + act); // 1. Kita tengok dia panggil apa
-                
                 let payload;
                 if (act === 'login') { 
                     payload = { action: act, ...load }; 
                 } else { 
                     payload = { action: act, token: userToken, u: currentUserID, ...load }; 
                 }
-                
                 const res = await fetch(`${API_URL}?action=${act}`, { 
                     method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(payload) 
                 });
-                
-                // --- INI BAHAGIAN PENTING UNTUK CHECK ERROR ---
-                const textResult = await res.text();
-                // console.log("Respon Server:", textResult); // Buka ini kalau nak tengok semua
+                const r = JSON.parse(await res.text());
 
-                try {
-                    const r = JSON.parse(textResult); // Cuba tukar jadi JSON
-                    
-                    if (r.success === false && r.message) {
-                        const msgToCheck = String(r.message).toLowerCase();
-                        if (msgToCheck.includes("sesi") || msgToCheck.includes("token")) {
-                            alert("⛔ Sesi tamat. Sila log masuk semula.");
-                            localStorage.removeItem('pnr_session');
-                            location.reload(); 
-                            return { success: false }; 
-                        }
+                if (r.success === false && r.message) {
+                    const msgToCheck = String(r.message).toLowerCase();
+                    if (msgToCheck.includes("sesi") || msgToCheck.includes("token")) {
+                        alert("⛔ Sesi tamat. Sila log masuk semula.");
+                        localStorage.removeItem('pnr_session'); location.reload(); return { success: false }; 
                     }
-                    return r;
-
-                } catch (jsonError) {
-                    // JIKA SANGKUT SINI, MAKSUDNYA ADA ERROR PADA GOOGLE SCRIPT
-                    console.error("❌ BUKAN JSON! Server balas HTML Error:", textResult);
-                    alert("Ralat Sistem! Sila lihat Console (F12) untuk detail.");
-                    throw new Error("Server returned HTML instead of JSON");
                 }
-                // ------------------------------------------------
-
-            } catch(e) { 
-                console.error("🔥 FETCH ERROR:", e); 
-                return {success:false, message:"Ralat sambungan."}; 
-            }
+                return r;
+            } catch(e) { console.error(e); return {success:false, message:"Ralat sambungan."}; }
         }
 
         // --- LOAD MASTER DATA (BERSIH) ---
@@ -387,6 +363,22 @@
                 }
                 console.log("Master Data:", pestMasterData);
             } catch(e) { console.error("Gagal load pest data", e); }
+        }
+
+        // --- FUNGSI CHECK PENDING (INI YANG HILANG TADI) ---
+        async function checkPendingCount() { 
+            try { 
+                if(["ADMIN","PENYELIA"].includes((uProf.role||"").toUpperCase())) {
+                    const d = await postData('getPending', {state: uProf.state}); 
+                    const b = document.getElementById('badgePending'); 
+                    if(d.rows && d.rows.length > 0) { 
+                        b.innerText = d.rows.length; 
+                        b.style.display = "inline-block"; 
+                    } else { 
+                        b.style.display = "none"; 
+                    } 
+                }
+            } catch(e){ console.error("Error checking pending:", e); } 
         }
 
         async function doLogin() {
@@ -407,22 +399,7 @@
                 msg.innerText = r.message; btn.disabled = false; btn.innerText = "MASUK"; 
             }
         }
-// --- FUNGSI SEMAK DATA PENDING (WAJIB ADA) ---
-        async function checkPendingCount() { 
-            try { 
-                // Hanya jalankan jika user adalah ADMIN atau PENYELIA
-                if(["ADMIN","PENYELIA"].includes((uProf.role||"").toUpperCase())) {
-                    const d = await postData('getPending', {state: uProf.state}); 
-                    const b = document.getElementById('badgePending'); 
-                    if(d.rows && d.rows.length > 0) { 
-                        b.innerText = d.rows.length; 
-                        b.style.display = "inline-block"; 
-                    } else { 
-                        b.style.display = "none"; 
-                    } 
-                }
-            } catch(e){ console.error("Error checking pending:", e); } 
-        }
+
         function applyLogin(r, token, uid) {
             uProf = r; userToken = token; currentUserID = uid;
             document.getElementById('uDisp').innerText = r.name; 
@@ -466,7 +443,7 @@
             if(t==='main' && map) setTimeout(() => map.invalidateSize(), 300);
         }
 
-        // ... (Fungsi Dashboard, Filter, Maps kekal sama - dipendekkan) ...
+        // ... (Fungsi Dashboard, Filter, Maps kekal sama) ...
         async function initDash() {
             const d = await postData('getAnalytics', {state: uProf.state}); 
             if(!d.records) { return; }
@@ -483,6 +460,21 @@
                 let pestOk = true; if(p && r.p) { try{ pestOk = (typeof r.p==='string'?JSON.parse(r.p):r.p)[p] }catch(err){ pestOk=false } }
                 return (n===""||r.n===n) && (d===""||r.d===d) && (t===""||r.tn===t) && (k===""||r.kt===k) && pestOk && (!s||r.t>=s) && (!e||r.t<=e);
             });
+            if(source === 'n' || !source) {
+                const dataD = mData.filter(r => n === "" || r.n === n);
+                updateDropdown('selDaerah', [...new Set(dataD.map(x=>x.d).filter(x=>x))].sort(), d);
+            }
+            if(source === 'd' || source === 'n' || !source) {
+                const dataT = mData.filter(r => (n===""||r.n===n) && (d===""||r.d===d));
+                updateDropdown('selTanaman', [...new Set(dataT.map(x=>x.tn).filter(x=>x))].sort(), t);
+            }
+            if(source === 't' || source === 'd' || source === 'n' || !source) {
+                const dataRest = mData.filter(r => (n===""||r.n===n) && (d===""||r.d===d) && (t===""||r.tn===t));
+                updateDropdown('selKategori', [...new Set(dataRest.map(x=>x.kt).filter(x=>x))].sort(), k);
+                let allPests = new Set();
+                dataRest.forEach(r => { try{ let obj=typeof r.p==='string'?JSON.parse(r.p):r.p; if(obj) Object.keys(obj).forEach(x=>allPests.add(x)) }catch(e){} });
+                updateDropdown('selPerosak', [...allPests].sort(), p);
+            }
             pg = 1; calcUI();
         }
         function updateDropdown(id, list, curVal) {
@@ -493,7 +485,8 @@
         function v(id){ return document.getElementById(id).value; }
         function fillSel(id, arr) { updateDropdown(id, arr, ""); }
         function resetFilter(){ document.querySelectorAll('select:not(:disabled), input[type=date]').forEach(e=>e.value=""); runFilter('n'); }
-        function calcUI() { /* Logic sama seperti sebelum ini */ 
+        
+        function calcUI() {
             let tt=0, ts=0, pm={}, km={1:0,2:0,3:0,4:0,5:0}, pts=[], hData={};
             fData.forEach(d => {
                 tt += (d.lt||0); ts += (d.ls||0);
@@ -505,8 +498,76 @@
             document.getElementById('k1').innerText = tt.toLocaleString(); document.getElementById('k2').innerText = ts.toLocaleString();
             document.getElementById('k3').innerText = tt>0 ? ((ts/tt)*100).toFixed(1)+"%" : "0%";
             document.getElementById('k4').innerText = fData.length.toLocaleString();
-            // ... (Panggil chart, map, summary dll) ...
+            
+            updateCharts(pm, km); updateMap(pts); updateHotspot(hData); genSummary(pm, tt, ts); renTab();
         } 
+
+        function genSummary(pm, tt, ts) {
+            const el = document.getElementById('smartSummary');
+            if (!el) return;
+            if (ts === 0 || fData.length === 0) {
+                el.innerHTML = `<div class="d-flex align-items-center"><div class="bg-light rounded-circle p-3 me-3 text-secondary"><i class="bi bi-robot fs-2"></i></div><div><h6 class="text-primary fw-bold mb-1">Analisis Pintar</h6><span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Tiada rekod serangan dilaporkan setakat ini.</span></div></div>`;
+                return;
+            }
+            let locGroups = {};
+            fData.forEach(d => {
+                const locKey = d.l; const ls = parseFloat(d.ls) || 0; const lt = parseFloat(d.lt) || 0;
+                if (ls > 0) {
+                    if (!locGroups[locKey]) { locGroups[locKey] = { name: locKey, negeri: d.n, daerah: d.d, totalLS: 0, totalLT: 0, crops: {}, pests: {}, severitySum: 0, count: 0 }; }
+                    let g = locGroups[locKey]; g.totalLS += ls; g.totalLT += lt; g.count++; g.severitySum += (parseInt(d.k) || 0); g.crops[d.tn] = (g.crops[d.tn] || 0) + ls;
+                    try { let pObj = typeof d.p === 'string' ? JSON.parse(d.p) : d.p; if (pObj) Object.entries(pObj).forEach(([pN, pA]) => g.pests[pN] = (g.pests[pN] || 0) + (parseFloat(pA)||0)); } catch (e) {}
+                }
+            });
+            const sortedLocs = Object.values(locGroups).sort((a, b) => b.totalLS - a.totalLS);
+            if (sortedLocs.length === 0) { el.innerHTML = "Data tidak mencukupi."; return; }
+            const topLoc = sortedLocs[0];
+            const topCropEntry = Object.entries(topLoc.crops).sort((a,b) => b[1] - a[1])[0]; const topCrop = topCropEntry ? topCropEntry[0] : "Tanaman";
+            const topPestEntry = Object.entries(topLoc.pests).sort((a,b) => b[1] - a[1])[0]; const topPest = topPestEntry ? topPestEntry[0] : "Perosak";
+            const avgSev = topLoc.count > 0 ? (topLoc.severitySum / topLoc.count).toFixed(1) : "0.0";
+            let score = parseFloat(avgSev), sevText = "Rendah", sevColor = "#22c55e";
+            if (score >= 4.5) { sevText = "Sangat Teruk"; sevColor = "#ef4444"; } else if (score >= 4.0) { sevText = "Teruk"; sevColor = "#f97316"; } else if (score >= 3.0) { sevText = "Sederhana"; sevColor = "#eab308"; } else if (score >= 2.0) { sevText = "Rendah"; sevColor = "#84cc16"; }
+            let locPct = topLoc.totalLT > 0 ? ((topLoc.totalLS / topLoc.totalLT) * 100).toFixed(2) : "0.00";
+            el.innerHTML = `<div class="d-flex align-items-start"><div class="d-none d-sm-flex bg-white shadow-sm border rounded-circle p-3 me-4 align-items-center justify-content-center" style="width: 60px; height: 60px; flex-shrink: 0;"><i class="bi bi-robot fs-3 text-primary"></i></div><div style="flex-grow: 1;"><h6 class="text-primary fw-bold mb-3">Analisis Pintar</h6><div class="mb-2" style="font-size: 0.95rem;"><i class="bi bi-geo-alt-fill text-danger me-2"></i> Lokasi Hotspot: <b class="text-uppercase text-dark">${topLoc.daerah}, ${topLoc.negeri}</b></div><div class="mb-2" style="font-size: 0.95rem; line-height: 1.5;"><i class="bi bi-flower1 text-success me-2"></i> Tanaman <b class="text-uppercase text-dark">${topCrop}</b> paling terkesan akibat serangan <b class="text-uppercase text-dark">${topPest}</b></div><div class="mb-2" style="font-size: 0.95rem;"><i class="bi bi-exclamation-circle-fill text-warning me-2"></i> Luas Serangan: <b class="text-dark">${topLoc.totalLS.toFixed(2)} Ha</b> <span class="text-muted">(${locPct}%)</span></div><div style="font-size: 0.95rem;"><i class="bi bi-bar-chart-fill me-2" style="color: ${sevColor}"></i> Indeks Keterukan: <b class="text-dark">${avgSev}</b> - <span style="color: ${sevColor}; font-weight: bold;">${sevText}</span></div></div></div>`;
+        }
+
+        function updateCharts(pm, km) { const tp = Object.entries(pm).sort((a,b)=>b[1]-a[1]).slice(0,10); if(charts.b) charts.b.destroy(); charts.b = new Chart(document.getElementById('cBar'), { type: 'bar', data: { labels: tp.map(x=>x[0]), datasets: [{ label: 'Ha', data: tp.map(x=>x[1]), backgroundColor: '#10b981', borderRadius:4 }] }, options: { indexAxis: 'y', maintainAspectRatio: false, plugins:{legend:{display:false}} } }); if(charts.p) charts.p.destroy(); charts.p = new Chart(document.getElementById('cPie'), { type: 'doughnut', data: { labels: ['T1','T2','T3','T4','T5'], datasets: [{ data: Object.values(km), backgroundColor: ['#22c55e','#84cc16','#eab308','#f97316','#ef4444'], borderWidth:0 }] }, options: { maintainAspectRatio: false, plugins:{legend:{position:'right'}} } }); }
+        
+        function updateMap(pts) { 
+            if(layer) map.removeLayer(layer); 
+            if(pts.length) { 
+                const markers = pts.map(item => {
+                    const p = item.coord; 
+                    const d = item.data;  
+                    let pestHTML = "";
+                    let pestObj = {};
+                    try { pestObj = typeof d.p === 'string' ? JSON.parse(d.p) : d.p; } catch(e) { pestObj = {}; }
+                    if (pestObj && Object.keys(pestObj).length > 0) {
+                        pestHTML = `<div style="margin-top:5px; border-top:1px dashed #ccc; padding-top:5px;"><small class="fw-bold text-muted">PERINCIAN PEROSAK:</small><ul style="padding-left: 15px; margin-bottom: 0; font-size: 0.8rem;">`;
+                        Object.entries(pestObj).forEach(([nama, luas]) => { pestHTML += `<li>${nama}: <b class="text-danger">${parseFloat(luas).toFixed(2)} Ha</b></li>`; });
+                        pestHTML += `</ul></div>`;
+                    } else { pestHTML = `<div class="mt-2 text-muted small fst-italic">- Tiada data perosak terperinci -</div>`; }
+                    const popupContent = `<div style="font-family: sans-serif; font-size: 0.85rem; min-width: 200px;"><div style="background-color: #f8f9fa; padding: 5px; border-bottom: 1px solid #ddd; margin-bottom: 5px;"><b class="text-success text-uppercase">${d.tn}</b></div><div class="mb-1"><i class="bi bi-geo-alt-fill text-danger"></i> <b>${d.l}</b><br><span class="text-muted small">${d.d}, ${d.n}</span></div><div class="d-flex justify-content-between bg-light border rounded p-1 mb-2" style="font-size: 0.8rem;"><div><span class="d-block text-muted" style="font-size:0.7rem">LUAS TANAM</span><b>${d.lt.toFixed(2)} Ha</b></div><div class="text-end border-start ps-2"><span class="d-block text-muted" style="font-size:0.7rem">JUMLAH SERANGAN</span><b class="text-danger">${d.ls.toFixed(2)} Ha</b></div></div>${pestHTML}<div class="text-end mt-2"><small class="text-muted" style="font-size: 0.7rem;">Tarikh: ${d.t}</small></div></div>`;
+                    const marker = L.circleMarker(p, { radius: 6, color: 'white', weight: 1, fillColor: '#dc2626', fillOpacity: 0.8 });
+                    marker.bindPopup(popupContent);
+                    marker.bindTooltip(`<b>${d.tn}</b>: ${d.l}`, { direction: 'top', offset: [0, -5], opacity: 0.9 });
+                    return marker;
+                });
+                layer = L.layerGroup(markers).addTo(map); 
+                map.fitBounds(L.latLngBounds(pts.map(x => x.coord))); 
+            } 
+        }
+
+        function updateHotspot(hData) { const s = Object.entries(hData).sort((a,b)=>b[1]-a[1]).slice(0,5); document.getElementById('hotspotTable').innerHTML = s.length ? s.map(x=>`<tr><td>${x[0]}</td><td class="text-end fw-bold text-danger">${x[1].toFixed(2)}</td></tr>`).join('') : '<tr><td colspan="2" class="text-center text-muted">Tiada Data</td></tr>'; }
+        
+        function renTab() { 
+            const st = (pg-1)*pSize; 
+            const dt = fData.slice(st, st+pSize); 
+            document.getElementById('tBody').innerHTML = dt.length ? dt.map((d, i) => {
+                const realIndex = st + i;
+                return `<tr onclick="viewRec(${realIndex})" style="cursor: pointer;" title="Klik untuk lihat butiran"><td>${d.t}</td><td>${d.n}</td><td>${d.l}</td><td><span class="badge bg-light text-dark border">${d.tn}</span></td><td>${d.lt.toFixed(2)}</td><td class="text-danger fw-bold">${d.ls.toFixed(2)}</td></tr>`;
+            }).join('') : '<tr><td colspan="6" class="text-center text-muted p-4">Tiada rekod.</td></tr>'; 
+            document.getElementById('pgInfo').innerText = `Page ${pg}`; 
+        }        
 
         // --- LOAD TASKS & PENDING (SIMPAN HEADER GLOBAL) ---
         async function loadMyTasks() {
@@ -586,6 +647,59 @@
             if(!task) { alert("Data tidak dijumpai."); return; }
             renderEditForm(task.row, task.data);
         }
+
+        // --- [VIEW MODAL] FUNGSI UNTUK VIEW DASHBOARD (YANG HILANG TADI) ---
+        function viewRec(idx) {
+            const d = fData[idx]; if (!d) return;
+            const cleanImg = (raw) => { if (!raw) return []; let str = String(raw).trim().replace(/[\[\]"'\\]/g, ''); return str.split(',').map(l => l.trim()).filter(l => l.toLowerCase().startsWith('http')); };
+            let pestRows = "";
+            if (d.p && Object.keys(d.p).length > 0) { Object.keys(d.p).forEach(k => { let luasVal = d.p[k], pctVal = (d.pp && d.pp[k]) ? d.pp[k] : 0, sevVal = (d.pk && d.pk[k]) ? d.pk[k] : 0, level = parseInt(sevVal) || 0; let badgeColor = level < 3 ? 'success' : (level < 4 ? 'warning' : 'danger'); pestRows += `<tr><td style="font-size:0.85rem" class="text-uppercase">${k}</td><td class="text-center fw-bold">${parseFloat(luasVal).toFixed(2)}</td><td class="text-center small">${pctVal}%</td><td class="text-center"><span class="badge bg-${badgeColor}">T${level}</span></td></tr>`; }); } else { pestRows = `<tr><td colspan="4" class="text-center text-muted small">Tiada Data Terperinci</td></tr>`; }
+            const imgLinks = cleanImg(d.im);
+            let imgHTML = imgLinks.length > 0 ? `<div class="mt-3 pt-2 border-top"><h6 class="fw-bold text-secondary small mb-2 text-uppercase"><i class="bi bi-paperclip me-1"></i> LAMPIRAN GAMBAR</h6><div class="d-flex flex-wrap gap-2">` + imgLinks.map((lnk,i)=>`<a href="${lnk}" target="_blank" class="btn btn-sm btn-outline-primary bg-white shadow-sm text-truncate fw-bold" style="max-width:140px;"><i class="bi bi-image me-1"></i> Gambar ${i+1}</a>`).join('') + `</div></div>` : `<div class="mt-3 pt-2 border-top"><small class="text-muted fst-italic text-uppercase"><i class="bi bi-slash-circle me-1"></i> TIADA GAMBAR</small></div>`;
+            let adminBtns = "";
+            if (uProf.role === "ADMIN") { adminBtns = `<div class="border-top pt-3 mt-3 d-flex justify-content-between gap-2"><button onclick="enableEditMode(${d.id})" class="btn btn-outline-primary btn-sm flex-grow-1"><i class="bi bi-pencil-square me-1"></i> KEMASKINI</button><button onclick="doDeleteRec(${d.id})" class="btn btn-outline-danger btn-sm flex-grow-1"><i class="bi bi-trash-fill me-1"></i> PADAM</button></div>`; }
+
+            const html = `
+            <div class="verify-card bg-white rounded-3 shadow-sm border h-100 position-relative">
+                <div class="p-3 border-bottom bg-light d-flex justify-content-between align-items-start">
+                    <div><div class="fw-bold text-uppercase text-dark">${d.pg}</div><div class="small text-muted fst-italic">${d.em}</div></div>
+                    <span class="badge bg-success text-white shadow-sm">DISAHKAN</span>
+                </div>
+                <div class="p-3 pb-0">
+                    <div id="view_info_${d.id}">
+                        <h6 class="fw-bold text-success mb-3 small border-bottom pb-2 text-uppercase"><i class="bi bi-info-circle-fill me-1"></i> LOKASI & TANAMAN</h6>
+                        <div class="row g-2 mb-1" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">TARIKH BANCIAN:</div><div class="col-8 fw-bold text-primary">${d.t}</div></div>
+                        <div class="row g-2 mb-1" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">NEGERI:</div><div class="col-8 fw-bold text-dark">${d.n}</div></div>
+                        <div class="row g-2 mb-1" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">DAERAH:</div><div class="col-8 fw-bold text-dark">${d.d}</div></div>
+                        <div class="row g-2 mb-1" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">LOKASI:</div><div class="col-8 fw-bold text-dark">${d.l}</div></div>
+                        <div class="row g-2 mb-1" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">KOORDINAT:</div><div class="col-8 font-monospace text-muted small">${d.c}</div></div>
+                        <hr class="my-2 text-muted opacity-25">
+                        <div class="row g-2 mb-1" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">KATEGORI TANAMAN:</div><div class="col-8 fw-bold text-dark text-uppercase">${d.kt || "-"}</div></div>
+                        <div class="row g-2 mb-1" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">TANAMAN:</div><div class="col-8 fw-bold text-success">${d.tn}</div></div>
+                        <div class="row g-2 mb-1" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">VARIETI:</div><div class="col-8 text-uppercase">${d.vr}</div></div>
+                        <div class="row g-2 mb-1" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">UMUR TANAMAN:</div><div class="col-8 text-uppercase">${d.um || "-"}</div></div>
+                        <div class="row g-2 mb-3" style="font-size:0.9rem"><div class="col-4 fw-bold text-secondary">LUAS TANAMAN:</div><div class="col-8 text-dark">${d.lt.toFixed(2)} HA</div></div>
+                    </div>
+                    <div id="edit_mode_${d.id}" style="display:none;" class="bg-light p-3 rounded border mb-3">
+                        <div class="text-center text-muted">Sila gunakan fungsi 'Tugasan Saya' atau Admin panel.</div>
+                        <button onclick="cancelEdit(${d.id})" class="btn btn-secondary btn-sm w-100">Tutup</button>
+                    </div>
+                </div>
+                <div class="px-3" id="view_pest_${d.id}">
+                    <h6 class="fw-bold text-success mb-2 small text-uppercase"><i class="bi bi-bug-fill me-1"></i> DATA SERANGAN</h6>
+                    <div class="table-responsive border rounded mb-2"><table class="table table-sm table-striped mb-0" style="font-size:0.8rem"><thead class="table-light"><tr><th>PEROSAK</th><th class="text-center">LUAS SERANGAN(HA)</th><th class="text-center">PERATUS SERANGAN</th><th class="text-center">KETERUKAN SERANGAN</th></tr></thead><tbody>${pestRows}</tbody></table></div>
+                    <div class="alert alert-warning border-warning mb-0 py-2 px-3 small"><i class="bi bi-lightbulb-fill text-warning me-1"></i> <strong>SYOR:</strong> ${d.s}</div>${imgHTML}
+                </div>
+                <div class="p-3 mt-auto"><div class="bg-success bg-opacity-10 border border-success rounded p-2 text-center"><small class="text-success fw-bold text-uppercase mb-1 d-block">DISAHKAN OLEH:</small><div class="text-dark small fw-bold">${d.vb}</div></div>${adminBtns}</div>
+            </div>`;
+            document.getElementById('detailBody').innerHTML = html;
+            document.getElementById('modalTitle').innerText = "BUTIRAN REKOD DISAHKAN";
+            new bootstrap.Modal(document.getElementById('detailModal')).show();
+        }
+        function enableEditMode(id) { document.getElementById(`view_info_${id}`).style.display = 'none'; document.getElementById(`view_pest_${id}`).style.display = 'none'; document.getElementById(`edit_mode_${id}`).style.display = 'block'; }
+        function cancelEdit(id) { document.getElementById(`view_info_${id}`).style.display = 'block'; document.getElementById(`view_pest_${id}`).style.display = 'block'; document.getElementById(`edit_mode_${id}`).style.display = 'none'; }
+        async function doDeleteRec(rowID) { if(!confirm("Padam rekod ini?")) return; const btn = event.target.closest('button'); btn.innerHTML='...'; btn.disabled=true; const r = await postData('deleteEntry', {row:rowID}); alert(r.message); if(r.success) location.reload(); }
+        function movePg(v) { pg = Math.max(1, pg+v); renTab(); }
 
         // --- FILE HANDLE ---
         function handleFileSelect(input) {
