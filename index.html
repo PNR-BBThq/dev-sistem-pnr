@@ -441,16 +441,38 @@
         }
 
         // --- DASHBOARD FUNCTIONS ---
-        async function initDash() {
-            const d = await postData('getAnalytics', {state: uProf.state}); 
-            if(!d.records) { return; }
-            mData = d.records; 
-            const currentN = document.getElementById('selNegeri').value;
-            fillSel('selNegeri', mData.map(d => d.n).filter((v, i, a) => a.indexOf(v) === i).sort()); 
-            if(currentN) document.getElementById('selNegeri').value = currentN;
-            if(uProf.state !== "ALL") { const s = document.getElementById('selNegeri'); s.value = uProf.state; s.disabled = true; }
-            runFilter('n');
+       // --- KEMASKINI 2: INISIALISASI DASHBOARD ---
+async function initDash() {
+    // Tunjuk spinner
+    document.getElementById('smartSummary').innerHTML = '<div class="d-flex align-items-center"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Sedang menganalisis data...</div>';
+    
+    const d = await postData('getAnalytics', {state: uProf.state}); 
+    if(!d.records) { 
+        document.getElementById('smartSummary').innerText = "Tiada data ditemui.";
+        return; 
+    }
+    
+    mData = d.records; 
+    
+    // Setup Filter Dropdown
+    const currentN = document.getElementById('selNegeri').value;
+    fillSel('selNegeri', mData.map(d => d.n).filter((v, i, a) => a.indexOf(v) === i).sort()); 
+    if(currentN) document.getElementById('selNegeri').value = currentN;
+    if(uProf.state !== "ALL") { const s = document.getElementById('selNegeri'); s.value = uProf.state; s.disabled = true; }
+    
+    // --- PENTING: CIPTA PETA JIKA BELUM ADA ---
+    try {
+        if(!map) { 
+            map = L.map('map').setView([4.2105, 101.9758], 6); 
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map); 
         }
+    } catch(e) {
+        console.error("Gagal initialize peta:", e);
+    }
+    // -----------------------------------------
+
+    runFilter('n');
+}
         function runFilter(source) {
             const n=v('selNegeri'), d=v('selDaerah'), t=v('selTanaman'), p=v('selPerosak'), k=v('selKategori'), s=v('dS'), e=v('dE');
             fData = mData.filter(r => { 
@@ -527,31 +549,45 @@
         }
         function updateCharts(pm, km) { const tp = Object.entries(pm).sort((a,b)=>b[1]-a[1]).slice(0,10); if(charts.b) charts.b.destroy(); charts.b = new Chart(document.getElementById('cBar'), { type: 'bar', data: { labels: tp.map(x=>x[0]), datasets: [{ label: 'Ha', data: tp.map(x=>x[1]), backgroundColor: '#10b981', borderRadius:4 }] }, options: { indexAxis: 'y', maintainAspectRatio: false, plugins:{legend:{display:false}} } }); if(charts.p) charts.p.destroy(); charts.p = new Chart(document.getElementById('cPie'), { type: 'doughnut', data: { labels: ['T1','T2','T3','T4','T5'], datasets: [{ data: Object.values(km), backgroundColor: ['#22c55e','#84cc16','#eab308','#f97316','#ef4444'], borderWidth:0 }] }, options: { maintainAspectRatio: false, plugins:{legend:{position:'right'}} } }); }
         
-        function updateMap(pts) { 
-            if(layer) map.removeLayer(layer); 
-            if(pts.length) { 
-                const markers = pts.map(item => {
-                    const p = item.coord; 
-                    const d = item.data;  
-                    let pestHTML = "";
-                    let pestObj = {};
-                    try { pestObj = typeof d.p === 'string' ? JSON.parse(d.p) : d.p; } catch(e) { pestObj = {}; }
-                    if (pestObj && Object.keys(pestObj).length > 0) {
-                        pestHTML = `<div style="margin-top:5px; border-top:1px dashed #ccc; padding-top:5px;"><small class="fw-bold text-muted">PERINCIAN PEROSAK:</small><ul style="padding-left: 15px; margin-bottom: 0; font-size: 0.8rem;">`;
-                        Object.entries(pestObj).forEach(([nama, luas]) => { pestHTML += `<li>${nama}: <b class="text-danger">${parseFloat(luas).toFixed(2)} Ha</b></li>`; });
-                        pestHTML += `</ul></div>`;
-                    } else { pestHTML = `<div class="mt-2 text-muted small fst-italic">- Tiada data perosak terperinci -</div>`; }
-                    const popupContent = `<div style="font-family: sans-serif; font-size: 0.85rem; min-width: 200px;"><div style="background-color: #f8f9fa; padding: 5px; border-bottom: 1px solid #ddd; margin-bottom: 5px;"><b class="text-success text-uppercase">${d.tn}</b></div><div class="mb-1"><i class="bi bi-geo-alt-fill text-danger"></i> <b>${d.l}</b><br><span class="text-muted small">${d.d}, ${d.n}</span></div><div class="d-flex justify-content-between bg-light border rounded p-1 mb-2" style="font-size: 0.8rem;"><div><span class="d-block text-muted" style="font-size:0.7rem">LUAS TANAM</span><b>${d.lt.toFixed(2)} Ha</b></div><div class="text-end border-start ps-2"><span class="d-block text-muted" style="font-size:0.7rem">JUMLAH SERANGAN</span><b class="text-danger">${d.ls.toFixed(2)} Ha</b></div></div>${pestHTML}<div class="text-end mt-2"><small class="text-muted" style="font-size: 0.7rem;">Tarikh: ${d.t}</small></div></div>`;
-                    const marker = L.circleMarker(p, { radius: 6, color: 'white', weight: 1, fillColor: '#dc2626', fillOpacity: 0.8 });
-                    marker.bindPopup(popupContent);
-                    marker.bindTooltip(`<b>${d.tn}</b>: ${d.l}`, { direction: 'top', offset: [0, -5], opacity: 0.9 });
-                    return marker;
-                });
-                layer = L.layerGroup(markers).addTo(map); 
-                map.fitBounds(L.latLngBounds(pts.map(x => x.coord))); 
-            } 
-        }
+     // --- KEMASKINI 3: CEGAH ERROR JIKA PETA TIADA ---
+function updateMap(pts) { 
+    // SAFETY CHECK: Kalau peta tak wujud, jangan buat apa-apa (elak crash)
+    if (!map) return; 
 
+    if(layer) map.removeLayer(layer); 
+    
+    if(pts.length) { 
+        const markers = pts.map(item => {
+            const p = item.coord; 
+            const d = item.data;  
+            let pestHTML = "";
+            let pestObj = {};
+            try { pestObj = typeof d.p === 'string' ? JSON.parse(d.p) : d.p; } catch(e) { pestObj = {}; }
+            
+            if (pestObj && Object.keys(pestObj).length > 0) {
+                pestHTML = `<div style="margin-top:5px; border-top:1px dashed #ccc; padding-top:5px;"><small class="fw-bold text-muted">PERINCIAN PEROSAK:</small><ul style="padding-left: 15px; margin-bottom: 0; font-size: 0.8rem;">`;
+                Object.entries(pestObj).forEach(([nama, luas]) => { pestHTML += `<li>${nama}: <b class="text-danger">${parseFloat(luas).toFixed(2)} Ha</b></li>`; });
+                pestHTML += `</ul></div>`;
+            } else { 
+                pestHTML = `<div class="mt-2 text-muted small fst-italic">- Tiada data perosak terperinci -</div>`; 
+            }
+            
+            const popupContent = `<div style="font-family: sans-serif; font-size: 0.85rem; min-width: 200px;"><div style="background-color: #f8f9fa; padding: 5px; border-bottom: 1px solid #ddd; margin-bottom: 5px;"><b class="text-success text-uppercase">${d.tn}</b></div><div class="mb-1"><i class="bi bi-geo-alt-fill text-danger"></i> <b>${d.l}</b><br><span class="text-muted small">${d.d}, ${d.n}</span></div><div class="d-flex justify-content-between bg-light border rounded p-1 mb-2" style="font-size: 0.8rem;"><div><span class="d-block text-muted" style="font-size:0.7rem">LUAS TANAM</span><b>${d.lt.toFixed(2)} Ha</b></div><div class="text-end border-start ps-2"><span class="d-block text-muted" style="font-size:0.7rem">JUMLAH SERANGAN</span><b class="text-danger">${d.ls.toFixed(2)} Ha</b></div></div>${pestHTML}<div class="text-end mt-2"><small class="text-muted" style="font-size: 0.7rem;">Tarikh: ${d.t}</small></div></div>`;
+            
+            const marker = L.circleMarker(p, { radius: 6, color: 'white', weight: 1, fillColor: '#dc2626', fillOpacity: 0.8 });
+            marker.bindPopup(popupContent);
+            marker.bindTooltip(`<b>${d.tn}</b>: ${d.l}`, { direction: 'top', offset: [0, -5], opacity: 0.9 });
+            return marker;
+        });
+        
+        layer = L.layerGroup(markers).addTo(map); 
+        
+        // Auto-zoom ke lokasi marker
+        if (markers.length > 0) {
+            try { map.fitBounds(L.latLngBounds(pts.map(x => x.coord))); } catch(e){}
+        }
+    } 
+}
         function updateHotspot(hData) { const s = Object.entries(hData).sort((a,b)=>b[1]-a[1]).slice(0,5); document.getElementById('hotspotTable').innerHTML = s.length ? s.map(x=>`<tr><td>${x[0]}</td><td class="text-end fw-bold text-danger">${x[1].toFixed(2)}</td></tr>`).join('') : '<tr><td colspan="2" class="text-center text-muted">Tiada Data</td></tr>'; }
         
         function renTab() { 
