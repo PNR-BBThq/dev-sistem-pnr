@@ -716,7 +716,7 @@ async function loadMasterData() {
                 <h6 class="text-primary border-bottom pb-2 mt-3">B. Tanaman (Dependent)</h6>
                 <div class="row g-2 mb-2">
                     <div class="col-6"><label class="small fw-bold">Kategori</label><select id="fe_kategori" class="form-select form-select-sm" onchange="updateTanamanList()"><option value="">- Pilih -</option>${Object.keys(pestMasterData).sort().map(k => `<option value="${k}">${k}</option>`).join('')}</select></div>
-                    <div class="col-6"><label class="small fw-bold">Tanaman</label><select id="fe_tanaman" class="form-select form-select-sm" onchange="updatePestRowsOnCropChange()">
+                    <div class="col-6"><label class="small fw-bold">Tanaman</label><select id="fe_tanaman" class="form-select form-select-sm" onchange="updatePestRowsOnCropChange()"><option value="">- Pilih Kategori Dulu -</option></select></div>
                 </div>
                 <div class="row g-2 mb-2">
                     <div class="col-6"><label class="small fw-bold">Varieti</label><input type="text" id="fe_varieti" class="form-control form-control-sm" value="${getV('VARIETI')}"></div>
@@ -803,7 +803,7 @@ async function loadMasterData() {
 
         function resetPestTable() {}
 
-     // --- 1. DAPATKAN LIST PEROSAK DARI DOM ---
+      // --- 1. DAPATKAN LIST PEROSAK DARI DOM ---
         function getPestListForCurrentCrop() {
             const kat = document.getElementById('fe_kategori').value;
             const tan = document.getElementById('fe_tanaman').value;
