@@ -36,8 +36,11 @@
     <div id="alertArea"></div> 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="text-success m-0">🌱 Borang Pemantauan</h3>
-        <span class="badge bg-secondary" id="queueBadge" style="display:none">0 Pending</span>
-    </div>
+       <div id="queueBadge" style="display:none">
+    <button type="button" class="btn btn-warning btn-sm fw-bold" onclick="syncOfflineData()">
+        <i class="bi bi-cloud-upload"></i> Sync Sekarang (<span id="qCount">0</span>)
+    </button>
+</div>
     
     <form id="monitorForm" onsubmit="handleFormSubmit(event)">
       
@@ -186,6 +189,10 @@
         checkConnectivity();
         loadDropdowns();
         addPerosakField(); 
+      // --- TAMBAHAN BARU: MINTA IZIN NOTIFICATION ---
+        if ('Notification' in window && Notification.permission !== 'granted') {
+            Notification.requestPermission();
+        }
     };
 
     window.addEventListener('online', () => { checkConnectivity(); syncOfflineData(); });
@@ -567,8 +574,14 @@
     function updateQueueBadge() {
         let q = JSON.parse(localStorage.getItem('pnr_queue') || "[]");
         const b = document.getElementById('queueBadge');
-        if(q.length > 0) { b.style.display = 'block'; b.innerText = `${q.length} Pending Sync`; } 
-        else { b.style.display = 'none'; }
+        const c = document.getElementById('qCount');
+        
+        if(q.length > 0) { 
+            b.style.display = 'block'; 
+            c.innerText = q.length; // Update nombor
+        } else { 
+            b.style.display = 'none'; 
+        }
     }
 
     async function syncOfflineData() {
@@ -586,11 +599,29 @@
             } catch (e) { newQ.push(item); }
         }
 
-        localStorage.setItem('pnr_queue', JSON.stringify(newQ));
+      localStorage.setItem('pnr_queue', JSON.stringify(newQ));
         updateQueueBadge();
         
         if (newQ.length === 0) {
+            // 1. Popup dalam app
             Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, title: 'Semua data offline berjaya dihantar!', icon: 'success' });
+            
+            // 2. Bunyikan Notification di System Tray (Push Notification)
+            hantarNotification(); 
+        }
+    }
+
+    // --- FUNGSI PUSH NOTIFICATION ---
+     function hantarNotification() {
+        if (Notification.permission === 'granted') {
+            navigator.serviceWorker.ready.then(function(registration) {
+                registration.showNotification('Sistem PNR Digital', {
+                    body: '✅ Tahniah! Semua data offline telah berjaya disinkronasi ke server.',
+                    icon: 'icon-192.png', // Pastikan nama icon betul
+                    vibrate: [200, 100, 200], // Getar: Bzz-Bz-Bzz
+                    tag: 'sync-complete'
+                });
+            });
         }
     }
 
