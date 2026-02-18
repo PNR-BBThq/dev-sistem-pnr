@@ -475,30 +475,90 @@
         }
 
 
-       async function initDash() {
-            // Cek offline dulu
-            if (!navigator.onLine) {
-                document.getElementById('smartSummary').innerHTML = '<div class="alert alert-warning"><i class="bi bi-wifi-off"></i> Tiada Internet. Paparan Dashboard tidak dapat dikemaskini.</div>';
-                // Kalau ada cache lama dalam variable mData, mungkin boleh guna, tapi buat masa ni kita stop sini.
-                
-                // SETUP MAP (Walaupun offline, setup frame dulu)
-                if(!map) { map = L.map('map').setView([4.2105, 101.9758], 6); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map); }
-                return;
+       // --- FUNGSI UTAMA DASHBOARD (OFFLINE + ONLINE HYBRID) ---
+        async function initDash() {
+            // 1. CUBA BACA DATA DARI CACHE DULU (Supaya user tak nampak kosong)
+            const cachedRaw = localStorage.getItem('pnr_dashboard_data');
+            const cachedTime = localStorage.getItem('pnr_dashboard_time');
+
+            if (cachedRaw) {
+                console.log("Memuatkan data offline...");
+                try {
+                    mData = JSON.parse(cachedRaw);
+                    
+                    // Setup dropdown negeri dari cache
+                    const currentN = document.getElementById('selNegeri').value;
+                    fillSel('selNegeri', mData.map(d => d.n).filter((v, i, a) => a.indexOf(v) === i).sort());
+                    if(currentN) document.getElementById('selNegeri').value = currentN;
+                    if(uProf.state !== "ALL") { const s = document.getElementById('selNegeri'); s.value = uProf.state; s.disabled = true; }
+
+                    // Setup Map (Offline)
+                    if(!map) { map = L.map('map').setView([4.2105, 101.9758], 6); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map); }
+                    
+                    // Jalankan kiraan graf guna data cache
+                    runFilter('n'); 
+                    
+                    // Update label masa
+                    updateLastUpdateLabel(cachedTime, false); 
+
+                } catch (e) { console.error("Cache rosak", e); }
+            } else {
+                 // Kalau tak ada cache langsung, tunjuk loading
+                 document.getElementById('smartSummary').innerHTML = '<div class="d-flex align-items-center"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Sedang menganalisis data...</div>';
             }
 
-            document.getElementById('smartSummary').innerHTML = '<div class="d-flex align-items-center"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Sedang menganalisis data...</div>';
-            const d = await postData('getAnalytics', {state: uProf.state}); 
-            if(!d.records) { document.getElementById('smartSummary').innerText="Tiada data."; return; }
-            mData = d.records; 
-            const currentN = document.getElementById('selNegeri').value;
-            fillSel('selNegeri', mData.map(d => d.n).filter((v, i, a) => a.indexOf(v) === i).sort()); 
-            if(currentN) document.getElementById('selNegeri').value = currentN;
-            if(uProf.state !== "ALL") { const s = document.getElementById('selNegeri'); s.value = uProf.state; s.disabled = true; }
-            
-            // Fix Map Initialization
-            if(!map) { map = L.map('map').setView([4.2105, 101.9758], 6); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map); }
-            
-            runFilter('n');
+            // 2. CEK INTERNET: KALAU ADA, TARIK DATA BARU
+            if (navigator.onLine) {
+                try {
+                    const d = await postData('getAnalytics', {state: uProf.state}); 
+                    
+                    if(d.records) {
+                        mData = d.records; // Update variable utama
+                        
+                        // SIMPAN KE CACHE (Update data dalam telefon)
+                        localStorage.setItem('pnr_dashboard_data', JSON.stringify(mData));
+                        const now = new Date().toLocaleString('en-MY', { hour12: true });
+                        localStorage.setItem('pnr_dashboard_time', now);
+                        
+                        // Setup dropdown semula (kalau ada negeri baru)
+                        const currentN = document.getElementById('selNegeri').value;
+                        fillSel('selNegeri', mData.map(d => d.n).filter((v, i, a) => a.indexOf(v) === i).sort()); 
+                        if(currentN) document.getElementById('selNegeri').value = currentN;
+                        if(uProf.state !== "ALL") { const s = document.getElementById('selNegeri'); s.value = uProf.state; s.disabled = true; }
+                        
+                        // Setup Map (Kalau belum ada)
+                        if(!map) { map = L.map('map').setView([4.2105, 101.9758], 6); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map); }
+                        
+                        // Jalankan kiraan graf guna data BARU
+                        runFilter('n');
+                        
+                        // Update label masa (Online)
+                        updateLastUpdateLabel(now, true);
+                    } else {
+                         document.getElementById('smartSummary').innerText="Tiada data dari server.";
+                    }
+                } catch (e) {
+                    console.error("Gagal tarik online", e);
+                }
+            } else {
+                // KALAU OFFLINE: Tunjuk warning
+                document.getElementById('smartSummary').innerHTML = '<div class="alert alert-warning mb-0 shadow-sm border-warning"><i class="bi bi-wifi-off-fill text-danger me-2"></i> <b>Mod Offline:</b> Memaparkan data simpanan. Sesetengah fungsi mungkin terhad.</div>';
+                
+                // Kalau tak ada cache dan tak ada internet
+                if (!cachedRaw) {
+                    document.getElementById('smartSummary').innerHTML = '<div class="alert alert-danger"><i class="bi bi-x-circle"></i> Tiada Internet & Tiada Data Simpanan. Sila sambung ke internet terlebih dahulu untuk muat turun data.</div>';
+                }
+            }
+        }
+
+        // --- FUNGSI KEMASKINI LABEL MASA ---
+        function updateLastUpdateLabel(timeStr, isOnline) {
+            const el = document.getElementById('lastUpdate');
+            if (isOnline) {
+                el.innerHTML = `<span class="text-success"><i class="bi bi-cloud-check-fill"></i> Data Terkini: ${timeStr}</span>`;
+            } else {
+                el.innerHTML = `<span class="text-danger fw-bold"><i class="bi bi-clock-history"></i> Data Offline (${timeStr || "Tiada Tarikh"})</span>`;
+            }
         }
 
         function runFilter(source) {
