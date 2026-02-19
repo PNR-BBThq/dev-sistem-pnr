@@ -9,6 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
@@ -215,7 +216,16 @@
                 <div class="d-flex justify-content-between mb-3"><h6 class="fw-bold"><i class="bi bi-table me-2"></i>Jadual Rekod</h6><small id="pgInfo" class="text-muted"></small></div>
                 <div class="table-responsive">
                     <table class="table table-sm table-hover align-middle">
-                        <thead class="table-light"><tr><th>Tarikh</th><th>Negeri</th><th>Lokasi</th><th>Tanaman</th><th>Luas Bancian</th><th>Luas Serangan</th></tr></thead>
+                       <thead class="table-light">
+    <tr>
+        <th>Tarikh</th>
+        <th>Negeri</th>
+        <th>Lokasi</th>
+        <th>Tanaman</th>
+        <th>Luas Bancian</th>
+        <th>Luas Serangan</th>
+        <th class="text-center">Tindakan</th> </tr>
+</thead>
                         <tbody id="tBody"></tbody>
                     </table>
                 </div>
@@ -639,11 +649,31 @@
         }
         function updateHotspot(hData) { const s = Object.entries(hData).sort((a,b)=>b[1]-a[1]).slice(0,5); document.getElementById('hotspotTable').innerHTML = s.length ? s.map(x=>`<tr><td>${x[0]}</td><td class="text-end fw-bold text-danger">${x[1].toFixed(2)}</td></tr>`).join('') : '<tr><td colspan="2" class="text-center text-muted">Tiada Data</td></tr>'; }
         
-        function renTab() { 
-            const st = (pg-1)*pSize; const dt = fData.slice(st, st+pSize); 
-            document.getElementById('tBody').innerHTML = dt.length ? dt.map((d, i) => { const realIndex = st + i; return `<tr onclick="viewRec(${realIndex})" style="cursor: pointer;" title="Klik untuk lihat butiran"><td>${formatDateDisplay(d.t)}</td><td>${d.n}</td><td>${d.l}</td><td><span class="badge bg-light text-dark border">${d.tn}</span></td><td>${d.lt.toFixed(2)}</td><td class="text-danger fw-bold">${d.ls.toFixed(2)}</td></tr>`; }).join('') : '<tr><td colspan="6" class="text-center text-muted p-4">Tiada rekod.</td></tr>'; 
+       function renTab() { 
+            const st = (pg-1)*pSize; 
+            const dt = fData.slice(st, st+pSize); 
+            document.getElementById('tBody').innerHTML = dt.length ? dt.map((d, i) => { 
+                const realIndex = st + i; 
+                return `
+                <tr style="cursor: pointer;" title="Klik baris untuk butiran">
+                    <td onclick="viewRec(${realIndex})">${formatDateDisplay(d.t)}</td>
+                    <td onclick="viewRec(${realIndex})">${d.n}</td>
+                    <td onclick="viewRec(${realIndex})">${d.l}</td>
+                    <td onclick="viewRec(${realIndex})"><span class="badge bg-light text-dark border">${d.tn}</span></td>
+                    <td onclick="viewRec(${realIndex})">${d.lt.toFixed(2)}</td>
+                    <td onclick="viewRec(${realIndex})" class="text-danger fw-bold">${d.ls.toFixed(2)}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-danger" title="Jana PDF" 
+                                data-lokasi="${d.l}" 
+                                data-pegawai="${d.pg}" 
+                                onclick="event.stopPropagation(); klikJanaPDF(this)">
+                            <i class="bi bi-file-earmark-pdf-fill"></i> PDF
+                        </button>
+                    </td>
+                </tr>`; 
+            }).join('') : '<tr><td colspan="7" class="text-center text-muted p-4">Tiada rekod.</td></tr>'; 
             document.getElementById('pgInfo').innerText = `Page ${pg}`; 
-        }        
+        }
 
         async function loadMyTasks() {
             const container = document.getElementById('taskContainer');
@@ -1044,6 +1074,43 @@
         async function approveAll() { if(!confirm("Sahkan SEMUA?")) return; const d = await postData('getPending', {state: uProf.state}); if(!d.rows.length) return; for (const r of d.rows) { await postData('submitVerify', {row: r.row, act: 'APPROVE', reason: 'Bulk', name: uProf.name}); } alert("Selesai"); loadPend(); initDash(); }
         async function downloadDualExcel() { if (!fData.length) { alert("Tiada data!"); return; } const workbook = new ExcelJS.Workbook(); const worksheet = workbook.addWorksheet('Laporan Penuh'); worksheet.columns = [{ header: 'ID', key: 'id', width: 6 }, { header: 'Nama Pegawai', key: 'pg', width: 25 }, { header: 'Tarikh', key: 't', width: 12 }, { header: 'Negeri', key: 'n', width: 15 }, { header: 'Daerah', key: 'd', width: 15 }, { header: 'Lokasi', key: 'l', width: 22 }, { header: 'Koordinat', key: 'c', width: 22 }, { header: 'Kategori', key: 'kt', width: 18 }, { header: 'Tanaman', key: 'tn', width: 18 }, { header: 'Luas Bancian (Ha)', key: 'lt', width: 18 }, { header: 'Perosak', key: 'p', width: 20 }, { header: 'Keterukan', key: 'k', width: 15 }, { header: 'Luas Serangan (Ha)', key: 'ls', width: 18 }, { header: '% Serangan', key: 'pct', width: 15 }, { header: 'Syor Kawalan', key: 's', width: 50 }]; worksheet.getRow(1).font = { bold: true }; worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' }; let rowIndex = 2; fData.forEach(d => { let pestEntries = (d.p && Object.keys(d.p).length > 0) ? Object.entries(d.p) : [["TIADA", 0]]; let startRow = rowIndex; let luasTanam = parseFloat(d.lt) || 0; pestEntries.forEach(([pName, pArea]) => { let luasSerang = parseFloat(pArea) || 0; let pctVal = (luasTanam > 0) ? ((luasSerang / luasTanam) * 100).toFixed(2) + '%' : "0%"; const row = worksheet.getRow(rowIndex); row.values = { id: d.id, pg: d.pg || "-", t: d.t, n: d.n, d: d.d, l: d.l, c: d.c || "-", kt: d.kt || "-", tn: d.tn, lt: luasTanam, p: pName, k: d.k, ls: luasSerang, pct: pctVal, s: d.s }; row.eachCell({ includeEmpty: true }, (cell) => { cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} }; cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }; }); rowIndex++; }); if (pestEntries.length > 1) { for (let c = 1; c <= 10; c++) { worksheet.mergeCells(startRow, c, rowIndex - 1, c); } worksheet.mergeCells(startRow, 15, rowIndex - 1, 15); } }); const buffer = await workbook.xlsx.writeBuffer(); const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }); const url = window.URL.createObjectURL(blob); const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'PNR_Laporan_Lengkap.xlsx'; anchor.click(); window.URL.revokeObjectURL(url); }
         async function dlPDF() { const btn = document.querySelector('button[onclick="dlPDF()"]'); btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Jana...'; btn.disabled = true; let dateLabel = "Terkini"; if (fData.length > 0) { const sortedDates = fData.map(d => d.t).sort(); const fmt = (d) => d.split('-').reverse().join('/'); dateLabel = fmt(sortedDates[0]) === fmt(sortedDates[sortedDates.length - 1]) ? fmt(sortedDates[0]) : `${fmt(sortedDates[0])} - ${fmt(sortedDates[sortedDates.length - 1])}`; } try { let targetName = document.getElementById('selNegeri').value; if (uProf && uProf.state === "CAMERON HIGHLANDS") { targetName = "PAHANG"; } else if (uProf && uProf.state !== "ALL") { targetName = uProf.state; } if (!targetName) targetName = "SEMUA"; const m = { user: uProf.name, negeri: targetName, dates: dateLabel }; const r = await postData('genPDF', { data: fData, meta: m }); if (r.success) { const a = document.createElement('a'); a.href = "data:application/pdf;base64," + r.base64; a.download = r.filename; a.click(); } else { alert("Gagal menjana PDF: " + r.message); } } catch (e) { console.error(e); alert("Ralat sistem semasa menjana PDF."); } btn.innerHTML = '<i class="bi bi-file-earmark-pdf"></i> PDF'; btn.disabled = false; }
+        // --- FUNGSI KLIK MUAT TURUN PDF ---
+        function klikJanaPDF(btnElement) {
+            // Cek jika tiada internet
+            if (!navigator.onLine) {
+                Swal.fire('Mod Offline', 'Harap maklum, penjanaan PDF memerlukan capaian internet.', 'warning');
+                return;
+            }
+
+            // Ambil data dari butang yang ditekan
+            const lokasi = btnElement.getAttribute('data-lokasi');
+            const pegawai = btnElement.getAttribute('data-pegawai');
+
+            // Papar loading (sebab PDF ambil masa 5-10 saat untuk proses gambar)
+            Swal.fire({
+                title: 'Menjana Laporan PDF...',
+                html: 'Sila tunggu sebentar. Memproses data & gambar...<br><br><div class="spinner-border text-success" role="status"></div>',
+                showConfirmButton: false,
+                allowOutsideClick: false
+            });
+
+            // Panggil backend
+            google.script.run
+                .withSuccessHandler(function(url) {
+                    Swal.close();
+                    if(url) {
+                        // Buka PDF di tab baru
+                        window.open(url, '_blank');
+                    } else {
+                        Swal.fire('Ralat', 'Gagal memuatkan pautan PDF.', 'error');
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    Swal.close();
+                    Swal.fire('Ralat', err.message, 'error');
+                })
+                .janaPDFBerdasarkanLokasi(lokasi, pegawai);
+        }
     </script>
 </body>
 </html>
