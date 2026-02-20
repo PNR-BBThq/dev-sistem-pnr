@@ -54,6 +54,58 @@
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; padding: 15px; }
         }
+        /* =========================================
+           MOBILE APP UI (BOTTOM NAVIGATION BAR)
+           ========================================= */
+        .mobile-bottom-nav { display: none; }
+        .mobile-overlay { display: none; }
+
+        @media (max-width: 768px) {
+            /* 1. Sembunyikan Butang Menu Atas Lama */
+            .d-md-none.mb-3 { display: none !important; }
+            
+            /* 2. Ubah Sidebar jadi "Offcanvas" (Hanya buka bila ditekan) */
+            .sidebar { 
+                transform: translateX(-100%); 
+                z-index: 1050; 
+                box-shadow: 5px 0 15px rgba(0,0,0,0.2); 
+            }
+            .sidebar.active { transform: translateX(0); }
+            
+            /* 3. Ruang bernafas untuk main content (elak tertutup dengan menu bawah) */
+            .main-content { padding: 15px; padding-bottom: 90px; margin-left: 0; }
+            
+            /* 4. Bar Navigasi Bawah (Macam App Sebenar) */
+            .mobile-bottom-nav {
+                display: flex; position: fixed; bottom: 0; left: 0; right: 0;
+                background: #ffffff; box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
+                z-index: 1040; padding: 10px 10px 15px 10px; justify-content: space-between;
+                align-items: flex-end; border-top-left-radius: 20px; border-top-right-radius: 20px;
+            }
+            .nav-bot-item {
+                text-align: center; color: #9ca3af; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+                flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+                cursor: pointer; transition: 0.3s;
+            }
+            .nav-bot-item i { font-size: 1.4rem; margin-bottom: 2px; }
+            .nav-bot-item.active { color: #064e3b; }
+            
+            /* 5. Butang Tambah Data Besar (Tengah) */
+            .nav-bot-fab {
+                background: linear-gradient(135deg, #10b981, #059669); color: white !important;
+                width: 55px; height: 55px; border-radius: 50%;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 2rem; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.4);
+                transform: translateY(-20px); border: 4px solid #f3f4f6;
+            }
+            
+            /* 6. Latar Hitam Gelap bila Filter dibuka */
+            .mobile-overlay {
+                position: fixed; top:0; left:0; right:0; bottom:0;
+                background: rgba(0,0,0,0.6); z-index: 1045; display: none;
+            }
+            .mobile-overlay.active { display: block; }
+        }
     </style>
 </head>
 <body>
@@ -298,6 +350,33 @@
         </div>
     </div>
 
+    <div class="mobile-overlay" id="mobileOverlay" onclick="toggleMobileFilter()"></div>
+
+    <div class="mobile-bottom-nav d-md-none">
+        <div class="nav-bot-item active" onclick="switchTab('main', this)">
+            <i class="bi bi-grid-1x2-fill"></i><span>Utama</span>
+        </div>
+        
+        <div class="nav-bot-item" id="mobNavTasks" onclick="switchTab('tasks', this)" style="display:none;">
+            <i class="bi bi-list-task"></i>
+            <span>Tugas</span>
+        </div>
+        
+        <div class="nav-bot-item" id="mobNavVerify" onclick="switchTab('verify', this)" style="display:none;">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Sahkan</span>
+        </div>
+        
+        <div class="nav-bot-item" onclick="switchTab('form', this)">
+            <div class="nav-bot-fab"><i class="bi bi-plus-lg"></i></div>
+            <span style="transform: translateY(-15px);">Borang</span>
+        </div>
+        
+        <div class="nav-bot-item" onclick="toggleMobileFilter()">
+            <i class="bi bi-funnel-fill"></i><span>Tapisan</span>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
@@ -399,15 +478,27 @@
             document.getElementById('uDisp').innerText = r.name; 
             document.getElementById('loginOverlay').style.display = 'none';
             
+            // Logik Paparan Navigasi berdasarkan Role
             if(["ADMIN","PENYELIA"].includes((r.role||"").toUpperCase())) { 
                 document.getElementById('navVerify').style.display = "flex"; 
+                if(document.getElementById('mobNavVerify')) document.getElementById('mobNavVerify').style.display = "flex";
                 checkPendingCount(); 
+            } else {
+                // Untuk staff biasa, paparkan butang tugas di phone
+                if(document.getElementById('mobNavTasks')) document.getElementById('mobNavTasks').style.display = "flex";
             }
+            
             document.getElementById('navTasks').style.display = "flex";
             
             loadMasterData(); 
             loadMyTasks();
             initDash();
+        }
+        // Fungsi untuk buka/tutup Tapisan di Telefon
+        function toggleMobileFilter() {
+            document.getElementById('sidebar').classList.toggle('active');
+            const overlay = document.getElementById('mobileOverlay');
+            if(overlay) overlay.classList.toggle('active');
         }
 
        // --- CHECK SESSION (OFFLINE FRIENDLY) ---
@@ -440,13 +531,33 @@
         window.onload = checkSession;
         
         function switchTab(t, el) {
+            // Logik buang aktif untuk PC & Mobile
             document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active')); 
-            if(el && !el.classList.contains('bg-success')) el.classList.add('active');
-            ['view-main','view-verify','view-tasks','view-form'].forEach(v => document.getElementById(v).style.display = 'none');
-            document.getElementById('view-'+t).style.display = 'block';
+            document.querySelectorAll('.nav-bot-item').forEach(x => x.classList.remove('active'));
+            
+            // Tambah warna aktif pada butang yang ditekan
+            if(el) {
+                if(!el.classList.contains('bg-success') && el.classList.contains('nav-item')) el.classList.add('active');
+                if(el.classList.contains('nav-bot-item')) el.classList.add('active');
+            }
+
+            // Tukar skrin utama
+            ['view-main','view-verify','view-tasks','view-form'].forEach(v => {
+                const view = document.getElementById(v);
+                if(view) view.style.display = 'none';
+            });
+            
+            const targetView = document.getElementById('view-'+t);
+            if(targetView) targetView.style.display = 'block';
+
             if(t==='verify') loadPend();
             if(t==='tasks') loadMyTasks();
             if(t==='main' && map) setTimeout(() => map.invalidateSize(), 300);
+            
+            // Tutup sidebar filter di telefon (kalau tengah terbuka)
+            document.getElementById('sidebar').classList.remove('active');
+            const overlay = document.getElementById('mobileOverlay');
+            if(overlay) overlay.classList.remove('active');
         }
 
                 // --- FUNGSI TARIKH MUKTAMAD (MANUAL PARSING) ---
