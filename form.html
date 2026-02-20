@@ -219,8 +219,11 @@
           </div>
       </div>
 
-      <div class="d-grid gap-2 mt-5">
-          <button type="submit" class="btn btn-success btn-lg fw-bold shadow" id="submitBtn">
+      <div class="d-flex flex-column flex-md-row gap-2 mt-5">
+          <button type="submit" name="submitMode" value="DRAF" class="btn btn-secondary btn-lg fw-bold shadow-sm flex-grow-1" id="draftBtn">
+              <i class="bi bi-save"></i> SIMPAN DRAF
+          </button>
+          <button type="submit" name="submitMode" value="BARU" class="btn btn-success btn-lg fw-bold shadow flex-grow-1" id="submitBtn">
               <i class="bi bi-send-fill"></i> HANTAR LAPORAN
           </button>
       </div>
@@ -492,8 +495,9 @@
         e.preventDefault();
         if (!e.target.checkValidity()) { e.target.reportValidity(); return; }
         if (!validateCoord(document.getElementById('gpsInput'))) return;
-
-        const f = e.target; const fd = new FormData(f);
+      
+      const mode = e.submitter ? e.submitter.value : 'BARU';  
+      const f = e.target; const fd = new FormData(f);
         const luasS={}, pctS={}, sevS={};
         const names=[]; 
         let errorPest = false;
@@ -518,7 +522,8 @@
         if(extraSyor) syors.push(extraSyor);
 
         const payload = {
-            action: 'submitNew', 
+            action: 'submitNew',
+            statusRekod: mode,
             namaPegawai: fd.get('namaPegawai'),
             email: fd.get('email'),
             tarikhBancian: fd.get('tarikhBancian'),
