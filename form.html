@@ -219,10 +219,11 @@
           </div>
       </div>
 
-      <div class="d-flex flex-column flex-md-row gap-2 mt-5">
-          <button type="submit" name="submitMode" value="DRAF" class="btn btn-secondary btn-lg fw-bold shadow-sm flex-grow-1" id="draftBtn">
+    <div class="d-flex flex-column flex-md-row gap-2 mt-5">
+          <button type="submit" name="submitMode" value="DRAF" class="btn btn-secondary btn-lg fw-bold shadow-sm flex-grow-1" id="draftBtn" formnovalidate>
               <i class="bi bi-save"></i> SIMPAN DRAF
           </button>
+          
           <button type="submit" name="submitMode" value="BARU" class="btn btn-success btn-lg fw-bold shadow flex-grow-1" id="submitBtn">
               <i class="bi bi-send-fill"></i> HANTAR LAPORAN
           </button>
@@ -490,14 +491,30 @@
         input.classList.add('is-invalid');
     }
 
-    // --- SUBMIT LOGIC ---
     async function handleFormSubmit(e) {
         e.preventDefault();
-        if (!e.target.checkValidity()) { e.target.reportValidity(); return; }
-        if (!validateCoord(document.getElementById('gpsInput'))) return;
-      
-      const mode = e.submitter ? e.submitter.value : 'BARU';  
-      const f = e.target; const fd = new FormData(f);
+        
+        // Kenal pasti butang mana yang ditekan
+        const mode = e.submitter ? e.submitter.value : 'BARU'; 
+        const f = e.target; 
+        
+        // ==========================================
+        // KAWALAN WAJIB ISI (HANYA UNTUK HANTAR BARU)
+        // ==========================================
+        if (mode === 'BARU') {
+            // 1. Check form HTML required
+            if (!f.checkValidity()) { 
+                f.reportValidity(); 
+                return; 
+            }
+            // 2. Check koordinat GPS betul atau tak
+            if (!validateCoord(document.getElementById('gpsInput'))) {
+                return;
+            }
+        }
+        // ==========================================
+
+        const fd = new FormData(f);
         const luasS={}, pctS={}, sevS={};
         const names=[]; 
         let errorPest = false;
@@ -505,13 +522,21 @@
         document.querySelectorAll('.perosak-item').forEach(row => { 
             const n = row.querySelector('.perosak-name').value; 
             const valStr = row.querySelector('.perosak-luas').value;
-            if(n && valStr === "") errorPest = true; 
+            
+            // 3. Check Perosak (Hanya jika HANTAR BARU)
+            if(mode === 'BARU' && n && valStr === "") errorPest = true; 
+            
             if(n && valStr !== "") { 
                 names.push(n); luasS[n]=parseFloat(valStr); pctS[n]=row.querySelector('.perosak-percent').value; sevS[n]=row.querySelector('.perosak-severity').value; 
             } 
         });
 
-        if(errorPest) { Swal.fire('Ralat','Sila isi luas serangan bagi perosak yang dipilih.','warning'); return; }
+        if(errorPest) { 
+            Swal.fire('Ralat','Sila isi luas serangan bagi perosak yang dipilih.','warning'); 
+            return; 
+        }
+
+        // ... (KOD SETERUSNYA KEKAL SAMA MACAM ASAL: const imgStr = await Promise.all...)
 
         const imgStr = await Promise.all(filesToUpload.map(file => new Promise((res) => { 
             const r = new FileReader(); r.onload = () => res({name:file.name, dataUrl:r.result}); r.readAsDataURL(file); 
