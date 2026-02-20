@@ -921,21 +921,56 @@
             } catch(e) { console.error(e); container.innerHTML='<div class="col-12 text-center p-5 text-danger">Ralat memuatkan data.</div>'; } 
         }
 
-        function renderCard(r, container, type) {
+       function renderCard(r, container, type) {
             const getV = (key) => { const i = currentHeaders.findIndex(h => h.toUpperCase().includes(key.toUpperCase())); return i > -1 ? r.data[i] : ""; };
             const lokasi = getV('LOKASI') || getV('KEBUN');
             const tanaman = getV('NAMA TANAMAN') || getV('TANAMAN');
             const kategori = getV('KATEGORI') || "-";
             const tarikh = formatDateDisplay(getV('TARIKH') || getV('DATE'));
+            const statusRekod = getV('STATUS') || ""; // Tarik status sebenar dari sheet
             const log = getV('LOG') || "";
+            
             let btnAction = "";
+            let badgeHtml = "";
+            let cardBorder = "primary";
+            let bgHeader = "light";
+
             if (type === 'TASK') {
-                let reason = log.includes("DITOLAK") ? log.split("Sebab:").pop() : "Sila semak log.";
-                btnAction = `<div class="task-reject-box p-2 mb-2 small"><i class="bi bi-exclamation-triangle-fill"></i> ${reason}</div><button class="btn btn-danger w-100 fw-bold btn-sm" onclick="openTaskEdit(${r.row})">KEMASKINI</button>`;
+                if (statusRekod.toUpperCase() === 'DRAF') {
+                    // PAPARAN UNTUK DRAF
+                    badgeHtml = `<span class="badge bg-secondary">DRAF</span>`;
+                    cardBorder = "secondary";
+                    btnAction = `<button class="btn btn-success w-100 fw-bold btn-sm shadow-sm" onclick="openTaskEdit(${r.row})"><i class="bi bi-pencil-square"></i> SAMBUNG ISI / HANTAR</button>`;
+                } else {
+                    // PAPARAN UNTUK DITOLAK
+                    badgeHtml = `<span class="badge bg-danger">DITOLAK</span>`;
+                    cardBorder = "danger";
+                    bgHeader = "danger bg-opacity-10";
+                    let reason = log.includes("DITOLAK") ? log.split("Sebab:").pop() : "Sila semak log.";
+                    btnAction = `<div class="task-reject-box p-2 mb-2 small"><i class="bi bi-exclamation-triangle-fill"></i> ${reason}</div><button class="btn btn-danger w-100 fw-bold btn-sm" onclick="openTaskEdit(${r.row})">KEMASKINI & HANTAR</button>`;
+                }
             } else {
+                // PAPARAN UNTUK ADMIN/PENYELIA (BARU)
+                badgeHtml = `<span class="badge bg-warning text-dark">BARU</span>`;
                 btnAction = `<div class="d-flex gap-2"><button class="btn btn-outline-danger flex-grow-1 btn-sm fw-bold" onclick="subVer(${r.row},'REJECT')">TOLAK</button><button class="btn btn-success flex-grow-1 btn-sm fw-bold" onclick="subVer(${r.row},'APPROVE')">SAHKAN</button></div>`;
             }
-            container.innerHTML += `<div class="col-md-6 col-xl-4"><div class="verify-card bg-white rounded-3 shadow-sm border mb-3 h-100 border-${type==='TASK'?'danger':'primary'}"><div class="p-3 border-bottom bg-${type==='TASK'?'danger':'light'} bg-opacity-10 d-flex justify-content-between"><div><div class="fw-bold text-dark">${lokasi}</div><div class="small text-muted">${kategori} - ${tanaman}</div><div class="small text-muted mt-1">${tarikh}</div></div><span class="badge bg-${type==='TASK'?'danger':'warning text-dark'}">${type==='TASK'?'DITOLAK':'BARU'}</span></div><div class="p-3">${btnAction}</div></div></div>`;
+
+            container.innerHTML += `
+            <div class="col-md-6 col-xl-4">
+                <div class="verify-card bg-white rounded-3 shadow-sm border mb-3 h-100 border-${cardBorder}">
+                    <div class="p-3 border-bottom bg-${bgHeader} d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="fw-bold text-dark">${lokasi}</div>
+                            <div class="small text-muted">${kategori} - ${tanaman}</div>
+                            <div class="small text-muted mt-1"><i class="bi bi-calendar-event"></i> ${tarikh}</div>
+                        </div>
+                        ${badgeHtml}
+                    </div>
+                    <div class="p-3 mt-auto">
+                        ${btnAction}
+                    </div>
+                </div>
+            </div>`;
         }
 
         async function openTaskEdit(rowId) {
