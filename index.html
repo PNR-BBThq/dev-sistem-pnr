@@ -1063,6 +1063,20 @@
             const savedDaerah = getV('DAERAH');
             const savedKat = getV('KATEGORI');
             const savedTan = getV('NAMA TANAMAN') || getV('TANAMAN');
+            
+            // --- KOD BARU: TARIK DAN LUKIS GAMBAR LAMA ---
+            const savedImg = getV('IMAGE LINKS (COMMA SEPARATED)') || getV('GAMBAR') || getV('IMAGE') || getV('FOTO') || "";
+            let oldImgPreviewHTML = "";
+            if(savedImg && savedImg.trim() !== "") {
+                const arr = savedImg.split(',');
+                oldImgPreviewHTML = `<div class="mt-2 pt-2 border-top"><small class="text-success fw-bold d-block mb-1"><i class="bi bi-images"></i> Gambar Sedia Ada:</small>` +
+                arr.map(lnk => {
+                    let cleanLnk = lnk.trim().replace(/[\[\]"'\\]/g, '');
+                    if(!cleanLnk) return "";
+                    return `<img src="${cleanLnk}" style="width: 60px; height: 60px; object-fit: cover; margin-right: 5px; border-radius: 5px; border: 1px solid #ccc; display: inline-block;">`;
+                }).join('') + `</div>`;
+            }
+            // ---------------------------------------------
 
             let html = `
             <div id="fullEditForm">
@@ -1097,12 +1111,17 @@
                 <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-3" onclick="addPestRow()">+ Tambah Perosak</button>
                 <h6 class="text-primary border-bottom pb-2 mt-3">D. Gambar & Kapsyen</h6>
                 <div class="mb-3 p-3 bg-white border rounded">
+                    <input type="hidden" id="fe_gambarLama" value="${savedImg}">
+                    
                     <label class="small fw-bold mb-1">Tajuk Gambar</label>
                     <input type="text" id="fe_caption" class="form-control form-control-sm mb-2" value="${valCaption}" placeholder="Masukkan tajuk gambar...">
                     <label class="small fw-bold mb-1">Muat Naik (Optional)</label>
                     <input type="file" id="fe_fileInput" class="form-control form-control-sm" accept="image/*" onchange="handleFileSelect(this)">
-                    <small class="text-muted d-block fst-italic mt-1" style="font-size:0.75rem">Biarkan kosong jika tidak mahu tukar gambar.</small>
+                    <small class="text-muted d-block fst-italic mt-1" style="font-size:0.75rem">Biarkan kosong jika tidak mahu tukar gambar asal.</small>
+                    
                     <img id="fe_imgPreview" src="" style="max-height: 100px; display: none; margin-top:5px; border:1px solid #ccc">
+                    
+                    ${oldImgPreviewHTML}
                 </div>
                 <div class="mb-3"><label class="small fw-bold text-success">Syor Kawalan</label><textarea id="fe_syor" class="form-control" rows="3">${getV('SYOR')}</textarea></div>
                 <button class="btn btn-success w-100 py-2 fw-bold" onclick="saveFullEdit()">SIMPAN PERUBAHAN</button>
@@ -1149,12 +1168,15 @@
                 const s = tr.querySelector('.p-sev').value;
                 if(n) { luasS[n]=a; sevS[n]=s; pctS[n] = luasT>0 ? ((a/luasT)*100).toFixed(2):0; }
             });
-            const payload = {
+           const payload = {
                 row: rowID, tarikh: document.getElementById('fe_tarikh').value, pegawai: document.getElementById('fe_pegawai').value,
                 negeri: document.getElementById('fe_negeri').value, daerah: document.getElementById('fe_daerah').value, lokasi: document.getElementById('fe_lokasi').value,
                 coord: document.getElementById('fe_coord').value, kategori: document.getElementById('fe_kategori').value, tanaman: document.getElementById('fe_tanaman').value,
                 varieti: document.getElementById('fe_varieti').value, umurT: document.getElementById('fe_umur').value, luasT: luasT,
-                luasS: luasS, keterukan: sevS, peratus: pctS, syor: document.getElementById('fe_syor').value, name: uProf.name, caption: captionVal 
+                luasS: luasS, keterukan: sevS, peratus: pctS, syor: document.getElementById('fe_syor').value, name: uProf.name, caption: captionVal,
+                
+                // TAMBAHAN: Tarik gambar lama supaya backend dapat selamatkannya
+                gambarLama: document.getElementById('fe_gambarLama').value 
             };
             if (currentFile) {
                 payload.imgData = currentFile.data; payload.imgType = currentFile.type;
