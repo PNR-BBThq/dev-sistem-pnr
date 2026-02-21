@@ -1062,22 +1062,33 @@
             const savedNegeri = getV('NEGERI');
             const savedDaerah = getV('DAERAH');
             const savedKat = getV('KATEGORI');
-            const savedTan = getV('NAMA TANAMAN') || getV('TANAMAN');
+           const savedTan = getV('NAMA TANAMAN') || getV('TANAMAN');
             
-            // --- KOD BARU: TARIK DAN LUKIS GAMBAR LAMA ---
+            // --- KOD BARU: TARIK, TUKAR LINK & LUKIS GAMBAR LAMA ---
             const savedImg = getV('IMAGE LINKS (COMMA SEPARATED)') || getV('GAMBAR') || getV('IMAGE') || getV('FOTO') || "";
             let oldImgPreviewHTML = "";
+            
             if(savedImg && savedImg.trim() !== "") {
                 const arr = savedImg.split(',');
                 oldImgPreviewHTML = `<div class="mt-2 pt-2 border-top"><small class="text-success fw-bold d-block mb-1"><i class="bi bi-images"></i> Gambar Sedia Ada:</small>` +
                 arr.map(lnk => {
                     let cleanLnk = lnk.trim().replace(/[\[\]"'\\]/g, '');
                     if(!cleanLnk) return "";
-                    return `<img src="${cleanLnk}" style="width: 60px; height: 60px; object-fit: cover; margin-right: 5px; border-radius: 5px; border: 1px solid #ccc; display: inline-block;">`;
+                    
+                    // Magik: Cari ID Google Drive dan tukar ke direct link (thumbnail)
+                    let directSrc = cleanLnk;
+                    const idMatch = cleanLnk.match(/[-\w]{25,}/);
+                    if (idMatch) {
+                        // Guna sz=w200 supaya gambar ringan & terus keluar dalam tag <img>
+                        directSrc = `https://drive.google.com/thumbnail?id=${idMatch[0]}&sz=w200`;
+                    }
+                    
+                    return `<a href="${cleanLnk}" target="_blank" title="Klik untuk lihat saiz penuh">
+                                <img src="${directSrc}" style="width: 60px; height: 60px; object-fit: cover; margin-right: 5px; border-radius: 5px; border: 1px solid #ccc; display: inline-block;">
+                            </a>`;
                 }).join('') + `</div>`;
             }
             // ---------------------------------------------
-
             let html = `
             <div id="fullEditForm">
                 <input type="hidden" id="fe_row" value="${rowID}">
