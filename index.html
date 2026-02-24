@@ -780,9 +780,10 @@
                     <td onclick="viewRec(${realIndex})">${d.lt.toFixed(2)}</td>
                     <td onclick="viewRec(${realIndex})" class="text-danger fw-bold">${d.ls.toFixed(2)}</td>
                     <td class="text-center">
-                        <button class="btn btn-sm btn-outline-danger" title="Jana PDF" 
+                       <button class="btn btn-sm btn-outline-danger" title="Jana PDF" 
                                 data-lokasi="${d.l}" 
                                 data-pegawai="${d.pg}" 
+                                data-timestamp="${d.ts}" 
                                 onclick="event.stopPropagation(); klikJanaPDF(this)">
                             <i class="bi bi-file-earmark-pdf-fill"></i> PDF
                         </button>
@@ -1262,17 +1263,15 @@
      
      // --- FUNGSI KLIK MUAT TURUN PDF (AUTO-DOWNLOAD BASE64) ---
         async function klikJanaPDF(btnElement) {
-            // Cek jika tiada internet
             if (!navigator.onLine) {
-                Swal.fire('Mod Offline', 'Harap maklum, penjanaan PDF memerlukan capaian internet.', 'warning');
+                Swal.fire('Mod Offline', 'Penjanaan PDF memerlukan capaian internet.', 'warning');
                 return;
             }
 
-            // Ambil data dari butang yang ditekan
             const lokasiStr = btnElement.getAttribute('data-lokasi');
             const pegawaiStr = btnElement.getAttribute('data-pegawai');
+            const exactTimestamp = btnElement.getAttribute('data-timestamp'); // Tarik kunci milisaat
 
-            // Papar loading screen
             Swal.fire({
                 title: 'Menjana Laporan PDF...',
                 html: 'Sila tunggu sebentar. Memproses data & gambar...<br><br><div class="spinner-border text-danger" role="status"></div>',
@@ -1281,33 +1280,23 @@
             });
 
             try {
-                // Panggil backend API
-                const r = await postData('janaPDFBaris', { lokasi: lokasiStr, pegawai: pegawaiStr });
+                // HANTAR KUNCI KE BACKEND
+                const r = await postData('janaPDFBaris', { 
+                    lokasi: lokasiStr, 
+                    pegawai: pegawaiStr,
+                    timestampTarget: exactTimestamp 
+                });
                 
-                // Semak jika backend memulangkan status success dan data base64
                 if ((r.success || r.status === 'success') && r.base64) {
-                    
-                    // Proses Muat Turun Terus (Auto-Download) ke Peranti
                     const link = document.createElement('a');
                     link.href = "data:application/pdf;base64," + r.base64;
-                    
-                    // Guna nama fail dari backend, atau buat nama default jika tiada
                     link.download = r.fileName || ("Laporan_" + lokasiStr.replace(/[^a-zA-Z0-9]/g, "_") + ".pdf");
                     
-                    // Simulasikan butang ditekan oleh pengguna (tanpa nampak di skrin)
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
                     
-                    // Tutup loading dan tunjuk mesej Berjaya
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berjaya!',
-                        text: 'Laporan PDF telah disimpan ke dalam peranti anda.',
-                        timer: 3000,
-                        showConfirmButton: false
-                    });
-
+                    Swal.fire({ icon: 'success', title: 'Berjaya!', text: 'Laporan PDF sedia!', timer: 3000, showConfirmButton: false });
                 } else {
                     Swal.fire('Ralat', r.message || r.error || 'Gagal memuatkan data PDF.', 'error');
                 }
