@@ -1168,8 +1168,8 @@
             document.getElementById('modalTitle').innerText = "KEMASKINI DATA";
             new bootstrap.Modal(document.getElementById('detailModal')).show();
         }
-        // --- BLOK 2: FUNGSI GALERI PINTAR ---
-        let retainedImagesGlobal = []; // Array rahsia simpan link yang tak dipadam
+       // --- BLOK 2: FUNGSI GALERI PINTAR (DIBETULKAN PAPARAN DRIVE) ---
+        let retainedImagesGlobal = []; 
 
         function renderEditImages(imgString) {
             const container = document.getElementById('edit_image_preview');
@@ -1181,16 +1181,26 @@
                 links.forEach((link, index) => {
                     if(link) {
                         retainedImagesGlobal.push(link);
+                        
+                        // --- KOD BARU: Tukar link Drive jadi Thumbnail URL ---
+                        let imgSrc = link; 
+                        const matchId = link.match(/[-\w]{25,}/); 
+                        if (matchId && matchId[0]) {
+                            // Guna API thumbnail Drive. sz=w150 maksudnya resize lebar 150px (loading laju sikit)
+                            imgSrc = `https://drive.google.com/thumbnail?id=${matchId[0]}&sz=w150`;
+                        }
+                        // ----------------------------------------------------
+
                         // Bina kotak thumbnail dengan butang X
                         const div = document.createElement('div');
                         div.className = "position-relative";
-                        div.style = "width: 65px; height: 65px; border: 1px solid #ccc; border-radius: 5px; overflow: hidden;";
+                        div.style = "width: 75px; height: 75px; border: 1px solid #ccc; border-radius: 5px; overflow: hidden;";
                         div.innerHTML = `
                             <a href="${link}" target="_blank">
-                               <img src="${link}" style="width: 100%; height: 100%; object-fit: cover;">
+                               <img src="${imgSrc}" style="width: 100%; height: 100%; object-fit: cover;" alt="Gambar">
                             </a>
-                            <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0" 
-                                    style="width: 20px; height: 20px; line-height: 1; font-size:10px; font-weight:bold;" 
+                            <button type="button" class="btn btn-danger position-absolute top-0 end-0 p-0" 
+                                    style="width: 22px; height: 22px; line-height: 1; font-size:12px; font-weight:bold; border-radius:0; border-bottom-left-radius:5px;" 
                                     onclick="removeRetainedImage(${index}, this)">X</button>
                         `;
                         container.appendChild(div);
@@ -1199,10 +1209,10 @@
             }
         }
 
-        // Fungsi bila staf tekan butang X
+        // Fungsi bila staf tekan butang X (Kekal sama)
         function removeRetainedImage(index, btnElement) {
-            retainedImagesGlobal[index] = null; // Tandakan link ini sebagai terpadam
-            btnElement.parentElement.remove(); // Padam dari skrin
+            retainedImagesGlobal[index] = null; 
+            btnElement.parentElement.remove(); 
         }
         
        function addPestRow(name="", area="", sev="") {
