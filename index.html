@@ -140,16 +140,29 @@
             </div>
             <hr class="my-4" style="color: #000;">
             
-            <div class="mb-3 px-2">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <small class="fw-bold text-dark" style="font-size:0.85rem; letter-spacing: 0.5px;"><i class="bi bi-funnel-fill me-1"></i> TAPISAN DATA</small>
+          <div class="mb-2">
+                    <label class="filter-label d-flex justify-content-between">Negeri <small class="text-muted fw-normal" style="font-size:9px;">(Pilih >1)</small></label>
+                    <select id="selNegeri" class="form-select form-select-sm" multiple size="4" onchange="runFilter('n')"></select>
                 </div>
-                
-                <div class="mb-2"><label class="filter-label">Negeri</label><select id="selNegeri" class="form-select form-select-sm" onchange="runFilter('n')"></select></div>
-                <div class="mb-2"><label class="filter-label">Daerah</label><select id="selDaerah" class="form-select form-select-sm" onchange="runFilter('d')"></select></div>
-                <div class="mb-2"><label class="filter-label">Tanaman</label><select id="selTanaman" class="form-select form-select-sm" onchange="runFilter('t')"></select></div>
-                <div class="mb-2"><label class="filter-label">Perosak</label><select id="selPerosak" class="form-select form-select-sm" onchange="runFilter('p')"></select></div>
-                <div class="mb-2"><label class="filter-label">Kategori</label><select id="selKategori" class="form-select form-select-sm" onchange="runFilter('k')"></select></div>
+                <div class="mb-2">
+                    <label class="filter-label">Daerah</label>
+                    <select id="selDaerah" class="form-select form-select-sm" multiple size="4" onchange="runFilter('d')"></select>
+                </div>
+                <div class="mb-2">
+                    <label class="filter-label">Tanaman</label>
+                    <select id="selTanaman" class="form-select form-select-sm" multiple size="4" onchange="runFilter('t')"></select>
+                </div>
+                <div class="mb-2">
+                    <label class="filter-label">Perosak</label>
+                    <select id="selPerosak" class="form-select form-select-sm" multiple size="4" onchange="runFilter('p')"></select>
+                </div>
+                <div class="mb-2">
+                    <label class="filter-label">Kategori</label>
+                    <select id="selKategori" class="form-select form-select-sm" multiple size="3" onchange="runFilter('k')"></select>
+                </div>
+                <div class="alert alert-light border py-1 px-2 mb-3 text-center" style="font-size: 0.7rem;">
+                    <i class="bi bi-info-circle text-primary"></i> Tahan butang <b>Ctrl</b> (PC) untuk pilih/buang lebih dari 1. Biarkan kosong untuk papar <b>SEMUA</b>.
+                </div>
                 
                 <div class="mb-3">
                     <label class="filter-label">Julat Tarikh</label>
@@ -642,12 +655,19 @@
         }
 
         // --- FUNGSI BARU: PROSES UI (KALIS ERROR) ---
-        function processDataToUI(dataList) {
-            // Setup Dropdown
-            const currentN = document.getElementById('selNegeri').value;
-            fillSel('selNegeri', dataList.map(d => d.n).filter((v, i, a) => a.indexOf(v) === i).sort());
-            if(currentN) document.getElementById('selNegeri').value = currentN;
-            if(uProf.state !== "ALL") { const s = document.getElementById('selNegeri'); s.value = uProf.state; s.disabled = true; }
+       function processDataToUI(dataList) {
+            // Setup Dropdown (Versi Multiple)
+            const currentN = v('selNegeri'); 
+            fillSel('selNegeri', dataList.map(d => d.n).filter((val, i, a) => a.indexOf(val) === i).sort());
+            
+            if(uProf.state !== "ALL") { 
+                const s = document.getElementById('selNegeri'); 
+                Array.from(s.options).forEach(opt => { if(opt.value === uProf.state) opt.selected = true; }); 
+                s.disabled = true; 
+            } else if (currentN.length > 0) {
+                const s = document.getElementById('selNegeri');
+                Array.from(s.options).forEach(opt => { if(currentN.includes(opt.value)) opt.selected = true; }); 
+            }
 
             // LUKIS MAP (HANYA JIKA LEAFLET WUJUD)
             if (typeof L !== 'undefined') {
@@ -672,26 +692,83 @@
             }
         }
 
-        function runFilter(source) {
+      function runFilter(source) {
             const n=v('selNegeri'), d=v('selDaerah'), t=v('selTanaman'), p=v('selPerosak'), k=v('selKategori'), s=v('dS'), e=v('dE');
+            
             fData = mData.filter(r => { 
-                let pestOk = true; if(p && r.p) { try{ pestOk = (typeof r.p==='string'?JSON.parse(r.p):r.p)[p] }catch(err){ pestOk=false } }
-                return (n===""||r.n===n) && (d===""||r.d===d) && (t===""||r.tn===t) && (k===""||r.kt===k) && pestOk && (!s||r.t>=s) && (!e||r.t<=e);
+                let pestOk = true; 
+                // Cek jika ada perosak yang dipilih
+                if (p.length > 0) {
+                    pestOk = false;
+                    if (r.p) {
+                        try { 
+                            const pestObj = (typeof r.p==='string' ? JSON.parse(r.p) : r.p);
+                            // Lulus jika rekod ada SALAH SATU perosak yang dipilih
+                            pestOk = p.some(selectedPest => pestObj[selectedPest]);
+                        } catch(err) {}
+                    }
+                }
+                
+                return (n.length===0 || n.includes(r.n)) && 
+                       (d.length===0 || d.includes(r.d)) && 
+                       (t.length===0 || t.includes(r.tn)) && 
+                       (k.length===0 || k.includes(r.kt)) && 
+                       pestOk && (!s||r.t>=s) && (!e||r.t<=e);
             });
-            if(source === 'n' || !source) { const dataD = mData.filter(r => n === "" || r.n === n); updateDropdown('selDaerah', [...new Set(dataD.map(x=>x.d).filter(x=>x))].sort(), d); }
-            if(source === 'd' || source === 'n' || !source) { const dataT = mData.filter(r => (n===""||r.n===n) && (d===""||r.d===d)); updateDropdown('selTanaman', [...new Set(dataT.map(x=>x.tn).filter(x=>x))].sort(), t); }
+
+            if(source === 'n' || !source) { 
+                const dataD = mData.filter(r => n.length===0 || n.includes(r.n)); 
+                updateDropdown('selDaerah', [...new Set(dataD.map(x=>x.d).filter(x=>x))].sort(), d); 
+            }
+            if(source === 'd' || source === 'n' || !source) { 
+                const dataT = mData.filter(r => (n.length===0 || n.includes(r.n)) && (d.length===0 || d.includes(r.d))); 
+                updateDropdown('selTanaman', [...new Set(dataT.map(x=>x.tn).filter(x=>x))].sort(), t); 
+            }
             if(source === 't' || source === 'd' || source === 'n' || !source) {
-                const dataRest = mData.filter(r => (n===""||r.n===n) && (d===""||r.d===d) && (t===""||r.tn===t));
+                const dataRest = mData.filter(r => (n.length===0 || n.includes(r.n)) && (d.length===0 || d.includes(r.d)) && (t.length===0 || t.includes(r.tn)));
                 updateDropdown('selKategori', [...new Set(dataRest.map(x=>x.kt).filter(x=>x))].sort(), k);
-                let allPests = new Set(); dataRest.forEach(r => { try{ let obj=typeof r.p==='string'?JSON.parse(r.p):r.p; if(obj) Object.keys(obj).forEach(x=>allPests.add(x)) }catch(e){} });
+                
+                let allPests = new Set(); 
+                dataRest.forEach(r => { 
+                    try { 
+                        let obj=typeof r.p==='string'?JSON.parse(r.p):r.p; 
+                        if(obj) Object.keys(obj).forEach(x=>allPests.add(x)); 
+                    } catch(err){} 
+                });
                 updateDropdown('selPerosak', [...allPests].sort(), p);
             }
             pg = 1; calcUI();
         }
-        function updateDropdown(id, list, curVal) { const el = document.getElementById(id); el.innerHTML = '<option value="">Semua</option>'; list.forEach(x => { let opt=document.createElement('option'); opt.value=x; opt.innerText=x; el.appendChild(opt); }); if(list.includes(curVal)) el.value = curVal; else el.value = ""; }
-        function v(id){ return document.getElementById(id).value; }
-        function fillSel(id, arr) { updateDropdown(id, arr, ""); }
-        function resetFilter(){ document.querySelectorAll('select:not(:disabled), input[type=date]').forEach(e=>e.value=""); runFilter('n'); }
+       function updateDropdown(id, list, curValArray) { 
+            const el = document.getElementById(id); 
+            el.innerHTML = ''; // Kosong bermaksud "Semua"
+            list.forEach(x => { 
+                let opt = document.createElement('option'); 
+                opt.value = x; 
+                opt.innerText = x; 
+                if (curValArray && curValArray.includes(x)) opt.selected = true;
+                el.appendChild(opt); 
+            }); 
+        }
+
+        function v(id){ 
+            const el = document.getElementById(id);
+            if(!el) return [];
+            if(el.type === 'date') return el.value;
+            // Jika ia dropdown multiple, kutip semua yang di-klik jadi Array
+            if(el.multiple) return Array.from(el.selectedOptions).map(opt => opt.value);
+            return el.value;
+        }
+
+        function fillSel(id, arr) { updateDropdown(id, arr, []); }
+
+        function resetFilter(){ 
+            document.querySelectorAll('select:not(:disabled)').forEach(e => {
+                Array.from(e.options).forEach(opt => opt.selected = false);
+            });
+            document.querySelectorAll('input[type=date]').forEach(e => e.value=""); 
+            runFilter('n'); 
+        }
         function calcUI() {
             let tt=0, ts=0, pm={}, km={1:0,2:0,3:0,4:0,5:0}, pts=[], hData={};
             fData.forEach(d => {
