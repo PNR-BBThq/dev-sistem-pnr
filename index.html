@@ -193,6 +193,9 @@
                 <span class="badge-pending" id="badgePending">0</span>
             </div>
             <hr class="my-4" style="color: #000;">
+            <div class="nav-item bg-dark text-white shadow-sm mt-2" id="navUsers" style="display:none" onclick="switchTab('users', this)">
+                <span><i class="bi bi-people-fill me-2 text-warning"></i> Urus Pengguna</span>
+            </div>
             
             <div class="mb-3 px-2"> 
                 <div class="d-flex align-items-center justify-content-between mb-3">
@@ -419,6 +422,36 @@
 </iframe>
         </div>
 
+        <div id="view-users" style="display:none">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold m-0 text-dark"><i class="bi bi-people-fill me-2"></i>Pengurusan Pengguna</h4>
+                <button class="btn btn-primary btn-sm px-3 shadow-sm" onclick="loadUsers()"><i class="bi bi-arrow-clockwise me-1"></i> Refresh</button>
+            </div>
+            
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-body p-4">
+                    <input type="text" id="searchUser" class="form-control form-control-lg mb-4 bg-light border-0" placeholder="Cari Nama / No K/P / Username..." onkeyup="filterUsers()">
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" style="font-size: 0.85rem;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-uppercase">Nama Pegawai & Jawatan</th>
+                                    <th class="text-uppercase">No. K/P</th>
+                                    <th class="text-uppercase">Akses Login (ID/Pass)</th>
+                                    <th class="text-uppercase">Peranan</th>
+                                    <th class="text-uppercase text-center">Status</th>
+                                    <th class="text-uppercase text-center">Tindakan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
@@ -592,6 +625,9 @@
                 if(document.getElementById('mobNavTasks')) document.getElementById('mobNavTasks').style.display = "flex";
             }
             
+            if((r.role||"").toUpperCase() === "ADMIN") {
+                document.getElementById('navUsers').style.display = "flex";
+            }
             document.getElementById('navTasks').style.display = "flex";
             
             loadMasterData(); 
@@ -646,7 +682,8 @@
             }
 
             // Tukar skrin utama
-            ['view-main','view-verify','view-tasks','view-form'].forEach(v => {
+           // Tukar skrin utama (TAMBAH 'view-users' DALAM SENARAI)
+            ['view-main','view-verify','view-tasks','view-form', 'view-users'].forEach(v => {
                 const view = document.getElementById(v);
                 if(view) view.style.display = 'none';
             });
@@ -656,6 +693,7 @@
 
             if(t==='verify') loadPend();
             if(t==='tasks') loadMyTasks();
+            if(t==='users') loadUsers();
             if(t==='main' && map) setTimeout(() => map.invalidateSize(), 300);
             
             // Tutup sidebar filter di telefon (kalau tengah terbuka)
@@ -1715,6 +1753,102 @@
                 Swal.fire('Ralat', 'Gagal berhubung dengan pelayan.', 'error');
             }
             btn.disabled = false; btn.innerHTML = 'HANTAR PENDAFTARAN';
+        }
+
+      // ==========================================
+        // FUNGSI PENGURUSAN PENGGUNA (ADMIN)
+        // ==========================================
+        let allUsersData = [];
+
+        async function loadUsers() {
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center p-5"><div class="spinner-border text-primary"></div></td></tr>';
+            try {
+                const d = await postData('getUserList', {});
+                if(d.success) {
+                    allUsersData = d.users || [];
+                    renderUsers(allUsersData);
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">${d.message}</td></tr>`;
+                }
+            } catch(e) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Ralat memuatkan senarai pengguna.</td></tr>';
+            }
+        }
+
+        function renderUsers(dataList) {
+            const tbody = document.getElementById('userTableBody');
+            if(dataList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Tiada data dijumpai.</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = dataList.map(u => {
+                let statusBadge = u.status.toUpperCase() === 'AKTIF' ? '<span class="badge bg-success">AKTIF</span>' : '<span class="badge bg-warning text-dark">MENUNGGU</span>';
+                let actionBtn = u.status.toUpperCase() !== 'AKTIF' ? 
+                    `<button class="btn btn-sm btn-success fw-bold me-1" onclick="updateUserStatus(${u.row}, 'AKTIF')"><i class="bi bi-check-lg"></i> LULUS</button>` : '';
+                
+                return `
+                <tr>
+                    <td><div class="fw-bold text-dark text-uppercase">${u.nama}</div><div class="small text-muted">${u.jawatan} - ${u.negeri}</div></td>
+                    <td class="font-monospace">${u.ic}</td>
+                    <td>
+                        <span class="d-block small text-primary fw-bold"><i class="bi bi-person me-1"></i>${u.uid}</span>
+                        <span class="d-block small text-danger fw-bold"><i class="bi bi-key me-1"></i>${u.pwd}</span>
+                    </td>
+                    <td><span class="badge bg-light text-dark border">${u.role}</span></td>
+                    <td class="text-center">${statusBadge}</td>
+                    <td class="text-center">
+                        ${actionBtn}
+                        <button class="btn btn-sm btn-outline-primary" onclick="editUser(${u.row})"><i class="bi bi-pencil-square"></i></button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function filterUsers() {
+            const term = document.getElementById('searchUser').value.toLowerCase();
+            const filtered = allUsersData.filter(u => 
+                (u.nama && u.nama.toLowerCase().includes(term)) || 
+                (u.ic && String(u.ic).includes(term)) || 
+                (u.uid && u.uid.toLowerCase().includes(term))
+            );
+            renderUsers(filtered);
+        }
+
+        async function updateUserStatus(row, newStatus) {
+            if(!confirm(`Adakah anda pasti mahu menukar status kepada ${newStatus}?`)) return;
+            const r = await postData('updateUser', { row: row, field: 'status', value: newStatus });
+            if(r.success) { alert("Berjaya dikemaskini!"); loadUsers(); } else { alert("Ralat: " + r.message); }
+        }
+
+        async function editUser(row) {
+            const u = allUsersData.find(x => x.row === row);
+            if(!u) return;
+            
+            const { value: formValues } = await Swal.fire({
+                title: 'Kemaskini Pengguna',
+                html: `
+                    <label class="form-label small fw-bold mt-2">Katalaluan</label>
+                    <input id="swal-pwd" class="form-control" value="${u.pwd}">
+                    <label class="form-label small fw-bold mt-3">Peranan (Role)</label>
+                    <select id="swal-role" class="form-select">
+                        <option value="STAF" ${u.role==='STAF'?'selected':''}>STAF</option>
+                        <option value="PENYELIA" ${u.role==='PENYELIA'?'selected':''}>PENYELIA</option>
+                        <option value="ADMIN" ${u.role==='ADMIN'?'selected':''}>ADMIN</option>
+                    </select>
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Simpan',
+                preConfirm: () => { return { pwd: document.getElementById('swal-pwd').value, role: document.getElementById('swal-role').value } }
+            });
+
+            if (formValues) {
+                const r = await postData('updateUser', { row: row, field: 'details', pwd: formValues.pwd, role: formValues.role });
+                if(r.success) { Swal.fire('Berjaya!', 'Data pengguna dikemaskini.', 'success'); loadUsers(); } 
+                else { Swal.fire('Ralat', r.message, 'error'); }
+            }
         }
         
     </script>
