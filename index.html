@@ -505,22 +505,33 @@
         let currentHeaders = []; 
         let pestMasterData = {}; 
 
-        async function postData(act, load) {
+      async function postData(act, load) {
             try {
                 let payload;
-                if (act === 'login') { payload = { action: act, ...load }; } 
-                else { payload = { action: act, token: userToken, u: currentUserID, ...load }; }
+                
+                // ⚠️ KOD DIBETULKAN: Kecualikan 'login' dan 'registerUser' dari semakan token
+                if (act === 'login' || act === 'registerUser') { 
+                    payload = { action: act, ...load }; 
+                } else { 
+                    payload = { action: act, token: userToken, u: currentUserID, ...load }; 
+                }
                 
                 const res = await fetch(`${API_URL}?action=${act}`, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(payload) });
                 const r = JSON.parse(await res.text());
 
-                if (r.success === false && r.message && (r.message.includes("sesi") || r.message.includes("token"))) {
-                    alert("⛔ Sesi tamat. Sila log masuk semula."); localStorage.removeItem('pnr_session'); location.reload(); return { success: false }; 
+                // Jangan halang pop-up kalau dia tengah cuba mendaftar (registerUser)
+                if (act !== 'registerUser' && r.success === false && r.message && (r.message.includes("sesi") || r.message.includes("token"))) {
+                    alert("⛔ Sesi tamat. Sila log masuk semula."); 
+                    localStorage.removeItem('pnr_session'); 
+                    location.reload(); 
+                    return { success: false }; 
                 }
                 return r;
-            } catch(e) { console.error(e); return {success:false, message:"Ralat sambungan."}; }
+            } catch(e) { 
+                console.error(e); 
+                return {success:false, message:"Ralat sambungan."}; 
+            }
         }
-
         async function loadMasterData() {
             try {
                 const r = await postData('getTanamanList', {});
