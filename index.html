@@ -129,7 +129,7 @@
         </div>
     </div>
 
-    <div class="sidebar" id="sidebar">
+   <div class="sidebar" id="sidebar">
         <div class="brand"><i class="bi bi-flower1"></i> PNR DIGITAL</div>
         
         <div class="sidebar-content">
@@ -148,13 +148,19 @@
             </div>
             <hr class="my-4" style="color: #000;">
             
-         <div class="mb-2">
+            <div class="mb-3 px-2"> 
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <small class="fw-bold text-dark" style="font-size:0.85rem; letter-spacing: 0.5px;"><i class="bi bi-funnel-fill me-1"></i> TAPISAN DATA</small>
+                </div>
+                
+                <div class="mb-2">
                     <label class="filter-label">Negeri</label>
                     <div class="dropdown d-grid">
                         <button class="btn btn-white border text-start text-truncate dropdown-toggle btn-sm bg-white" type="button" id="btnselNegeri" data-bs-toggle="dropdown" data-bs-auto-close="outside">- Semua -</button>
                         <div class="dropdown-menu w-100 p-2 shadow-sm" style="max-height: 220px; overflow-y: auto;" id="listselNegeri"></div>
                     </div>
                 </div>
+                
                 <div class="mb-2">
                     <label class="filter-label">Daerah</label>
                     <div class="dropdown d-grid">
@@ -162,6 +168,7 @@
                         <div class="dropdown-menu w-100 p-2 shadow-sm" style="max-height: 220px; overflow-y: auto;" id="listselDaerah"></div>
                     </div>
                 </div>
+                
                 <div class="mb-2">
                     <label class="filter-label">Tanaman</label>
                     <div class="dropdown d-grid">
@@ -169,6 +176,7 @@
                         <div class="dropdown-menu w-100 p-2 shadow-sm" style="max-height: 220px; overflow-y: auto;" id="listselTanaman"></div>
                     </div>
                 </div>
+                
                 <div class="mb-2">
                     <label class="filter-label">Perosak</label>
                     <div class="dropdown d-grid">
@@ -176,6 +184,7 @@
                         <div class="dropdown-menu w-100 p-2 shadow-sm" style="max-height: 220px; overflow-y: auto;" id="listselPerosak"></div>
                     </div>
                 </div>
+                
                 <div class="mb-2">
                     <label class="filter-label">Kategori</label>
                     <div class="dropdown d-grid">
@@ -183,8 +192,8 @@
                         <div class="dropdown-menu w-100 p-2 shadow-sm" style="max-height: 220px; overflow-y: auto;" id="listselKategori"></div>
                     </div>
                 </div>
-                
-                <div class="mb-3">
+
+                <div class="mb-3 mt-3">
                     <label class="filter-label">Julat Tarikh</label>
                     <div class="row g-1">
                         <div class="col-6"><input type="date" id="dS" class="form-control form-control-sm" onchange="runFilter()"></div>
@@ -208,8 +217,7 @@
                         <i class="bi bi-box-arrow-up-right"></i> Buka Sistem
                     </button>
                 </div>
-            </div>
-        </div>
+            </div> </div>
         
         <div class="sidebar-footer">
             <div class="nav-item mb-3 bg-success text-white shadow-sm" onclick="switchTab('form', this)" style="cursor: pointer;">
@@ -222,7 +230,7 @@
             </div>
         </div>
     </div>
-
+    
     <div class="main-content">
         <div class="d-md-none mb-3 d-flex justify-content-between align-items-center bg-white p-3 rounded shadow-sm">
             <span class="fw-bold text-success fs-5"><i class="bi bi-flower1"></i> PNR</span>
