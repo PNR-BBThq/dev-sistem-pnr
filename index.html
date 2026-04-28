@@ -110,13 +110,20 @@
 </head>
 <body>
 
-    <div id="loginOverlay">
+  <div id="loginOverlay">
         <div class="login-box">
             <div class="brand justify-content-center mb-4"><i class="bi bi-flower1"></i> PNR DIGITAL</div>
             <h6 class="text-muted mb-4">Log Masuk Sistem</h6>
             <input type="text" id="uid" class="form-control mb-3 p-3" placeholder="ID Pengguna">
             <input type="password" id="pwd" class="form-control mb-4 p-3" placeholder="Kata Laluan">
             <button type="button" onclick="doLogin()" class="btn btn-success w-100 fw-bold p-3" id="btnLogin">MASUK</button>
+            
+            <div class="text-center mt-3">
+                <a href="#" onclick="lupaKatalaluan()" class="text-decoration-none small text-secondary fw-bold hover-primary">
+                    <i class="bi bi-question-circle me-1"></i> Lupa Kata Laluan?
+                </a>
+            </div>
+
             <small id="loginMsg" class="text-danger d-block mt-3 fw-bold"></small>
         </div>
     </div>
@@ -1565,6 +1572,41 @@
                 Swal.fire('Ralat API', 'Gagal berhubung dengan pelayan. Sila cuba lagi.', 'error');
             }
         }
+
+        // ==========================================
+        // FUNGSI LUPA KATA LALUAN (HALA KE WHATSAPP)
+        // ==========================================
+        function lupaKatalaluan() {
+            Swal.fire({
+                title: 'Lupa Kata Laluan?',
+                html: '<span class="text-muted small">Sila masukkan <b>Nama Penuh</b> anda untuk dihantar kepada Admin bagi tujuan semakan.</span>',
+                input: 'text',
+                inputPlaceholder: 'Cth: AHMAD BIN ABU',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#25D366', // Warna Hijau WhatsApp
+                cancelButtonColor: '#d33',
+                confirmButtonText: '<i class="bi bi-whatsapp"></i> Hantar ke Admin',
+                cancelButtonText: 'Batal',
+                inputValidator: (value) => {
+                    if (!value || value.trim() === "") {
+                        return 'Sila masukkan nama penuh anda!';
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const nama = result.value.trim().toUpperCase();
+                    
+                    // ⚠️ PENTING: GANTI DENGAN NOMBOR ADMIN SEBENAR (Mula dengan 60)
+                    const adminPhone = "60123456789"; 
+                    
+                    const mesej = `Salam Admin, saya *${nama}* terlupa butiran log masuk sistem PNR. Mohon bantuan untuk semak Username dan Password saya. Terima kasih.`;
+                    const waUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(mesej)}`;
+                    window.open(waUrl, '_blank');
+                }
+            });
+        }
+        
     </script>
 </body>
 </html>
