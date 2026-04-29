@@ -1770,7 +1770,7 @@
                 pwd: document.getElementById('regPwd').value.trim(),
                 nama: document.getElementById('regNama').value.trim().toUpperCase(),
                 negeri: document.getElementById('regNegeri').value,
-                role: 'STAF', // Default
+                role: 'STAFF', // Default
                 jawatan: document.getElementById('regJawatan').value.trim().toUpperCase(),
                 ic: document.getElementById('regIC').value.trim(),
                 status: 'MENUNGGU',
@@ -1951,7 +1951,7 @@
                         <div class="col-6 mt-3">
                             <label class="small fw-bold">Peranan (Access Level)</label>
                             <select id="swal-role" class="form-select form-select-sm">
-                                <option value="STAF" ${u.role==='STAF'?'selected':''}>STAF</option>
+                                <option value="STAFF" ${u.role==='STAFF'?'selected':''}>STAFF</option>
                                 <option value="PENYELIA" ${u.role==='PENYELIA'?'selected':''}>PENYELIA</option>
                                 <option value="ADMIN" ${u.role==='ADMIN'?'selected':''}>ADMIN</option>
                             </select>
