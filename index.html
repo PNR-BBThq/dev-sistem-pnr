@@ -1872,27 +1872,88 @@
             if(!u) return;
             
             const { value: formValues } = await Swal.fire({
-                title: 'Kemaskini Pengguna',
+                title: 'Kemaskini Maklumat Pengguna',
+                width: '600px',
                 html: `
-                    <label class="form-label small fw-bold mt-2">Katalaluan</label>
-                    <input id="swal-pwd" class="form-control" value="${u.pwd}">
-                    <label class="form-label small fw-bold mt-3">Peranan (Role)</label>
-                    <select id="swal-role" class="form-select">
-                        <option value="STAF" ${u.role==='STAF'?'selected':''}>STAF</option>
-                        <option value="PENYELIA" ${u.role==='PENYELIA'?'selected':''}>PENYELIA</option>
-                        <option value="ADMIN" ${u.role==='ADMIN'?'selected':''}>ADMIN</option>
-                    </select>
+                    <div class="text-start row g-3">
+                        <div class="col-12">
+                            <label class="small fw-bold">Nama Penuh</label>
+                            <input id="swal-nama" class="form-control form-control-sm text-uppercase" value="${u.nama}">
+                        </div>
+                        <div class="col-6">
+                            <label class="small fw-bold">No. K/P</label>
+                            <input id="swal-ic" type="number" class="form-control form-control-sm" value="${u.ic}">
+                        </div>
+                        <div class="col-6">
+                            <label class="small fw-bold">Jawatan</label>
+                            <input id="swal-jawatan" class="form-control form-control-sm text-uppercase" value="${u.jawatan}">
+                        </div>
+                        <div class="col-12">
+                            <label class="small fw-bold">Negeri Bertugas</label>
+                            <select id="swal-negeri" class="form-select form-select-sm">
+                                <option value="HQ / IBU PEJABAT" ${u.negeri==='HQ / IBU PEJABAT'?'selected':''}>HQ / IBU PEJABAT</option>
+                                <option value="Johor" ${u.negeri==='Johor'?'selected':''}>Johor</option>
+                                <option value="Kedah" ${u.negeri==='Kedah'?'selected':''}>Kedah</option>
+                                <option value="Kelantan" ${u.negeri==='Kelantan'?'selected':''}>Kelantan</option>
+                                <option value="Melaka" ${u.negeri==='Melaka'?'selected':''}>Melaka</option>
+                                <option value="Negeri Sembilan" ${u.negeri==='Negeri Sembilan'?'selected':''}>Negeri Sembilan</option>
+                                <option value="Pahang" ${u.negeri==='Pahang'?'selected':''}>Pahang</option>
+                                <option value="Perak" ${u.negeri==='Perak'?'selected':''}>Perak</option>
+                                <option value="Perlis" ${u.negeri==='Perlis'?'selected':''}>Perlis</option>
+                                <option value="Pulau Pinang" ${u.negeri==='Pulau Pinang'?'selected':''}>Pulau Pinang</option>
+                                <option value="Sabah" ${u.negeri==='Sabah'?'selected':''}>Sabah</option>
+                                <option value="Sarawak" ${u.negeri==='Sarawak'?'selected':''}>Sarawak</option>
+                                <option value="Selangor" ${u.negeri==='Selangor'?'selected':''}>Selangor</option>
+                                <option value="Terengganu" ${u.negeri==='Terengganu'?'selected':''}>Terengganu</option>
+                                <option value="W.P. Kuala Lumpur" ${u.negeri==='W.P. Kuala Lumpur'?'selected':''}>W.P. Kuala Lumpur</option>
+                                <option value="W.P. Labuan" ${u.negeri==='W.P. Labuan'?'selected':''}>W.P. Labuan</option>
+                                <option value="W.P. Putrajaya" ${u.negeri==='W.P. Putrajaya'?'selected':''}>W.P. Putrajaya</option>
+                            </select>
+                        </div>
+                        <div class="col-6 mt-3">
+                            <label class="small fw-bold text-primary">Username</label>
+                            <input id="swal-uid" class="form-control form-control-sm" value="${u.uid}">
+                        </div>
+                        <div class="col-6 mt-3">
+                            <label class="small fw-bold text-danger">Password</label>
+                            <input id="swal-pwd" class="form-control form-control-sm" value="${u.pwd}">
+                        </div>
+                        <div class="col-12 mt-3">
+                            <label class="small fw-bold">Peranan (Access Level)</label>
+                            <select id="swal-role" class="form-select form-select-sm">
+                                <option value="STAF" ${u.role==='STAF'?'selected':''}>STAF (Boleh Hantar Data)</option>
+                                <option value="PENYELIA" ${u.role==='PENYELIA'?'selected':''}>PENYELIA (Boleh Sahkan Data)</option>
+                                <option value="ADMIN" ${u.role==='ADMIN'?'selected':''}>ADMIN (Kuasa Penuh)</option>
+                            </select>
+                        </div>
+                    </div>
                 `,
                 focusConfirm: false,
                 showCancelButton: true,
-                confirmButtonText: 'Simpan',
-                preConfirm: () => { return { pwd: document.getElementById('swal-pwd').value, role: document.getElementById('swal-role').value } }
+                confirmButtonText: 'Simpan Perubahan',
+                preConfirm: () => {
+                    return {
+                        row: u.row,
+                        uid: document.getElementById('swal-uid').value.trim(),
+                        pwd: document.getElementById('swal-pwd').value.trim(),
+                        nama: document.getElementById('swal-nama').value.trim().toUpperCase(),
+                        negeri: document.getElementById('swal-negeri').value,
+                        role: document.getElementById('swal-role').value,
+                        jawatan: document.getElementById('swal-jawatan').value.trim().toUpperCase(),
+                        ic: document.getElementById('swal-ic').value.trim()
+                    }
+                }
             });
 
             if (formValues) {
-                const r = await postData('updateUser', { row: row, field: 'details', pwd: formValues.pwd, role: formValues.role });
-                if(r.success) { Swal.fire('Berjaya!', 'Data pengguna dikemaskini.', 'success'); loadUsers(); } 
-                else { Swal.fire('Ralat', r.message, 'error'); }
+                Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                const r = await postData('updateUser', { field: 'full_edit', ...formValues });
+                if(r.success) {
+                    Swal.fire('Berjaya!', 'Maklumat pengguna telah dikemaskini.', 'success');
+                    loadUsers();
+                } else {
+                    Swal.fire('Ralat', r.message, 'error');
+                }
             }
         }
         
