@@ -542,8 +542,10 @@
             try {
                 let payload;
                 
-                // ⚠️ KOD DIBETULKAN: Kecualikan 'login' dan 'registerUser' dari semakan token
-                if (act === 'login' || act === 'registerUser') { 
+                // ⚠️ KOD BARU: Senarai fungsi yang TIDAK perlukan Token
+                const laluanBebas = ['login', 'registerUser', 'verifyForgotPwd', 'updateMyAccess'];
+                
+                if (laluanBebas.includes(act)) { 
                     payload = { action: act, ...load }; 
                 } else { 
                     payload = { action: act, token: userToken, u: currentUserID, ...load }; 
@@ -552,8 +554,7 @@
                 const res = await fetch(`${API_URL}?action=${act}`, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(payload) });
                 const r = JSON.parse(await res.text());
 
-                // Jangan halang pop-up kalau dia tengah cuba mendaftar (registerUser)
-                if (act !== 'registerUser' && r.success === false && r.message && (r.message.includes("sesi") || r.message.includes("token"))) {
+                if (!laluanBebas.includes(act) && r.success === false && r.message && (r.message.includes("sesi") || r.message.includes("token"))) {
                     alert("⛔ Sesi tamat. Sila log masuk semula."); 
                     localStorage.removeItem('pnr_session'); 
                     location.reload(); 
@@ -565,6 +566,7 @@
                 return {success:false, message:"Ralat sambungan."}; 
             }
         }
+        
         async function loadMasterData() {
             try {
                 const r = await postData('getTanamanList', {});
@@ -1677,36 +1679,79 @@
             }
         }
 // ==========================================
-        // FUNGSI LUPA KATA LALUAN (HALA KE WHATSAPP)
+        // FUNGSI LUPA KATA LALUAN (SEMAKAN IC & NAMA)
         // ==========================================
-        function lupaKatalaluan() {
-            Swal.fire({
-                title: 'Lupa Kata Laluan?',
-                html: '<span class="text-muted small">Sila masukkan <b>Nama Penuh</b> anda untuk dihantar kepada Admin bagi tujuan semakan.</span>',
-                input: 'text',
-                inputPlaceholder: 'Cth: AHMAD BIN ABU',
-                icon: 'question',
+        async function lupaKatalaluan() {
+            // 1. Minta Nama & IC
+            const { value: formValues } = await Swal.fire({
+                title: 'Lupa Akses Log Masuk?',
+                html: `
+                    <div class="text-start mt-3">
+                        <label class="small fw-bold">Nama Penuh</label>
+                        <input id="swal-nama" class="form-control mb-3 text-uppercase" placeholder="Sama seperti dalam sistem">
+                        <label class="small fw-bold">No. K/P (Tanpa Sengkang)</label>
+                        <input id="swal-ic" type="number" class="form-control" placeholder="Cth: 900101011234">
+                    </div>
+                `,
+                focusConfirm: false,
                 showCancelButton: true,
-                confirmButtonColor: '#25D366', 
-                cancelButtonColor: '#d33',
-                confirmButtonText: '<i class="bi bi-whatsapp"></i> Hantar ke Admin',
+                confirmButtonText: 'Semak Data',
                 cancelButtonText: 'Batal',
-                heightAuto: false, // ⚠️ INI UBAT PENTING: Elak Dashboard Lari
-                inputValidator: (value) => {
-                    if (!value || value.trim() === "") {
-                        return 'Sila masukkan nama penuh anda!';
-                    }
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const nama = result.value.trim().toUpperCase();
-                    const adminPhone = "60189041522"; // Nombor Tuan dikekalkan
-                    
-                    const mesej = `Salam Admin, saya *${nama}* terlupa butiran log masuk sistem PNR. Mohon bantuan untuk semak Username dan Password saya. Terima kasih.`;
-                    const waUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(mesej)}`;
-                    window.open(waUrl, '_blank');
+                preConfirm: () => {
+                    const nama = document.getElementById('swal-nama').value.trim();
+                    const ic = document.getElementById('swal-ic').value.trim();
+                    if(!nama || !ic) { Swal.showValidationMessage('Sila isi kedua-dua maklumat!'); return false; }
+                    return { nama, ic };
                 }
             });
+
+            if (formValues) {
+                Swal.fire({ title: 'Menyemak Pangkalan Data...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
+                
+                // Hantar ke backend untuk disemak
+                const r = await postData('verifyForgotPwd', formValues);
+
+                if (r.success) {
+                    // 2. Jika Jumpa, tunjuk Password & Username (Boleh Edit)
+                    const { value: updateValues } = await Swal.fire({
+                        title: 'Rekod Dijumpai!',
+                        html: `
+                            <div class="alert alert-success small mb-3">Ini adalah akses semasa anda. Anda boleh kekalkan atau tukar kata laluan baru di sini.</div>
+                            <div class="text-start">
+                                <label class="small fw-bold text-success">Username</label>
+                                <input id="upd-uid" class="form-control mb-3" value="${r.uid}">
+                                <label class="small fw-bold text-success">Kata Laluan</label>
+                                <input id="upd-pwd" class="form-control" value="${r.pwd}">
+                            </div>
+                        `,
+                        showCancelButton: true,
+                        confirmButtonText: '<i class="bi bi-save"></i> Simpan & Log Masuk',
+                        cancelButtonText: 'Tutup',
+                        preConfirm: () => {
+                            const uid = document.getElementById('upd-uid').value.trim();
+                            const pwd = document.getElementById('upd-pwd').value.trim();
+                            if(!uid || !pwd) { Swal.showValidationMessage('Username dan Password tidak boleh kosong!'); return false; }
+                            return { uid, pwd, row: r.row };
+                        }
+                    });
+
+                    // 3. Jika tekan Simpan, update di database
+                    if (updateValues) {
+                        Swal.fire({ title: 'Menyimpan Akses Baru...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
+                        const u = await postData('updateMyAccess', updateValues);
+                        if (u.success) {
+                            Swal.fire('Berjaya!', 'Akses anda telah dikemaskini.', 'success');
+                            // Isikan automatik kotak log masuk supaya user tak payah taip semula
+                            document.getElementById('uid').value = updateValues.uid;
+                            document.getElementById('pwd').value = updateValues.pwd;
+                        } else {
+                            Swal.fire('Ralat', u.message, 'error');
+                        }
+                    }
+                } else {
+                    Swal.fire('Tidak Dijumpai', r.message, 'error');
+                }
+            }
         }
 // ==========================================
         // FUNGSI PENDAFTARAN PENGGUNA BARU
