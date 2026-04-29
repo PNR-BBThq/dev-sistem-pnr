@@ -1821,7 +1821,7 @@
             }
         }
 
-        function renderUsers(dataList) {
+       function renderUsers(dataList) {
             const tbody = document.getElementById('userTableBody');
             if(dataList.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Tiada data dijumpai.</td></tr>';
@@ -1829,8 +1829,11 @@
             }
             
             tbody.innerHTML = dataList.map(u => {
-                let statusBadge = u.status.toUpperCase() === 'AKTIF' ? '<span class="badge bg-success">AKTIF</span>' : '<span class="badge bg-warning text-dark">MENUNGGU</span>';
-                let actionBtn = u.status.toUpperCase() !== 'AKTIF' ? 
+                let statusBadge = u.status.toUpperCase() === 'AKTIF' ? '<span class="badge bg-success">AKTIF</span>' : 
+                                  u.status.toUpperCase() === 'MENUNGGU' ? '<span class="badge bg-warning text-dark">MENUNGGU</span>' :
+                                  '<span class="badge bg-danger">' + u.status.toUpperCase() + '</span>';
+                                  
+                let actionBtn = u.status.toUpperCase() === 'MENUNGGU' ? 
                     `<button class="btn btn-sm btn-success fw-bold me-1" onclick="updateUserStatus(${u.row}, 'AKTIF')"><i class="bi bi-check-lg"></i> LULUS</button>` : '';
                 
                 return `
@@ -1845,7 +1848,8 @@
                     <td class="text-center">${statusBadge}</td>
                     <td class="text-center">
                         ${actionBtn}
-                        <button class="btn btn-sm btn-outline-primary" onclick="editUser(${u.row})"><i class="bi bi-pencil-square"></i></button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="editUser(${u.row})" title="Kemaskini"><i class="bi bi-pencil-square"></i></button>
+                        <button class="btn btn-sm btn-outline-danger ms-1" onclick="deleteUser(${u.row})" title="Padam Akaun"><i class="bi bi-trash-fill"></i></button>
                     </td>
                 </tr>`;
             }).join('');
@@ -1864,9 +1868,35 @@
         async function updateUserStatus(row, newStatus) {
             if(!confirm(`Adakah anda pasti mahu menukar status kepada ${newStatus}?`)) return;
             const r = await postData('updateUser', { row: row, field: 'status', value: newStatus });
-            if(r.success) { alert("Berjaya dikemaskini!"); loadUsers(); } else { alert("Ralat: " + r.message); }
+            if(r.success) { loadUsers(); } else { alert("Ralat: " + r.message); }
         }
 
+        // --- FUNGSI PADAM PENGGUNA BARU ---
+        async function deleteUser(row) {
+            const res = await Swal.fire({
+                title: 'Padam Akaun?',
+                text: "Tindakan ini akan memadam data pengguna ini secara KEKAL!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bi bi-trash"></i> Ya, Padam!',
+                cancelButtonText: 'Batal'
+            });
+
+            if (res.isConfirmed) {
+                Swal.fire({ title: 'Memadam...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                const r = await postData('deleteUser', { row: row });
+                if (r.success) {
+                    Swal.fire('Berjaya!', 'Akaun telah dipadam.', 'success');
+                    loadUsers(); // Refresh jadual
+                } else {
+                    Swal.fire('Ralat', r.message, 'error');
+                }
+            }
+        }
+
+        // --- FUNGSI EDIT PENGGUNA (TAMBAH STATUS) ---
         async function editUser(row) {
             const u = allUsersData.find(x => x.row === row);
             if(!u) return;
@@ -1918,12 +1948,21 @@
                             <label class="small fw-bold text-danger">Password</label>
                             <input id="swal-pwd" class="form-control form-control-sm" value="${u.pwd}">
                         </div>
-                        <div class="col-12 mt-3">
+                        <div class="col-6 mt-3">
                             <label class="small fw-bold">Peranan (Access Level)</label>
                             <select id="swal-role" class="form-select form-select-sm">
-                                <option value="STAFF" ${u.role==='STAF'?'selected':''}>STAF (Boleh Hantar Data)</option>
-                                <option value="PENYELIA" ${u.role==='PENYELIA'?'selected':''}>PENYELIA (Boleh Sahkan Data)</option>
-                                <option value="ADMIN" ${u.role==='ADMIN'?'selected':''}>ADMIN (Akses semua)</option>
+                                <option value="STAF" ${u.role==='STAF'?'selected':''}>STAF</option>
+                                <option value="PENYELIA" ${u.role==='PENYELIA'?'selected':''}>PENYELIA</option>
+                                <option value="ADMIN" ${u.role==='ADMIN'?'selected':''}>ADMIN</option>
+                            </select>
+                        </div>
+                        <div class="col-6 mt-3">
+                            <label class="small fw-bold text-warning">Status Akaun</label>
+                            <select id="swal-status" class="form-select form-select-sm">
+                                <option value="AKTIF" ${u.status.toUpperCase()==='AKTIF'?'selected':''}>AKTIF</option>
+                                <option value="MENUNGGU" ${u.status.toUpperCase()==='MENUNGGU'?'selected':''}>MENUNGGU</option>
+                                <option value="DITOLAK" ${u.status.toUpperCase()==='DITOLAK'?'selected':''}>DITOLAK</option>
+                                <option value="DIGANTUNG" ${u.status.toUpperCase()==='DIGANTUNG'?'selected':''}>DIGANTUNG</option>
                             </select>
                         </div>
                     </div>
@@ -1940,7 +1979,8 @@
                         negeri: document.getElementById('swal-negeri').value,
                         role: document.getElementById('swal-role').value,
                         jawatan: document.getElementById('swal-jawatan').value.trim().toUpperCase(),
-                        ic: document.getElementById('swal-ic').value.trim()
+                        ic: document.getElementById('swal-ic').value.trim(),
+                        status: document.getElementById('swal-status').value // DATA BARU
                     }
                 }
             });
@@ -1956,7 +1996,6 @@
                 }
             }
         }
-        
     </script>
 </body>
 </html>
