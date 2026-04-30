@@ -979,12 +979,10 @@ function dapatkanWarnaTahap(peratus) {
     return '#ef4444';                    // Merah (81-100%)
 }
 
-// Pembolehubah layer untuk benarkan 'toggle' hidup/mati (Global)
 let markerLayer = null; 
 let zoneLayer = null;
 let mapLayerControl = null;
 
-// FUNGSI MENENTUKAN WARNA BERDASARKAN PERATUS SERANGAN (Syarat Tuan)
 function dapatkanWarnaTahap(peratus) {
     if (peratus <= 10) return '#ffffff'; // Putih (0-10%)
     if (peratus <= 50) return '#22c55e'; // Hijau (11-50%)
@@ -995,7 +993,6 @@ function dapatkanWarnaTahap(peratus) {
 function updateMap(pts) { 
     if(!map) return;
     
-    // 1. Bersihkan layer lama jika ada
     if(markerLayer) map.removeLayer(markerLayer); 
     if(zoneLayer) map.removeLayer(zoneLayer);
     if(mapLayerControl) map.removeControl(mapLayerControl);
@@ -1008,70 +1005,82 @@ function updateMap(pts) {
             const p = item.coord; 
             const d = item.data; 
             
-            // --- KIRA PERATUSAN SECARA AUTOMATIK (CLIENT-SIDE) ---
-            let peratus = 0;
-            if (d.lt > 0) { peratus = (d.ls / d.lt) * 100; }
-            const warnaZon = dapatkanWarnaTahap(peratus);
-
-            // Logik Pop-up Perosak (Kekalkan kod asal Tuan)
             let pestHTML = ""; 
             let pestObj = {}; 
+            let maxPeratus = 0; // Untuk simpan % tertinggi bagi penentuan warna zon
+
             try { pestObj = typeof d.p === 'string' ? JSON.parse(d.p) : d.p; } catch(e) { pestObj = {}; }
             
+            // --- KIRA PERATUSAN INDIVIDU UNTUK SETIAP PEROSAK ---
             if (pestObj && Object.keys(pestObj).length > 0) { 
-                pestHTML = `<div style="margin-top:5px; border-top:1px dashed #ccc; padding-top:5px;"><small class="fw-bold text-muted">PERINCIAN PEROSAK:</small><ul style="padding-left: 15px; margin-bottom: 0; font-size: 0.8rem;">`; 
-                Object.entries(pestObj).forEach(([nama, luas]) => { pestHTML += `<li>${nama}: <b class="text-danger">${parseFloat(luas).toFixed(2)} Ha</b></li>`; }); 
+                pestHTML = `<div style="margin-top:5px; border-top:1px dashed #ccc; padding-top:5px;">
+                            <small class="fw-bold text-muted">PERINCIAN & PERATUS PEROSAK:</small>
+                            <ul style="padding-left: 15px; margin-bottom: 0; font-size: 0.8rem;">`; 
+                
+                Object.entries(pestObj).forEach(([nama, luas]) => { 
+                    let luasPest = parseFloat(luas) || 0;
+                    let peratusPest = 0;
+                    
+                    // Kira peratus individu perosak
+                    if (d.lt > 0) { peratusPest = (luasPest / d.lt) * 100; }
+                    
+                    // Rekodkan peratusan paling tinggi untuk jadikan warna bulatan map
+                    if (peratusPest > maxPeratus) { maxPeratus = peratusPest; }
+                    
+                    let warnaTeks = dapatkanWarnaTahap(peratusPest);
+                    warnaTeks = warnaTeks === '#ffffff' ? 'black' : warnaTeks; // Elak teks putih atas background cerah
+                    
+                    pestHTML += `<li>${nama}: <b>${luasPest.toFixed(2)} Ha</b> <span style="color:${warnaTeks}; font-weight:bold;">(${peratusPest.toFixed(1)}%)</span></li>`; 
+                }); 
                 pestHTML += `</ul></div>`; 
             } else { 
                 pestHTML = `<div class="mt-2 text-muted small fst-italic">- Tiada data perosak terperinci -</div>`; 
+                // Fallback jika tiada data perincian
+                if (d.lt > 0 && d.ls > 0) maxPeratus = (d.ls / d.lt) * 100;
             }
+
+            // Warna zon ditentukan oleh perosak paling tinggi peratusannya
+            const warnaZon = dapatkanWarnaTahap(maxPeratus);
             
-            // Pop-up utama (Ditingkatkan dengan kotak 'TAHAP %')
+            // Pop-up utama
             const popupContent = `<div style="font-family: sans-serif; font-size: 0.85rem; min-width: 200px;">
                 <div style="background-color: #f8f9fa; padding: 5px; border-bottom: 1px solid #ddd; margin-bottom: 5px;"><b class="text-success text-uppercase">${d.tn}</b></div>
                 <div class="mb-1"><i class="bi bi-geo-alt-fill text-danger"></i> <b>${d.l}</b><br><span class="text-muted small">${d.d}, ${d.n}</span></div>
                 
                 <div class="d-flex justify-content-between bg-light border rounded p-1 mb-2" style="font-size: 0.8rem;">
                     <div><span class="d-block text-muted" style="font-size:0.65rem">LUAS TANAM</span><b>${d.lt.toFixed(2)} Ha</b></div>
-                    <div class="text-center border-start ps-2 pe-2"><span class="d-block text-muted" style="font-size:0.65rem">SERANGAN</span><b class="text-danger">${d.ls.toFixed(2)} Ha</b></div>
-                    <div class="text-end border-start ps-2"><span class="d-block text-muted" style="font-size:0.65rem">TAHAP</span><b style="color:${warnaZon === '#ffffff' ? 'black' : warnaZon}">${peratus.toFixed(1)}%</b></div>
+                    <div class="text-end border-start ps-2"><span class="d-block text-muted" style="font-size:0.65rem">ANCAMAN MAX</span><b style="color:${warnaZon === '#ffffff' ? 'black' : warnaZon}">${maxPeratus.toFixed(1)}%</b></div>
                 </div>
                 
                 ${pestHTML}
                 <div class="text-end mt-2"><small class="text-muted" style="font-size: 0.7rem;">Tarikh: ${d.t}</small></div>
             </div>`;
             
-            // --- BINA LAYER A: TITIK LOKASI BIASA (CircleMarker - Pixel radius) ---
+            // LAYER A: Marker biasa
             const marker = L.circleMarker(p, { radius: 6, color: 'white', weight: 1, fillColor: '#dc2626', fillOpacity: 0.8 });
             marker.bindPopup(popupContent); 
             marker.bindTooltip(`<b>${d.tn}</b>: ${d.l}`, { direction: 'top', offset: [0, -5], opacity: 0.9 }); 
             markersArr.push(marker);
 
-            // --- BINA LAYER B: ZON SERANGAN (L.circle - Radius dalam METER) ---
+            // LAYER B: Zon Serangan
             const zone = L.circle(p, {
                 color: 'black',
                 weight: 1,
-                fillColor: warnaZon, // Warna solid ikut peratus
-                fillOpacity: 0.7,     // Lutsinar sedikit
-                radius: 1000          // <--- RADIUS: 1000 Meter (1 KM). Tuan boleh tukar meter di sini.
+                fillColor: warnaZon, 
+                fillOpacity: 0.7,     
+                radius: 1000          // Radius 1 KM
             });
-            zone.bindPopup(popupContent); // Kongsi pop-up yang sama
-            zone.bindTooltip(`Tahap Serangan: <b>${peratus.toFixed(1)}%</b>`, { direction: 'top', opacity: 0.9 });
+            zone.bindPopup(popupContent); 
+            zone.bindTooltip(`Kritikal Tertinggi: <b>${maxPeratus.toFixed(1)}%</b>`, { direction: 'top', opacity: 0.9 });
             zonesArr.push(zone);
         });
 
-        // Himpunkan semua titik ke dalam kumpulan layer
         markerLayer = L.layerGroup(markersArr); 
-        zoneLayer = L.layerGroup(zonesArr);
+        zoneLayer = L.layerGroup(zonesArr).addTo(map); // Default buka zon
 
-        // PAPARAN DEFAULT: Tunjuk Zon Serangan pada mulanya
-        zoneLayer.addTo(map); 
-
-        // BINA KOTAK PILIHAN (TOGGLE LAYER)
-        // Kita letak ikon emoji supaya nampak mesra pengguna
         const overlayMaps = {
             "📍 Titik Lokasi (Biasa)": markerLayer,
-            "⭕ Zon Serangan (1km)": zoneLayer
+            "⭕ Zon Ancaman (1km)": zoneLayer
         };
         mapLayerControl = L.control.layers(null, overlayMaps, {collapsed: false}).addTo(map);
 
