@@ -13,6 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
+    <script src="https://leaflet.github.io/Leaflet.heat/dist/leaflet-heat.js"></script>
 
     <style>
         :root { --primary: #064e3b; --accent: #10b981; --bg: #f3f4f6; }
@@ -965,21 +966,104 @@
             charts.p = new Chart(document.getElementById('cPie'), { type: 'doughnut', data: { labels: ['T1','T2','T3','T4','T5'], datasets: [{ data: Object.values(km), backgroundColor: ['#22c55e','#84cc16','#eab308','#f97316','#ef4444'], borderWidth:0 }] }, options: { maintainAspectRatio: false, plugins:{legend:{position:'right'}} } }); 
         }
         
-        function updateMap(pts) { 
-            if(!map) return;
-            if(layer) map.removeLayer(layer); 
-            if(pts.length) { 
-                const markers = pts.map(item => {
-                    const p = item.coord; const d = item.data; let pestHTML = ""; let pestObj = {}; try { pestObj = typeof d.p === 'string' ? JSON.parse(d.p) : d.p; } catch(e) { pestObj = {}; }
-                    if (pestObj && Object.keys(pestObj).length > 0) { pestHTML = `<div style="margin-top:5px; border-top:1px dashed #ccc; padding-top:5px;"><small class="fw-bold text-muted">PERINCIAN PEROSAK:</small><ul style="padding-left: 15px; margin-bottom: 0; font-size: 0.8rem;">`; Object.entries(pestObj).forEach(([nama, luas]) => { pestHTML += `<li>${nama}: <b class="text-danger">${parseFloat(luas).toFixed(2)} Ha</b></li>`; }); pestHTML += `</ul></div>`; } else { pestHTML = `<div class="mt-2 text-muted small fst-italic">- Tiada data perosak terperinci -</div>`; }
-                    const popupContent = `<div style="font-family: sans-serif; font-size: 0.85rem; min-width: 200px;"><div style="background-color: #f8f9fa; padding: 5px; border-bottom: 1px solid #ddd; margin-bottom: 5px;"><b class="text-success text-uppercase">${d.tn}</b></div><div class="mb-1"><i class="bi bi-geo-alt-fill text-danger"></i> <b>${d.l}</b><br><span class="text-muted small">${d.d}, ${d.n}</span></div><div class="d-flex justify-content-between bg-light border rounded p-1 mb-2" style="font-size: 0.8rem;"><div><span class="d-block text-muted" style="font-size:0.7rem">LUAS TANAM</span><b>${d.lt.toFixed(2)} Ha</b></div><div class="text-end border-start ps-2"><span class="d-block text-muted" style="font-size:0.7rem">JUMLAH SERANGAN</span><b class="text-danger">${d.ls.toFixed(2)} Ha</b></div></div>${pestHTML}<div class="text-end mt-2"><small class="text-muted" style="font-size: 0.7rem;">Tarikh: ${d.t}</small></div></div>`;
-                    const marker = L.circleMarker(p, { radius: 6, color: 'white', weight: 1, fillColor: '#dc2626', fillOpacity: 0.8 });
-                    marker.bindPopup(popupContent); marker.bindTooltip(`<b>${d.tn}</b>: ${d.l}`, { direction: 'top', offset: [0, -5], opacity: 0.9 }); return marker;
-                });
-                layer = L.layerGroup(markers).addTo(map); 
-                try { map.fitBounds(L.latLngBounds(pts.map(x => x.coord))); } catch(e){}
-            } 
-        }
+        // Pembolehubah layer untuk benarkan 'toggle' hidup/mati
+let markerLayer = null; 
+let zoneLayer = null;
+let mapLayerControl = null;
+
+// Fungsi menentukan warna berdasarkan Peratus Serangan
+function dapatkanWarnaTahap(peratus) {
+    if (peratus <= 10) return '#ffffff'; // Putih (0-10%)
+    if (peratus <= 50) return '#22c55e'; // Hijau (11-50%)
+    if (peratus <= 80) return '#eab308'; // Kuning (51-80%)
+    return '#ef4444';                    // Merah (81-100%)
+}
+
+function updateMap(pts) { 
+    if(!map) return;
+    
+    // 1. Bersihkan layer lama jika ada
+    if(markerLayer) map.removeLayer(markerLayer); 
+    if(zoneLayer) map.removeLayer(zoneLayer);
+    if(mapLayerControl) map.removeControl(mapLayerControl);
+
+    if(pts.length) { 
+        const markersArr = [];
+        const zonesArr = [];
+
+        pts.forEach(item => {
+            const p = item.coord; 
+            const d = item.data; 
+            
+            // KIRA PERATUSAN SECARA AUTOMATIK
+            let peratus = 0;
+            if (d.lt > 0) { peratus = (d.ls / d.lt) * 100; }
+            const warnaZon = dapatkanWarnaTahap(peratus);
+
+            // Logik Pop-up Perosak (Kekalkan kod asal Tuan)
+            let pestHTML = ""; 
+            let pestObj = {}; 
+            try { pestObj = typeof d.p === 'string' ? JSON.parse(d.p) : d.p; } catch(e) { pestObj = {}; }
+            
+            if (pestObj && Object.keys(pestObj).length > 0) { 
+                pestHTML = `<div style="margin-top:5px; border-top:1px dashed #ccc; padding-top:5px;"><small class="fw-bold text-muted">PERINCIAN PEROSAK:</small><ul style="padding-left: 15px; margin-bottom: 0; font-size: 0.8rem;">`; 
+                Object.entries(pestObj).forEach(([nama, luas]) => { pestHTML += `<li>${nama}: <b class="text-danger">${parseFloat(luas).toFixed(2)} Ha</b></li>`; }); 
+                pestHTML += `</ul></div>`; 
+            } else { 
+                pestHTML = `<div class="mt-2 text-muted small fst-italic">- Tiada data perosak terperinci -</div>`; 
+            }
+            
+            // Pop-up utama (Ditambah kotak 'TAHAP %' di bahagian tengah)
+            const popupContent = `<div style="font-family: sans-serif; font-size: 0.85rem; min-width: 200px;">
+                <div style="background-color: #f8f9fa; padding: 5px; border-bottom: 1px solid #ddd; margin-bottom: 5px;"><b class="text-success text-uppercase">${d.tn}</b></div>
+                <div class="mb-1"><i class="bi bi-geo-alt-fill text-danger"></i> <b>${d.l}</b><br><span class="text-muted small">${d.d}, ${d.n}</span></div>
+                
+                <div class="d-flex justify-content-between bg-light border rounded p-1 mb-2" style="font-size: 0.8rem;">
+                    <div><span class="d-block text-muted" style="font-size:0.65rem">LUAS TANAM</span><b>${d.lt.toFixed(2)} Ha</b></div>
+                    <div class="text-center border-start ps-2 pe-2"><span class="d-block text-muted" style="font-size:0.65rem">SERANGAN</span><b class="text-danger">${d.ls.toFixed(2)} Ha</b></div>
+                    <div class="text-end border-start ps-2"><span class="d-block text-muted" style="font-size:0.65rem">TAHAP</span><b style="color:${warnaZon === '#ffffff' ? 'black' : warnaZon}">${peratus.toFixed(1)}%</b></div>
+                </div>
+                
+                ${pestHTML}
+                <div class="text-end mt-2"><small class="text-muted" style="font-size: 0.7rem;">Tarikh: ${d.t}</small></div>
+            </div>`;
+            
+            // --- BINA LAYER A: TITIK LOKASI BIASA ---
+            const marker = L.circleMarker(p, { radius: 6, color: 'white', weight: 1, fillColor: '#dc2626', fillOpacity: 0.8 });
+            marker.bindPopup(popupContent); 
+            marker.bindTooltip(`<b>${d.tn}</b>: ${d.l}`, { direction: 'top', offset: [0, -5], opacity: 0.9 }); 
+            markersArr.push(marker);
+
+            // --- BINA LAYER B: ZON SERANGAN (RADIUS 1 KM) ---
+            const zone = L.circle(p, {
+                color: 'black',
+                weight: 1,
+                fillColor: warnaZon,
+                fillOpacity: 0.7, // Tahap kejelasan warna
+                radius: 1000      // RADIUS: 1000 Meter (1 KM). Boleh tukar jika perlu.
+            });
+            zone.bindPopup(popupContent); // Kekalkan Pop-up yang sama
+            zone.bindTooltip(`Tahap Serangan: <b>${peratus.toFixed(1)}%</b>`, { direction: 'top', opacity: 0.9 });
+            zonesArr.push(zone);
+        });
+
+        // Himpunkan semua titik ke dalam kumpulan layer
+        markerLayer = L.layerGroup(markersArr); 
+        zoneLayer = L.layerGroup(zonesArr);
+
+        // PAPARAN DEFAULT: Tunjuk Zon Serangan pada mulanya
+        zoneLayer.addTo(map); 
+
+        // BINA KOTAK PILIHAN (TOGGLE)
+        const overlayMaps = {
+            "📍 Titik Lokasi (Biasa)": markerLayer,
+            "⭕ Zon Serangan (1km)": zoneLayer
+        };
+        mapLayerControl = L.control.layers(null, overlayMaps, {collapsed: false}).addTo(map);
+
+        try { map.fitBounds(L.latLngBounds(pts.map(x => x.coord))); } catch(e){}
+    } 
+}
         function updateHotspot(hData) { const s = Object.entries(hData).sort((a,b)=>b[1]-a[1]).slice(0,5); document.getElementById('hotspotTable').innerHTML = s.length ? s.map(x=>`<tr><td>${x[0]}</td><td class="text-end fw-bold text-danger">${x[1].toFixed(2)}</td></tr>`).join('') : '<tr><td colspan="2" class="text-center text-muted">Tiada Data</td></tr>'; }
         
        function renTab() { 
