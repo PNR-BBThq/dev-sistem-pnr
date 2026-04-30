@@ -966,36 +966,21 @@
             charts.p = new Chart(document.getElementById('cPie'), { type: 'doughnut', data: { labels: ['T1','T2','T3','T4','T5'], datasets: [{ data: Object.values(km), backgroundColor: ['#22c55e','#84cc16','#eab308','#f97316','#ef4444'], borderWidth:0 }] }, options: { maintainAspectRatio: false, plugins:{legend:{position:'right'}} } }); 
         }
         
-        // Pembolehubah layer untuk benarkan 'toggle' hidup/mati
-var markerLayer = null; 
-var zoneLayer = null;
+      var markerLayer = null; 
+var heatLayer = null;
 var mapLayerControl = null;
-
-// Fungsi menentukan warna berdasarkan Peratus Serangan
-function dapatkanWarnaTahap(peratus) {
-    if (peratus <= 10) return '#ffffff'; // Putih (0-10%)
-    if (peratus <= 50) return '#22c55e'; // Hijau (11-50%)
-    if (peratus <= 80) return '#eab308'; // Kuning (51-80%)
-    return '#ef4444';                    // Merah (81-100%)
-}
-
-function dapatkanWarnaTahap(peratus) {
-    if (peratus <= 10) return '#ffffff'; // Putih (0-10%)
-    if (peratus <= 50) return '#22c55e'; // Hijau (11-50%)
-    if (peratus <= 80) return '#eab308'; // Kuning (51-80%)
-    return '#ef4444';                    // Merah (81-100%)
-}
 
 function updateMap(pts) { 
     if(!map) return;
     
+    // 1. Bersihkan layer lama
     if(markerLayer) map.removeLayer(markerLayer); 
-    if(zoneLayer) map.removeLayer(zoneLayer);
+    if(heatLayer) map.removeLayer(heatLayer);
     if(mapLayerControl) map.removeControl(mapLayerControl);
 
     if(pts.length) { 
         const markersArr = [];
-        const zonesArr = [];
+        const heatData = []; // Array khas untuk kumpul data awan haba
 
         pts.forEach(item => {
             const p = item.coord; 
@@ -1003,11 +988,11 @@ function updateMap(pts) {
             
             let pestHTML = ""; 
             let pestObj = {}; 
-            let maxPeratus = 0; // Untuk simpan % tertinggi bagi penentuan warna zon
+            let maxPeratus = 0; // Pembolehubah untuk cari ancaman paling tinggi
 
             try { pestObj = typeof d.p === 'string' ? JSON.parse(d.p) : d.p; } catch(e) { pestObj = {}; }
             
-            // --- KIRA PERATUSAN INDIVIDU UNTUK SETIAP PEROSAK ---
+            // --- KIRA PERATUSAN INDIVIDU (Logik Pertanian) ---
             if (pestObj && Object.keys(pestObj).length > 0) { 
                 pestHTML = `<div style="margin-top:5px; border-top:1px dashed #ccc; padding-top:5px;">
                             <small class="fw-bold text-muted">PERINCIAN & PERATUS PEROSAK:</small>
@@ -1016,67 +1001,65 @@ function updateMap(pts) {
                 Object.entries(pestObj).forEach(([nama, luas]) => { 
                     let luasPest = parseFloat(luas) || 0;
                     let peratusPest = 0;
-                    
-                    // Kira peratus individu perosak
                     if (d.lt > 0) { peratusPest = (luasPest / d.lt) * 100; }
                     
-                    // Rekodkan peratusan paling tinggi untuk jadikan warna bulatan map
+                    // Rekod ancaman tertinggi untuk dijadikan "Suhu" Heatmap
                     if (peratusPest > maxPeratus) { maxPeratus = peratusPest; }
                     
-                    let warnaTeks = dapatkanWarnaTahap(peratusPest);
-                    warnaTeks = warnaTeks === '#ffffff' ? 'black' : warnaTeks; // Elak teks putih atas background cerah
-                    
-                    pestHTML += `<li>${nama}: <b>${luasPest.toFixed(2)} Ha</b> <span style="color:${warnaTeks}; font-weight:bold;">(${peratusPest.toFixed(1)}%)</span></li>`; 
+                    pestHTML += `<li>${nama}: <b>${luasPest.toFixed(2)} Ha</b> <span style="font-weight:bold;">(${peratusPest.toFixed(1)}%)</span></li>`; 
                 }); 
                 pestHTML += `</ul></div>`; 
             } else { 
                 pestHTML = `<div class="mt-2 text-muted small fst-italic">- Tiada data perosak terperinci -</div>`; 
-                // Fallback jika tiada data perincian
                 if (d.lt > 0 && d.ls > 0) maxPeratus = (d.ls / d.lt) * 100;
             }
 
-            // Warna zon ditentukan oleh perosak paling tinggi peratusannya
-            const warnaZon = dapatkanWarnaTahap(maxPeratus);
-            
-            // Pop-up utama
+            // --- MASUKKAN KOORDINAT & SUHU (MAX PERATUS) KE DALAM HEATMAP ---
+            heatData.push([p[0], p[1], maxPeratus]);
+
+            // --- BINA POP-UP MARKER ---
             const popupContent = `<div style="font-family: sans-serif; font-size: 0.85rem; min-width: 200px;">
                 <div style="background-color: #f8f9fa; padding: 5px; border-bottom: 1px solid #ddd; margin-bottom: 5px;"><b class="text-success text-uppercase">${d.tn}</b></div>
                 <div class="mb-1"><i class="bi bi-geo-alt-fill text-danger"></i> <b>${d.l}</b><br><span class="text-muted small">${d.d}, ${d.n}</span></div>
                 
                 <div class="d-flex justify-content-between bg-light border rounded p-1 mb-2" style="font-size: 0.8rem;">
                     <div><span class="d-block text-muted" style="font-size:0.65rem">LUAS TANAM</span><b>${d.lt.toFixed(2)} Ha</b></div>
-                    <div class="text-end border-start ps-2"><span class="d-block text-muted" style="font-size:0.65rem">ANCAMAN MAX</span><b style="color:${warnaZon === '#ffffff' ? 'black' : warnaZon}">${maxPeratus.toFixed(1)}%</b></div>
+                    <div class="text-end border-start ps-2"><span class="d-block text-muted" style="font-size:0.65rem">ANCAMAN MAX</span><b class="text-danger">${maxPeratus.toFixed(1)}%</b></div>
                 </div>
                 
                 ${pestHTML}
                 <div class="text-end mt-2"><small class="text-muted" style="font-size: 0.7rem;">Tarikh: ${d.t}</small></div>
             </div>`;
             
-            // LAYER A: Marker biasa
             const marker = L.circleMarker(p, { radius: 6, color: 'white', weight: 1, fillColor: '#dc2626', fillOpacity: 0.8 });
             marker.bindPopup(popupContent); 
             marker.bindTooltip(`<b>${d.tn}</b>: ${d.l}`, { direction: 'top', offset: [0, -5], opacity: 0.9 }); 
             markersArr.push(marker);
-
-            // LAYER B: Zon Serangan
-            const zone = L.circle(p, {
-                color: 'black',
-                weight: 1,
-                fillColor: warnaZon, 
-                fillOpacity: 0.7,     
-                radius: 1000          // Radius 1 KM
-            });
-            zone.bindPopup(popupContent); 
-            zone.bindTooltip(`Kritikal Tertinggi: <b>${maxPeratus.toFixed(1)}%</b>`, { direction: 'top', opacity: 0.9 });
-            zonesArr.push(zone);
         });
 
+        // Himpunkan Marker
         markerLayer = L.layerGroup(markersArr); 
-        zoneLayer = L.layerGroup(zonesArr).addTo(map); // Default buka zon
+        
+        // --- BINA LAYER HEATMAP ---
+        heatLayer = L.heatLayer(heatData, {
+            radius: 35,     // Saiz awan haba (Boleh besarkan kalau nampak kecil)
+            blur: 25,       // Tahap kelembutan warna (Boleh naikkan supaya lebih blend)
+            max: 100,       // Suhu maksimum (Sebab % paling tinggi ialah 100)
+            gradient: {
+                0.1: 'blue',   // 10% ke bawah: Biru (Selamat)
+                0.4: 'lime',   // 40% sekitar: Hijau 
+                0.7: 'yellow', // 70% sekitar: Kuning (Bahaya)
+                1.0: 'red'     // 100%: Merah Menyala (Kritikal)
+            }
+        });
 
+        // Paparkan Heatmap sebagai default
+        heatLayer.addTo(map);
+
+        // Kawalan Menu Layer
         const overlayMaps = {
             "📍 Titik Lokasi (Biasa)": markerLayer,
-            "⭕ Zon Ancaman (1km)": zoneLayer
+            "🔥 Peta Haba (Heatmap)": heatLayer
         };
         mapLayerControl = L.control.layers(null, overlayMaps, {collapsed: false}).addTo(map);
 
