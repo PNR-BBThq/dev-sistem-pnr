@@ -2246,38 +2246,39 @@ function downloadKML() {
     };
 
     let kml = `<?xml version="1.0" encoding="UTF-8"?>
-    <kml xmlns="http://www.opengis.net/kml/2.2">
-    <Document>
-        <name>Laporan Serangan PNR Digital</name>
-        <description>Data spatial serangan perosak/penyakit</description>`;
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+    <name>Laporan Serangan PNR Digital</name>
+    <description>Data spatial serangan perosak/penyakit</description>\n`;
 
     fData.forEach(d => {
         const coord = d.c.split(',').map(Number);
         const peratus = d.lt > 0 ? ((d.ls / d.lt) * 100) : 0;
-        const warna = colorMap[d.n.toUpperCase()] || "ffffffff"; // Default Putih
+        const warna = colorMap[(d.n || "").toUpperCase()] || "ffffffff"; // Default Putih
         
         // Saiz ikon berdasarkan peratus serangan (skala 0.5 hingga 2.5)
         const skala = Math.max(0.5, (peratus / 100) * 2.5).toFixed(1);
 
+        // Perhatikan ejaan <scale> dan </scale> yang dah dibetulkan di bawah ini 😄
         kml += `
-        <Placemark>
-            <name>${d.tn} - ${d.l}</name>
-            <description>
-                Negeri: ${d.n}
-                Serangan: ${d.ls} Ha (${peratus.toFixed(1)}%)
-                Keterukan: T${d.k}
-            </description>
-            <Style>
-                <IconStyle>
-                    <color>${warna}</color>
-                    <scale>${skala}</skale>
-                    <Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon>
-                </IconStyle>
-            </Style>
-            <Point>
-                <coordinates>${coord[1]},${coord[0]},0</coordinates>
-            </Point>
-        </Placemark>`;
+    <Placemark>
+        <name>${d.tn} - ${d.l}</name>
+        <description><![CDATA[
+            <b>Negeri:</b> ${d.n}<br>
+            <b>Serangan:</b> ${d.ls.toFixed(2)} Ha (${peratus.toFixed(1)}%)<br>
+            <b>Keterukan:</b> T${d.k}
+        ]]></description>
+        <Style>
+            <IconStyle>
+                <color>${warna}</color>
+                <scale>${skala}</scale>
+                <Icon><href>http://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href></Icon>
+            </IconStyle>
+        </Style>
+        <Point>
+            <coordinates>${coord[1]},${coord[0]},0</coordinates>
+        </Point>
+    </Placemark>`;
     });
 
     kml += `\n</Document></kml>`;
@@ -2287,7 +2288,10 @@ function downloadKML() {
     const a = document.createElement('a');
     a.href = url;
     a.download = "PNR_Laporan_GoogleEarth.kml";
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
 }
       
     </script>
