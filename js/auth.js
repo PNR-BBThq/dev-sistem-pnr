@@ -89,86 +89,42 @@ const AuthManager = {
         location.reload(); 
     },
 
-    toggleDaftar: async function() {
-        const { value: formValues } = await Swal.fire({
-            title: 'Daftar Akaun Baru',
-            width: '500px',
-            html: `
-                <div class="text-start mt-3" style="font-size: 0.9rem;">
-                    <div class="alert alert-info py-2 small mb-3"><i class="bi bi-info-circle-fill"></i> Akaun baru perlu disahkan oleh Admin sebelum boleh digunakan.</div>
-                    
-                    <label class="fw-bold mb-1 text-secondary">Nama Penuh (Seperti Kad Pengenalan)</label>
-                    <input id="reg-nama" class="form-control form-control-sm mb-3 text-uppercase" placeholder="Nama penuh anda">
-                    
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label class="fw-bold mb-1 text-secondary">No. K/P (Tanpa Sengkang)</label>
-                            <input id="reg-ic" type="number" class="form-control form-control-sm" placeholder="900101011234">
-                        </div>
-                        <div class="col-6">
-                            <label class="fw-bold mb-1 text-secondary">Jawatan</label>
-                            <input id="reg-jawatan" class="form-control form-control-sm text-uppercase" placeholder="Cth: PEGAWAI PERTANIAN">
-                        </div>
-                    </div>
-                    
-                    <label class="fw-bold mb-1 text-secondary">Negeri Bertugas</label>
-                    <select id="reg-negeri" class="form-select form-select-sm mb-4">
-                        <option value="">- Pilih Negeri -</option>
-                        ${Object.keys(DISTRICT_DATA).map(n => `<option value="${n}">${n}</option>`).join('')}
-                    </select>
+  toggleDaftar: async function() {
+        // Ambil nilai dari borang HTML
+        const nama = document.getElementById('reg-nama').value.trim();
+        const ic = document.getElementById('reg-ic').value.trim();
+        const jawatan = document.getElementById('reg-jawatan').value.trim();
+        const negeri = document.getElementById('reg-negeri').value;
+        const uid = document.getElementById('reg-uid').value.trim();
+        const pwd = document.getElementById('reg-pwd').value.trim();
 
-                    <hr class="my-3 text-muted">
+        if(!nama || !ic || !jawatan || !negeri || !uid || !pwd) {
+            Swal.fire('Maklumat Tidak Lengkap', 'Sila isi SEMUA maklumat yang diwajibkan!', 'warning');
+            return;
+        }
 
-                    <div class="row g-2">
-                        <div class="col-6">
-                            <label class="fw-bold mb-1 text-primary">ID Pengguna (Username)</label>
-                            <input id="reg-uid" class="form-control form-control-sm text-lowercase" placeholder="Pilih username anda">
-                        </div>
-                        <div class="col-6">
-                            <label class="fw-bold mb-1 text-danger">Kata Laluan</label>
-                            <input id="reg-pwd" type="password" class="form-control form-control-sm" placeholder="Pilih kata laluan">
-                        </div>
-                    </div>
-                </div>
-            `,
-            focusConfirm: false,
-            showCancelButton: true,
-            confirmButtonText: '<i class="bi bi-person-plus-fill me-1"></i> Hantar Pendaftaran',
-            cancelButtonText: 'Batal',
-            confirmButtonColor: '#198754',
-            preConfirm: () => {
-                const nama = document.getElementById('reg-nama').value.trim();
-                const ic = document.getElementById('reg-ic').value.trim();
-                const jawatan = document.getElementById('reg-jawatan').value.trim();
-                const negeri = document.getElementById('reg-negeri').value;
-                const uid = document.getElementById('reg-uid').value.trim();
-                const pwd = document.getElementById('reg-pwd').value.trim();
+        const formValues = { 
+            nama: nama.toUpperCase(), ic: ic, jawatan: jawatan.toUpperCase(), 
+            negeri: negeri, uid: uid.toLowerCase(), pwd: pwd,
+            role: "STAF", status: "MENUNGGU", catatan: "Didaftar melalui Web PNR"
+        };
 
-                if(!nama || !ic || !jawatan || !negeri || !uid || !pwd) {
-                    Swal.showValidationMessage('Sila isi SEMUA maklumat yang diwajibkan!');
-                    return false;
-                }
-                
-                return { 
-                    nama: nama.toUpperCase(), ic: ic, jawatan: jawatan.toUpperCase(), 
-                    negeri: negeri, uid: uid.toLowerCase(), pwd: pwd,
-                    role: "STAF", status: "MENUNGGU", catatan: "Didaftar melalui PWA"
-                };
-            }
-        });
-
-        if (formValues) {
-            Swal.fire({ title: 'Menghantar Pendaftaran...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
-            const r = await API.postData('registerUser', formValues);
-            
-            if (r.success) {
-                Swal.fire({ icon: 'success', title: 'Berjaya!', text: r.message, confirmButtonColor: '#198754' });
-            } else {
-                Swal.fire('Gagal Mendaftar', r.message, 'error');
-            }
+        Swal.fire({ title: 'Menghantar Pendaftaran...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
+        const r = await API.postData('registerUser', formValues);
+        
+        if (r.success) {
+            Swal.fire({ icon: 'success', title: 'Berjaya!', text: r.message, confirmButtonColor: '#198754' }).then(() => {
+                // Kembali ke paparan log masuk
+                document.getElementById('formDaftar').style.display = 'none';
+                document.getElementById('formLogin').style.display = 'block';
+                // Kosongkan form
+                ['reg-nama','reg-ic','reg-jawatan','reg-negeri','reg-uid','reg-pwd'].forEach(id => document.getElementById(id).value = '');
+            });
+        } else {
+            Swal.fire('Gagal Mendaftar', r.message, 'error');
         }
     },
-
+    
     lupaKatalaluan: async function() {
         const { value: formValues } = await Swal.fire({
             title: 'Lupa Akses Log Masuk?',
