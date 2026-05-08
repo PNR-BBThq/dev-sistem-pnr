@@ -1,3 +1,7 @@
+// ==========================================
+// FAIL: js/kpi.js (VERSI PRO: GROUPING TABLE & ICON KORPORAT)
+// ==========================================
+
 const KPIManager = {
     targetData: null,
     targetCrops: null,
@@ -6,6 +10,7 @@ const KPIManager = {
     stateChart: null,
     currentDrillDownState: null,
 
+    // Helper: Pemisahan Cameron Highlands (Standalone)
     getEffectiveState: function(d) {
         const negeri = (d.n || "").toUpperCase().trim();
         const daerah = (d.d || "").toUpperCase().trim();
@@ -45,51 +50,91 @@ const KPIManager = {
         this.renderPrintSummaryTable(currentNegeri);
     },
 
+    // 1. KAD KPI MODEN DENGAN SIMBOL RELEVAN
     renderKPICards: function(filterNegeri) {
         const container = document.getElementById('kpiCardsModern');
         if(!container) return; container.innerHTML = '';
+        
         const categories = [
             { id: "BUAH-BUAHAN", label: "Buah-buahan", icon: "bi-apple", color: "success" },
-            { id: "SAYUR-SAYURAN", label: "Sayur-sayuran", icon: "bi-flower3", color: "primary" },
-            { id: "KONTAN", label: "Kontan / Lain", icon: "bi-tree-fill", color: "warning" },
-            { id: "KELAPA", label: "Kelapa / Industri", icon: "bi-droplet-half", color: "info" }
+            { id: "SAYUR-SAYURAN", label: "Sayur-sayuran", icon: "bi-leaf", color: "primary" }, // Ikon Daun
+            { id: "KONTAN", label: "Kontan & lain-lain", icon: "bi-cash-stack", color: "warning" }, // Ikon Duit
+            { id: "KELAPA", label: "Kelapa", icon: "bi-tree-fill", color: "info" } // Ikon Pokok (Palma)
         ];
+
         categories.forEach(cat => {
             let totalSasaran = 0, totalActual = 0;
+            
+            // Sasaran dari Sheet
             Object.keys(this.targetData).forEach(negKey => {
-                if(filterNegeri.length === 0 || filterNegeri.includes(negKey)) totalSasaran += (this.targetData[negKey][cat.id] || 0);
+                if(filterNegeri.length === 0 || filterNegeri.includes(negKey)) {
+                    // Penyelarasan kunci sasaran
+                    let targetKey = cat.id;
+                    if(cat.id === "KONTAN") targetKey = "KONTAN";
+                    totalSasaran += (this.targetData[negKey][targetKey] || 0);
+                }
             });
+
+            // Pencapaian dari DB
             AppState.mData.forEach(d => {
                 const effNegeri = this.getEffectiveState(d);
                 if(filterNegeri.length === 0 || filterNegeri.includes(effNegeri)) {
                     let dbKat = (d.kt || "").toUpperCase();
-                    let isMatch = (cat.id === "BUAH-BUAHAN" && dbKat.includes("BUAH")) || (cat.id === "SAYUR-SAYURAN" && dbKat.includes("SAYUR")) || (cat.id === "KONTAN" && (dbKat.includes("KONTAN") || dbKat.includes("SINGKAT") || dbKat.includes("LAIN"))) || (cat.id === "KELAPA" && (dbKat.includes("KELAPA") || dbKat.includes("INDUSTRI") || (d.tn||"").toUpperCase().includes("KELAPA")));
+                    let dbTan = (d.tn || "").toUpperCase();
+                    let isMatch = false;
+
+                    if (cat.id === "BUAH-BUAHAN" && dbKat.includes("BUAH")) isMatch = true;
+                    else if (cat.id === "SAYUR-SAYURAN" && dbKat.includes("SAYUR")) isMatch = true;
+                    else if (cat.id === "KONTAN" && (dbKat.includes("KONTAN") || dbKat.includes("SINGKAT") || dbKat.includes("LAIN"))) isMatch = true;
+                    else if (cat.id === "KELAPA" && (dbKat.includes("KELAPA") || dbKat.includes("INDUSTRI") || dbTan.includes("KELAPA"))) isMatch = true;
+
                     if (isMatch) totalActual += (parseFloat(d.lt) || 0);
                 }
             });
+
             const peratus = totalSasaran > 0 ? Math.min(100, (totalActual / totalSasaran) * 100).toFixed(1) : 0;
-            container.innerHTML += `<div class="col-sm-6 col-xl-3"><div class="card border-0 shadow-sm h-100" style="border-radius: 12px; border-left: 5px solid var(--bs-${cat.color}) !important;"><div class="card-body p-3"><div class="d-flex justify-content-between align-items-center mb-2"><h6 class="fw-bold text-muted small m-0">${cat.label}</h6><i class="bi ${cat.icon} text-${cat.color}"></i></div><h4 class="fw-bold mb-1">${totalActual.toLocaleString(undefined,{maximumFractionDigits:1})} <small class="text-muted" style="font-size:0.7rem">Ha</small></h4><div class="d-flex justify-content-between small"><span class="text-muted">Prestasi</span><span class="fw-bold text-${cat.color}">${peratus}%</span></div><div class="progress mt-2" style="height: 5px;"><div class="progress-bar bg-${cat.color}" style="width: ${peratus}%"></div></div></div></div></div>`;
+            container.innerHTML += `
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card border-0 shadow-sm h-100" style="border-radius: 12px; border-left: 5px solid var(--bs-${cat.color}) !important;">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold text-muted small m-0">${cat.label}</h6>
+                                <i class="bi ${cat.icon} text-${cat.color} fs-5"></i>
+                            </div>
+                            <h4 class="fw-bold mb-1">${totalActual.toLocaleString(undefined,{maximumFractionDigits:1})} <small class="text-muted" style="font-size:0.7rem">Ha</small></h4>
+                            <div class="d-flex justify-content-between small">
+                                <span class="text-muted">Prestasi</span>
+                                <span class="fw-bold text-${cat.color}">${peratus}%</span>
+                            </div>
+                            <div class="progress mt-2" style="height: 5px; border-radius: 10px;">
+                                <div class="progress-bar bg-${cat.color}" style="width: ${peratus}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
         });
     },
 
+    // 2. GRAF PERBANDINGAN NEGERI (DRILL-DOWN)
     renderStateChart: function(filterNegeri) {
         const ctx = document.getElementById('stateAchievementChart');
         if(!ctx) return;
         if(this.stateChart) this.stateChart.destroy();
         let labels = [], data = [], colors = [];
         const stateList = filterNegeri.length > 0 ? filterNegeri : Object.keys(this.targetCrops).sort();
+
         if (this.currentDrillDownState) {
             document.getElementById('stateChartTitle').innerHTML = `<i class="bi bi-pie-chart-fill me-2 text-primary"></i> Pecahan Kategori: ${this.currentDrillDownState}`;
             document.getElementById('btnBackState').style.display = 'block';
-            const categories = ["BUAH-BUAHAN", "SAYUR-SAYURAN", "KONTAN", "KELAPA"];
-            labels = categories; colors = ['#198754', '#0d6efd', '#ffc107', '#0dcaf0'];
-            categories.forEach(cat => {
+            const cats = ["BUAH-BUAHAN", "SAYUR-SAYURAN", "KONTAN", "KELAPA"];
+            labels = ["Buah", "Sayur", "Kontan", "Kelapa"]; 
+            colors = ['#198754', '#0d6efd', '#ffc107', '#0dcaf0'];
+            cats.forEach(cId => {
                 let area = 0;
                 AppState.mData.forEach(d => {
                     if(this.getEffectiveState(d) === this.currentDrillDownState) {
-                        let dbKat = (d.kt || "").toUpperCase();
-                        let isMatch = (cat === "BUAH-BUAHAN" && dbKat.includes("BUAH")) || (cat === "SAYUR-SAYURAN" && dbKat.includes("SAYUR")) || (cat === "KONTAN" && (dbKat.includes("KONTAN") || dbKat.includes("SINGKAT") || dbKat.includes("LAIN"))) || (cat === "KELAPA" && (dbKat.includes("KELAPA") || dbKat.includes("INDUSTRI") || (d.tn||"").toUpperCase().includes("KELAPA")));
-                        if(isMatch) area += (parseFloat(d.lt) || 0);
+                        let dbK = (d.kt || "").toUpperCase();
+                        if((cId==="BUAH-BUAHAN" && dbK.includes("BUAH")) || (cId==="SAYUR-SAYURAN" && dbK.includes("SAYUR")) || (cId==="KONTAN" && (dbK.includes("KONTAN")||dbK.includes("LAIN"))) || (cId==="KELAPA" && (dbK.includes("KELAPA")||(d.tn||"").toUpperCase().includes("KELAPA")))) area += parseFloat(d.lt)||0;
                     }
                 });
                 data.push(area.toFixed(2));
@@ -108,31 +153,19 @@ const KPIManager = {
         this.stateChart = new Chart(ctx, {
             type: 'bar',
             data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderRadius: 5 }] },
-            options: {
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                onClick: (e, elements) => {
-                    if (elements.length > 0 && !this.currentDrillDownState) {
-                        const idx = elements[0].index;
-                        this.currentDrillDownState = stateList[idx];
-                        this.renderStateChart(filterNegeri);
-                    }
-                }
-            }
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, onClick: (e, elements) => { if (elements.length > 0 && !this.currentDrillDownState) { const idx = elements[0].index; this.currentDrillDownState = stateList[idx]; this.renderStateChart(filterNegeri); } } }
         });
     },
 
     backToAllStates: function() { this.currentDrillDownState = null; this.renderStateChart(FilterManager.v('selNegeri')); },
 
-    // 2. GRAF TREND BULANAN SEBENAR (NON-KUMULATIF)
+    // 3. GRAF TREND BULANAN SEBENAR (NON-KUMULATIF)
     renderTrendChart: function(filterNegeri) {
         const ctx = document.getElementById('skuTrendChart');
         if(!ctx) return;
         if(this.trendChart) this.trendChart.destroy();
-
-        const bulanLabelsAll = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
+        const bulanLabelsAll = ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogo", "Sep", "Okt", "Nov", "Dis"];
         const currentMonthIdx = new Date().getMonth(); 
-        
         let monthlyData = new Array(12).fill(0);
         AppState.mData.forEach(d => {
             const effNegeri = this.getEffectiveState(d);
@@ -141,134 +174,71 @@ const KPIManager = {
                 if(!isNaN(date)) monthlyData[date.getMonth()] += (parseFloat(d.lt) || 0);
             }
         });
-
-        // Potong data setakat bulan semasa sahaja
         const slicedLabels = bulanLabelsAll.slice(0, currentMonthIdx + 1);
         const slicedData = monthlyData.slice(0, currentMonthIdx + 1);
-
         this.trendChart = new Chart(ctx, {
-            type: 'bar', // Gunakan bar untuk pencapaian bulanan supaya nampak lebih jelas perbandingannya
-            data: {
-                labels: slicedLabels,
-                datasets: [{
-                    label: 'Luas Bancian Bulanan (Ha)',
-                    data: slicedData,
-                    backgroundColor: 'rgba(13, 110, 253, 0.7)',
-                    borderColor: '#0d6efd',
-                    borderWidth: 1,
-                    borderRadius: 4
-                }]
-            },
-            options: { 
-                maintainAspectRatio: false, 
-                plugins: { 
-                    legend: { display: false },
-                    tooltip: { callbacks: { label: (ctx) => ` Pencapaian: ${ctx.raw.toFixed(2)} Ha` } }
-                }, 
-                scales: { 
-                    y: { 
-                        beginAtZero: true,
-                        title: { display: true, text: 'Hektar (Ha)', font: { size: 10 } }
-                    } 
-                } 
-            }
+            type: 'bar',
+            data: { labels: slicedLabels, datasets: [{ label: 'Luas Bulanan (Ha)', data: slicedData, backgroundColor: 'rgba(13, 110, 253, 0.7)', borderColor: '#0d6efd', borderWidth: 1, borderRadius: 4 }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
         });
     },
 
-    // 3. JADUAL PDF MODEN (GROUPING CATEGORY)
+    // 4. JADUAL PDF PRO (GROUPING CATEGORY & SELARAS NAMA)
     renderPrintSummaryTable: function(filterNegeri) {
         const tbody = document.querySelector('#printSummaryTable tbody');
         if(!tbody) return;
         
         let sum = {};
+        const catMap = { 
+            "BUAH": "BUAH-BUAHAN", 
+            "SAYUR": "SAYUR-SAYURAN", 
+            "KONTAN": "KONTAN & LAIN-LAIN", 
+            "SINGKAT": "KONTAN & LAIN-LAIN",
+            "LAIN": "KONTAN & LAIN-LAIN",
+            "KELAPA": "KELAPA",
+            "INDUSTRI": "KELAPA"
+        };
+
         AppState.mData.forEach(d => {
             const effNegeri = this.getEffectiveState(d);
             if(filterNegeri.length === 0 || filterNegeri.includes(effNegeri)) {
-                let k = (d.kt || "LAIN").toUpperCase().trim(); 
-                let t = (d.tn || "TIADA").toUpperCase().trim();
-                let key = k + "_" + t;
-                if(!sum[key]) sum[key] = { k: k, t: t, c: 0, l: 0 };
+                let rawK = (d.kt || "").toUpperCase().trim();
+                let tan = (d.tn || "TIADA").toUpperCase().trim();
+                
+                // Selaraskan Kategori
+                let k = "KONTAN & LAIN-LAIN"; 
+                for (let key in catMap) { if(rawK.includes(key)) { k = catMap[key]; break; } }
+                if(tan.includes("KELAPA")) k = "KELAPA";
+
+                let key = k + "_" + tan;
+                if(!sum[key]) sum[key] = { k: k, t: tan, c: 0, l: 0 };
                 sum[key].c++; 
                 sum[key].l += (parseFloat(d.lt) || 0);
             }
         });
 
-        // Susun data mengikut Kategori (A-Z) kemudian Tanaman (A-Z)
-        const sortedItems = Object.values(sum).sort((a, b) => {
-            if (a.k < b.k) return -1;
-            if (a.k > b.k) return 1;
-            if (a.t < b.t) return -1;
-            if (a.t > b.t) return 1;
-            return 0;
-        });
+        const sortedItems = Object.values(sum).sort((a, b) => a.k.localeCompare(b.k) || a.t.localeCompare(b.t));
+        if (sortedItems.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="text-center p-3">Tiada data</td></tr>'; return; }
 
-        if (sortedItems.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" class="text-center p-4 text-muted">Tiada data untuk dipaparkan</td></tr>';
-            return;
-        }
-
-        let html = '';
-        let currentCategory = '';
-        let subTotalLokasi = 0;
-        let subTotalLuas = 0;
-
-        sortedItems.forEach((item, index) => {
-            // Jika kategori berubah, buat Header Row baru
-            if (item.k !== currentCategory) {
-                // Tambah subtotal untuk kategori sebelumnya (kecuali yang pertama)
-                if (currentCategory !== '') {
-                    html += `
-                        <tr class="table-light fw-bold" style="background-color: #f1f5f9 !important;">
-                            <td class="text-end text-uppercase" style="font-size: 0.7rem;">JUMLAH ${currentCategory}</td>
-                            <td class="text-center">${subTotalLokasi}</td>
-                            <td class="text-center">${subTotalLuas.toFixed(2)}</td>
-                        </tr>
-                    `;
+        let html = '', currentCat = '', subL = 0, subA = 0;
+        sortedItems.forEach((item, i) => {
+            if (item.k !== currentCat) {
+                if (currentCat !== '') {
+                    html += `<tr class="fw-bold" style="background-color: #f8fafc !important;"><td class="text-end small">JUMLAH ${currentCat}</td><td class="text-center">${subL}</td><td class="text-center">${subA.toFixed(2)}</td></tr>`;
                 }
-
-                // Reset subtotal
-                subTotalLokasi = 0;
-                subTotalLuas = 0;
-                currentCategory = item.k;
-
-                // Header Kategori
-                html += `
-                    <tr style="background-color: #e2e8f0 !important;">
-                        <td colspan="3" class="fw-bold text-primary py-2 px-3">
-                            <i class="bi bi-tag-fill me-1"></i> KATEGORI: ${currentCategory}
-                        </td>
-                    </tr>
-                `;
+                subL = 0; subA = 0; currentCat = item.k;
+                html += `<tr style="background-color: #f1f5f9 !important;"><td colspan="3" class="fw-bold text-primary py-2 px-3"><i class="bi bi-tag-fill me-1"></i> ${currentCat}</td></tr>`;
             }
-
-            // Baris Data Tanaman
-            html += `
-                <tr>
-                    <td class="ps-4 text-dark" style="letter-spacing: 0.5px;">${item.t}</td>
-                    <td class="text-center">${item.c}</td>
-                    <td class="text-center">${item.l.toFixed(2)}</td>
-                </tr>
-            `;
-
-            subTotalLokasi += item.c;
-            subTotalLuas += item.l;
-
-            // Jika baris terakhir, tambah subtotal terakhir
-            if (index === sortedItems.length - 1) {
-                html += `
-                    <tr class="table-light fw-bold" style="background-color: #f1f5f9 !important;">
-                        <td class="text-end text-uppercase" style="font-size: 0.7rem;">JUMLAH ${currentCategory}</td>
-                        <td class="text-center">${subTotalLokasi}</td>
-                        <td class="text-center">${subTotalLuas.toFixed(2)}</td>
-                    </tr>
-                `;
+            html += `<tr><td class="ps-4">${item.t}</td><td class="text-center">${item.c}</td><td class="text-center">${item.l.toFixed(2)}</td></tr>`;
+            subL += item.c; subA += item.l;
+            if (i === sortedItems.length - 1) {
+                html += `<tr class="fw-bold" style="background-color: #f8fafc !important;"><td class="text-end small">JUMLAH ${currentCat}</td><td class="text-center">${subL}</td><td class="text-center">${subA.toFixed(2)}</td></tr>`;
             }
         });
-
         tbody.innerHTML = html;
     },
 
-    // Matrix Grid, Extra Crops, & Utils (Dikekalkan)
+    // Matrix Grid, Extra Crops & Utils
     renderMatrixGrid: function(filterNegeri) {
         const thead = document.getElementById('matrixHead');
         const tbody = document.getElementById('matrixBody');
