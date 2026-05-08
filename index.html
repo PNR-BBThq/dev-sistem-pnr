@@ -279,55 +279,44 @@
             </div>
         </div>
 <div id="view-sku" class="app-view" style="display:none">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold m-0 text-dark"><i class="bi bi-graph-up-arrow me-2"></i> Laporan Pencapaian SKU 2026</h4>
-        <div class="btn-group shadow-sm">
-            <button class="btn btn-danger btn-sm px-3" onclick="KPIManager.printPDF()"><i class="bi bi-file-earmark-pdf me-1"></i> Cetak PDF (A4)</button>
-            <button class="btn btn-primary btn-sm px-3" onclick="KPIManager.init()"><i class="bi bi-arrow-clockwise me-1"></i> Refresh</button>
-        </div>
-    </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold m-0 text-dark"><i class="bi bi-graph-up-arrow me-2 text-primary"></i> Laporan Pencapaian SKU 2026</h4>
+                <div class="btn-group shadow-sm d-print-none">
+                    <button class="btn btn-danger btn-sm px-3 fw-bold" onclick="KPIManager.printPDF()"><i class="bi bi-file-earmark-pdf me-1"></i> Cetak PDF</button>
+                    <button class="btn btn-white border bg-white text-primary btn-sm px-3 fw-bold" onclick="KPIManager.init()"><i class="bi bi-arrow-clockwise me-1"></i> Refresh</button>
+                </div>
+            </div>
 
-    <div class="row g-3 mb-4" id="skuSummaryCards"></div>
+            <div class="row g-3 mb-4" id="kpiCardsModern"></div>
 
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white py-3"><h6 class="fw-bold m-0">1. Peratus Pencapaian Luas Bancian mengikut Kategori Tanaman</h6></div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" id="tableKPILuas">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Kategori Tanaman</th>
-                            <th class="text-center">Sasaran (Ha)</th>
-                            <th class="text-center">Pencapaian (Ha)</th>
-                            <th width="30%">Prestasi</th>
-                        </tr>
-                    </thead>
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold m-0 text-secondary"><i class="bi bi-grid-3x3-gap-fill me-2"></i> Matrik Liputan Sasaran 2026</h6>
+                    <small class="text-muted d-print-none"><i class="bi bi-hand-index-thumb-fill text-primary"></i> Klik butang hijau untuk butiran</small>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle text-center mb-0" id="matrixTable" style="font-size: 0.8rem;">
+                            <thead class="table-light align-middle" id="matrixHead"></thead>
+                            <tbody id="matrixBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3"><h6 class="fw-bold m-0 text-secondary"><i class="bi bi-stars me-2"></i> Tanaman Luar Sasaran (Extra)</h6></div>
+                <div class="card-body bg-light" id="extraCropsContainer"></div>
+            </div>
+
+            <div class="d-none d-print-block mt-5">
+                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">Ringkasan Luas Bancian & Bil. Lokasi Mengikut Tanaman</h5>
+                <table class="table table-sm table-bordered" style="font-size: 0.85rem;" id="printSummaryTable">
+                    <thead class="table-light"><tr><th>Kategori</th><th>Nama Tanaman</th><th class="text-center">Bil. Lokasi</th><th class="text-center">Jumlah Luas (Ha)</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
         </div>
-    </div>
-
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white py-3"><h6 class="fw-bold m-0">2. Status Liputan Tanaman Sasaran 2026</h6></div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-bordered align-middle mb-0" id="tableKPILiputan">
-                    <thead class="table-light text-center">
-                        <tr>
-                            <th>Negeri</th>
-                            <th>Kategori</th>
-                            <th>Tanaman Sasaran (SKU)</th>
-                            <th>Status (Tick)</th>
-                            <th>Catatan (Tanaman Luar Sasaran)</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
         
     <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
