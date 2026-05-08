@@ -12,7 +12,7 @@ const FilterManager = {
         return Array.from(checkboxes).map(cb => cb.value);
     },
 
-    runFilter: function(source) {
+runFilter: function(source) {
         const n = this.v('selNegeri');
         const d = this.v('selDaerah');
         const t = this.v('selTanaman');
@@ -39,7 +39,6 @@ const FilterManager = {
                    pestOk && (!s||r.t>=s) && (!e||r.t<=e);
         });
 
-        // Kemaskini Dropdown yang lain berdasarkan apa yang ditapis
         if(source === 'n' || !source) { 
             const dataD = AppState.mData.filter(r => n.length===0 || n.includes(r.n)); 
             this.updateDropdown('selDaerah', [...new Set(dataD.map(x=>x.d).filter(x=>x))].sort(), d, 'd'); 
@@ -64,6 +63,14 @@ const FilterManager = {
         
         AppState.pg = 1; 
         DashboardManager.calcUI();
+
+        // ==========================================
+        // TAMBAH: UPDATE SKU JIKA TAB SKU SEDANG DIBUKA
+        // ==========================================
+        const viewSKU = document.getElementById('view-sku');
+        if (viewSKU && viewSKU.style.display !== 'none' && typeof KPIManager !== 'undefined') {
+            KPIManager.renderDashboard();
+        }
     },
 
     updateDropdown: function(id, list, curValArray, srcCode) { 
