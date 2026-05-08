@@ -91,10 +91,10 @@ const ViewManager = {
             if(el.classList.contains('nav-bot-item')) el.classList.add('active');
         }
 
-        ['view-main','view-verify','view-tasks','view-form', 'view-users'].forEach(v => {
-            const view = document.getElementById(v);
-            if(view) view.style.display = 'none';
-        });
+        ['view-main','view-verify','view-tasks','view-form', 'view-users', 'view-sku'].forEach(v => {
+    const view = document.getElementById(v);
+    if(view) view.style.display = 'none';
+});
         
         const targetView = document.getElementById('view-'+t);
         if(targetView) targetView.style.display = 'block';
@@ -102,6 +102,7 @@ const ViewManager = {
         if(t === 'verify' && typeof VerifyManager !== 'undefined') VerifyManager.loadPend();
         if(t === 'tasks' && typeof TaskManager !== 'undefined') TaskManager.loadMyTasks();
         if(t === 'users' && typeof UserManager !== 'undefined') UserManager.loadUsers();
+        if(t === 'sku' && typeof KPIManager !== 'undefined') KPIManager.init();
         
         if(t === 'main' && typeof MapManager !== 'undefined' && MapManager.map) {
             setTimeout(() => MapManager.map.invalidateSize(), 300);
