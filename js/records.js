@@ -217,20 +217,23 @@ const TaskManager = {
         } catch(e) { container.innerHTML = "Ralat memuatkan tugasan."; }
     },
 
-    renderCard: function(r, container, type, headersData) {
+   renderCard: function(r, container, type, headersData) {
         const hList = headersData || AppState.currentHeaders;
         const getV = (key) => { const i = hList.findIndex(h => h.toUpperCase().includes(key.toUpperCase())); return i > -1 ? r.data[i] : ""; };
         
-        const lokasi = getV('LOKASI') || getV('KEBUN');
-        const tanaman = getV('NAMA TANAMAN') || getV('TANAMAN');
-        const kategori = getV('KATEGORI') || "-";
-        const tarikh = Utils.formatDateDisplay(getV('TARIKH') || getV('DATE'));
-        const statusRekod = getV('STATUS') || ""; 
-        const log = getV('LOG') || "";
-        
-        let btnAction = ""; let badgeHtml = ""; let cardBorder = "primary"; let bgHeader = "light";
-
         if (type === 'TASK') {
+            // ==========================================
+            // DESIGN UNTUK TUGASAN SAYA (DRAF / DITOLAK)
+            // ==========================================
+            const lokasi = getV('LOKASI') || getV('KEBUN');
+            const tanaman = getV('NAMA TANAMAN') || getV('TANAMAN');
+            const kategori = getV('KATEGORI') || "-";
+            const tarikh = Utils.formatDateDisplay(getV('TARIKH') || getV('DATE'));
+            const statusRekod = getV('STATUS') || ""; 
+            const log = getV('LOG') || "";
+            
+            let btnAction = ""; let badgeHtml = ""; let cardBorder = "primary"; let bgHeader = "light";
+
             if (statusRekod.toUpperCase() === 'DRAF') {
                 badgeHtml = `<span class="badge bg-secondary">DRAF</span>`; cardBorder = "secondary";
                 btnAction = `<button class="btn btn-success w-100 fw-bold btn-sm shadow-sm" onclick="TaskManager.openTaskEdit(${r.row})"><i class="bi bi-pencil-square"></i> SAMBUNG ISI / HANTAR</button>`;
@@ -239,80 +242,113 @@ const TaskManager = {
                 let reason = log.includes("DITOLAK") ? log.split("Sebab:").pop() : "Sila semak log.";
                 btnAction = `<div class="task-reject-box p-2 mb-2 small"><i class="bi bi-exclamation-triangle-fill"></i> ${reason}</div><button class="btn btn-danger w-100 fw-bold btn-sm" onclick="TaskManager.openTaskEdit(${r.row})">KEMASKINI & HANTAR</button>`;
             }
-        } else {
-            // VERIFY Mode
-            const btnMap = getV('KOORDINAT') ? `<a href="https://www.google.com/maps/search/?api=1&query=$$${getV('KOORDINAT').replace(/\s/g, '')}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-1 ms-2"><i class="bi bi-geo-alt-fill"></i></a>` : "";
+
+            container.innerHTML += `
+            <div class="col-md-6 col-xl-4">
+                <div class="verify-card bg-white rounded-3 shadow-sm border mb-3 h-100 border-${cardBorder}">
+                    <div class="p-3 border-bottom bg-${bgHeader} d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="fw-bold text-dark">${lokasi}</div>
+                            <div class="small text-muted">${kategori} - ${tanaman}</div>
+                            <div class="small text-muted mt-1"><i class="bi bi-calendar-event"></i> ${tarikh}</div>
+                        </div>
+                        ${badgeHtml}
+                    </div>
+                    <div class="p-3 mt-auto">
+                        ${btnAction}
+                    </div>
+                </div>
+            </div>`;
+        } 
+        else if (type === 'VERIFY') {
+            // ==========================================
+            // DESIGN ASAL 100% UNTUK PENGESAHAN (VERIFY)
+            // ==========================================
+            const tkhHantar = Utils.formatDateDisplay(getV('Timestamp'));
+            const tarikhBancian = Utils.formatDateDisplay(getV('Tarikh Bancian') || getV('Tarikh') || getV('Date'));
+            const nama = getV('Nama') || getV('Pegawai');
+            const email = getV('Email') || "-";
+            const negeri = getV('Negeri') || "-";
+            const daerah = getV('Daerah') || "-";
+            const lokasi = getV('Lokasi') || getV('Kebun') || "-";
+            const koordinat = String(getV('Koordinat') || "-");
+            const tanaman = getV('Nama Tanaman') || getV('Tanaman') || "-";
+            const varieti = getV('Varieti') || "-";
+            const umur = getV('Umur') || "-";
+            const kategori = getV('Kategori') || "-";
+            const luasTanam = getV('Luas Bertanam') || getV('Luas') || "-";
+            const syor = getV('Syor') || "-";
+
+            let btnMap = ""; 
+            if(koordinat && koordinat.includes(',') && koordinat.length > 5) { 
+                const cleanCoord = koordinat.trim().replace(/\s/g, ''); 
+                const mapUrl = `https://www.google.com/maps/search/?api=1&query=$$${cleanCoord}`; 
+                btnMap = `<a href="${mapUrl}" target="_blank" class="btn btn-sm btn-outline-primary border-0 py-0 px-1 ms-2" title="Lihat di Google Maps" style="line-height:1;"><i class="bi bi-geo-alt-fill"></i></a>`; 
+            }
+
             let pestRows = ""; 
             try { 
-                const lsObj = JSON.parse(getV('LUAS SERANGAN') || "{}"); const pctObj = JSON.parse(getV('PERATUS') || "{}"); const kObj = JSON.parse(getV('KETERUKAN') || "{}"); 
+                const lsObj = JSON.parse(getV('Luas Serangan') || "{}"); 
+                const pctObj = JSON.parse(getV('Peratus') || "{}"); 
+                const kObj = JSON.parse(getV('Keterukan') || "{}"); 
                 if(Object.keys(lsObj).length > 0) { 
                     Object.keys(lsObj).forEach(k => { 
-                        let level = kObj[k] || 0; let badgeColor = level < 3 ? 'success' : (level < 4 ? 'warning' : 'danger'); 
-                        pestRows += `<tr><td class="text-start text-uppercase small">${k}</td><td class="text-center fw-bold">${lsObj[k]}</td><td class="text-center small">${pctObj[k]||0}%</td><td class="text-center"><span class="badge bg-${badgeColor}">T${level}</span></td></tr>`; 
+                        let level = kObj[k] || 0; 
+                        let badgeColor = level < 3 ? 'success' : (level < 4 ? 'warning' : 'danger'); 
+                        pestRows += `<tr><td class="text-start text-uppercase" style="font-size:0.8rem; vertical-align:middle;">${k}</td><td class="text-center fw-bold" style="vertical-align:middle;">${lsObj[k]}</td><td class="text-center small" style="vertical-align:middle;">${pctObj[k]||0}%</td><td class="text-center" style="vertical-align:middle;"><span class="badge bg-${badgeColor}">T${level}</span></td></tr>`; 
                     }); 
-                } else { pestRows = `<tr><td colspan="4" class="text-center text-muted fst-italic small">Tiada Serangan</td></tr>`; } 
+                } else { 
+                    pestRows = `<tr><td colspan="4" class="text-center text-muted fst-italic small">Tiada Serangan</td></tr>`; 
+                } 
             } catch(e) { pestRows = `<tr><td colspan="4" class="text-center text-muted small">Ralat Data</td></tr>`; } 
-            
-            const rawImg = getV('IMAGE LINKS (COMMA SEPARATED)') || getV('GAMBAR'); 
-            const imgLinks = (rawImg||"").split(',').map(l => l.trim()).filter(l => l.startsWith('http')); 
-            let imgHTML = imgLinks.length > 0 ? `<div class="mt-3 pt-2 border-top"><h6 class="fw-bold text-secondary small mb-2"><i class="bi bi-images me-1"></i> LAMPIRAN</h6><div class="d-flex flex-wrap gap-2">` + imgLinks.map((lnk, i) => `<a href="${lnk}" target="_blank" class="btn btn-sm btn-outline-primary shadow-sm"><i class="bi bi-eye"></i> Gambar ${i+1}</a>`).join('') + `</div></div>` : ``;
 
-            badgeHtml = `<span class="badge bg-warning text-dark shadow-sm flex-shrink-0 ms-2">BARU</span>`;
+            const rawImg = getV('IMAGE LINKS (COMMA SEPARATED)') || getV('Gambar') || getV('Image') || getV('Foto'); 
+            const imgLinks = (rawImg||"").split(',').map(l => l.trim()).filter(l => l.toLowerCase().startsWith('http')); 
             
-            // Generate full Verify Card
+            let imgHTML = imgLinks.length > 0 ? `<div class="mt-3 pt-2 border-top"><h6 class="fw-bold text-secondary small mb-2 text-uppercase"><i class="bi bi-images me-1"></i> LAMPIRAN GAMBAR (${imgLinks.length})</h6><div class="d-flex flex-wrap gap-2">` + imgLinks.map((lnk, i) => {
+                const idMatch = lnk.match(/[-\w]{25,}/);
+                const viewLink = idMatch ? `https://drive.google.com/file/d/${idMatch[0]}/view?usp=sharing` : lnk;
+                return `<a href="${viewLink}" target="_blank" class="btn btn-sm btn-outline-primary bg-white shadow-sm text-truncate fw-bold" style="max-width: 140px; font-size:0.75rem"><i class="bi bi-eye me-1"></i> Gambar ${i+1}</a>`;
+            }).join('') + `</div></div>` : `<div class="mt-3 pt-2 border-top"><small class="text-muted fst-italic small text-uppercase"><i class="bi bi-slash-circle me-1"></i> TIADA GAMBAR</small></div>`; 
+
             container.innerHTML += `
             <div class="col-md-6 col-xl-4">
                 <div class="verify-card bg-white rounded-3 shadow-sm border mb-3 h-100 d-flex flex-column">
                     <div class="p-3 border-bottom bg-light d-flex justify-content-between align-items-start">
-                        <div style="overflow:hidden;"><div class="small text-muted mb-1"><i class="bi bi-clock me-1"></i> ${tarikh}</div><div class="fw-bold text-uppercase text-dark text-truncate">${getV('NAMA')||getV('PEGAWAI')}</div></div>
-                        ${badgeHtml}
+                        <div style="overflow:hidden;"><div class="small text-muted mb-1"><i class="bi bi-clock me-1"></i> Tarikh Hantar: ${tkhHantar}</div><div class="fw-bold text-uppercase text-dark text-truncate">${nama}</div><div class="small text-muted fst-italic text-truncate">${email}</div></div>
+                        <span class="badge bg-warning text-dark shadow-sm flex-shrink-0 ms-2">BARU</span>
                     </div>
                     <div class="p-3 flex-grow-1">
                         <div class="mb-4">
-                            <h6 class="fw-bold text-success mb-3 small border-bottom pb-2"><i class="bi bi-info-circle-fill me-1"></i> LOKASI & TANAMAN</h6>
-                            <div class="row g-2 mb-1 small"><div class="col-4 fw-bold text-secondary">NEGERI:</div><div class="col-8 fw-bold text-dark">${getV('NEGERI')}</div></div>
-                            <div class="row g-2 mb-1 small"><div class="col-4 fw-bold text-secondary">DAERAH:</div><div class="col-8 fw-bold text-dark">${getV('DAERAH')}</div></div>
-                            <div class="row g-2 mb-1 small"><div class="col-4 fw-bold text-secondary">LOKASI:</div><div class="col-8 fw-bold text-dark text-break">${lokasi}</div></div>
-                            <div class="row g-2 mb-1 small"><div class="col-4 fw-bold text-secondary">KOORD:</div><div class="col-8 font-monospace text-muted d-flex align-items-center"><span>${getV('KOORDINAT')}</span>${btnMap}</div></div>
+                            <h6 class="fw-bold text-success mb-3 small border-bottom pb-2 text-uppercase"><i class="bi bi-info-circle-fill me-1"></i> LOKASI & TANAMAN</h6>
+                            <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">TARIKH BANCIAN:</div><div class="col-8 fw-bold text-primary">${tarikhBancian}</div></div>
+                            <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">NEGERI:</div><div class="col-8 fw-bold text-dark">${negeri}</div></div>
+                            <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">DAERAH:</div><div class="col-8 fw-bold text-dark">${daerah}</div></div>
+                            <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">LOKASI:</div><div class="col-8 fw-bold text-dark text-break">${lokasi}</div></div>
+                            <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">KOORDINAT:</div><div class="col-8 font-monospace text-muted small d-flex align-items-center"><span>${koordinat}</span>${btnMap}</div></div>
                             <hr class="my-2 text-muted opacity-25">
-                            <div class="row g-2 mb-1 small"><div class="col-4 fw-bold text-secondary">TANAMAN:</div><div class="col-8 fw-bold text-success text-uppercase">${tanaman}</div></div>
-                            <div class="row g-2 mb-1 small"><div class="col-4 fw-bold text-secondary">LUAS:</div><div class="col-8 text-dark fw-bold">${getV('LUAS BERTANAM') || getV('LUAS')} HA</div></div>
+                            <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">KATEGORI TANAMAN:</div><div class="col-8 fw-bold text-dark text-uppercase">${kategori}</div></div>
+                            <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">TANAMAN:</div><div class="col-8 fw-bold text-success text-uppercase">${tanaman}</div></div>
+                            <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">VARIETI:</div><div class="col-8 text-uppercase">${varieti}</div></div>
+                            <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">UMUR TANAMAN:</div><div class="col-8 text-uppercase">${umur}</div></div>
+                            <div class="row g-2 mb-1" style="font-size:0.85rem"><div class="col-4 fw-bold text-secondary text-uppercase">LUAS TANAMAN:</div><div class="col-8 text-dark fw-bold">${luasTanam} HA</div></div>
                         </div>
                         <div>
-                            <h6 class="fw-bold text-danger mb-2 small border-bottom pb-1"><i class="bi bi-bug-fill me-1"></i> DATA SERANGAN</h6>
-                            <div class="table-responsive border rounded bg-white"><table class="table table-sm table-striped mb-0 small"><thead class="table-light"><tr><th>Perosak</th><th class="text-center">Luas(Ha)</th><th class="text-center">%</th><th class="text-center">Tahap</th></tr></thead><tbody>${pestRows}</tbody></table></div>
+                            <h6 class="fw-bold text-danger mb-2 small border-bottom pb-1 text-uppercase"><i class="bi bi-bug-fill me-1"></i> DATA SERANGAN</h6>
+                            <div class="table-responsive border rounded bg-white"><table class="table table-sm table-striped mb-0" style="font-size:0.75rem"><thead class="table-light"><tr><th class="text-start ps-2 text-uppercase">Perosak Dikesan</th><th class="text-center text-wrap text-uppercase">Luas Serangan(Ha)</th><th class="text-center text-wrap uppercase">Peratus serangan</th><th class="text-center text-wrap uppercase">Keterukan Serangan</th></tr></thead><tbody>${pestRows}</tbody></table></div>
                             ${imgHTML}
                         </div>
                     </div>
                     <div class="p-3 mt-auto border-top">
-                        <div class="alert alert-warning border-warning mb-3 py-2 px-3 small d-flex align-items-start"><i class="bi bi-lightbulb-fill text-warning me-2 mt-1"></i> <div><strong>SYOR KAWALAN:</strong><span class="text-dark d-block">${getV('SYOR')}</span></div></div>
+                        <div class="alert alert-warning border-warning mb-3 py-2 px-3 small d-flex align-items-start"><i class="bi bi-lightbulb-fill text-warning me-2 mt-1"></i> <div><strong class="text-uppercase d-block mb-1">SYOR KAWALAN:</strong><span class="text-dark">${syor}</span></div></div>
                         <div class="d-flex gap-2">
-                            <button class="btn btn-outline-danger flex-grow-1 fw-bold btn-sm" onclick="VerifyManager.subVer(${r.row},'REJECT')">TOLAK</button>
-                            <button class="btn btn-success flex-grow-1 fw-bold shadow-sm btn-sm" onclick="VerifyManager.subVer(${r.row},'APPROVE')">SAHKAN</button>
+                            <button class="btn btn-outline-danger flex-grow-1 fw-bold text-uppercase btn-sm py-2" onclick="VerifyManager.subVer(${r.row},'REJECT')"><i class="bi bi-x-lg me-1"></i> TOLAK</button>
+                            <button class="btn btn-success flex-grow-1 fw-bold shadow-sm text-uppercase btn-sm py-2" onclick="VerifyManager.subVer(${r.row},'APPROVE')"><i class="bi bi-check-lg me-1"></i> SAHKAN</button>
                         </div>
                     </div>
                 </div>
             </div>`;
-            return;
         }
-
-        // Render Task Card
-        container.innerHTML += `
-        <div class="col-md-6 col-xl-4">
-            <div class="verify-card bg-white rounded-3 shadow-sm border mb-3 h-100 border-${cardBorder}">
-                <div class="p-3 border-bottom bg-${bgHeader} d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="fw-bold text-dark">${lokasi}</div>
-                        <div class="small text-muted">${kategori} - ${tanaman}</div>
-                        <div class="small text-muted mt-1"><i class="bi bi-calendar-event"></i> ${tarikh}</div>
-                    </div>
-                    ${badgeHtml}
-                </div>
-                <div class="p-3 mt-auto">
-                    ${btnAction}
-                </div>
-            </div>
-        </div>`;
     },
 
     openTaskEdit: async function(rowId) {
