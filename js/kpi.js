@@ -1,10 +1,26 @@
+// ==========================================
+// FAIL: js/kpi.js (VERSI KEMASKINI: PEMISAHAN C. HIGHLANDS)
+// ==========================================
+
 const KPIManager = {
     targetData: null,
     targetCrops: null,
     allUniqueCrops: [],
     trendChart: null,
     stateChart: null,
-    currentDrillDownState: null, // Untuk simpan state bila drill-down
+    currentDrillDownState: null,
+
+    // Helper: Fungsi untuk menentukan "Negeri Operasi" yang sebenar
+    getEffectiveState: function(d) {
+        const negeri = (d.n || "").toUpperCase().trim();
+        const daerah = (d.d || "").toUpperCase().trim();
+        
+        // JIKA Pahang & Cameron Highlands -> Jadi "CAMERON HIGHLANDS" (Standalone)
+        if (negeri === "PAHANG" && (daerah === "CAMERON HIGHLANDS" || daerah === "C. HIGHLANDS")) {
+            return "CAMERON HIGHLANDS";
+        }
+        return negeri;
+    },
 
     init: async function() {
         Swal.fire({ title: 'Memuatkan Data SKU...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -29,14 +45,14 @@ const KPIManager = {
     renderDashboard: function() {
         const currentNegeri = FilterManager.v('selNegeri'); 
         this.renderKPICards(currentNegeri);
-        this.renderStateChart(currentNegeri); // Graf Bar Perbandingan Negeri
-        this.renderTrendChart(currentNegeri); // Graf Trend (Fix kumulatif)
+        this.renderStateChart(currentNegeri);
+        this.renderTrendChart(currentNegeri);
         this.renderMatrixGrid(currentNegeri);
         this.renderExtraCrops(currentNegeri);
         this.renderPrintSummaryTable(currentNegeri);
     },
 
-    // 1. KPI CARDS (Dikekalkan)
+    // 1. KPI CARDS (DENGAN LOGIK PEMISAHAN)
     renderKPICards: function(filterNegeri) {
         const container = document.getElementById('kpiCardsModern');
         if(!container) return; container.innerHTML = '';
@@ -46,21 +62,31 @@ const KPIManager = {
             { id: "KONTAN", label: "Kontan / Lain", icon: "bi-tree-fill", color: "warning" },
             { id: "KELAPA", label: "Kelapa / Industri", icon: "bi-droplet-half", color: "info" }
         ];
+        
         categories.forEach(cat => {
             let totalSasaran = 0, totalActual = 0;
-            Object.keys(this.targetData).forEach(neg => {
-                if(filterNegeri.length === 0 || filterNegeri.includes(neg)) totalSasaran += (this.targetData[neg][cat.id] || 0);
+            
+            // Ambil Sasaran dari Sheet
+            Object.keys(this.targetData).forEach(negKey => {
+                if(filterNegeri.length === 0 || filterNegeri.includes(negKey)) {
+                    totalSasaran += (this.targetData[negKey][cat.id] || 0);
+                }
             });
+
+            // Ambil Pencapaian dari Database
             AppState.mData.forEach(d => {
-                if(filterNegeri.length === 0 || filterNegeri.includes(d.n)) {
+                const effNegeri = this.getEffectiveState(d);
+                if(filterNegeri.length === 0 || filterNegeri.includes(effNegeri)) {
                     let dbKat = (d.kt || "").toUpperCase();
                     let isMatch = (cat.id === "BUAH-BUAHAN" && dbKat.includes("BUAH")) || 
                                  (cat.id === "SAYUR-SAYURAN" && dbKat.includes("SAYUR")) || 
                                  (cat.id === "KONTAN" && (dbKat.includes("KONTAN") || dbKat.includes("SINGKAT") || dbKat.includes("LAIN"))) ||
                                  (cat.id === "KELAPA" && (dbKat.includes("KELAPA") || dbKat.includes("INDUSTRI") || (d.tn||"").toUpperCase().includes("KELAPA")));
+                    
                     if (isMatch) totalActual += (parseFloat(d.lt) || 0);
                 }
             });
+
             const peratus = totalSasaran > 0 ? Math.min(100, (totalActual / totalSasaran) * 100).toFixed(1) : 0;
             container.innerHTML += `<div class="col-sm-6 col-xl-3"><div class="card border-0 shadow-sm h-100" style="border-radius: 12px; border-left: 5px solid var(--bs-${cat.color}) !important;"><div class="card-body p-3"><div class="d-flex justify-content-between align-items-center mb-2"><h6 class="fw-bold text-muted small m-0">${cat.label}</h6><i class="bi ${cat.icon} text-${cat.color}"></i></div><h4 class="fw-bold mb-1">${totalActual.toLocaleString(undefined,{maximumFractionDigits:1})} <small class="text-muted" style="font-size:0.7rem">Ha</small></h4><div class="d-flex justify-content-between small"><span class="text-muted">Prestasi</span><span class="fw-bold text-${cat.color}">${peratus}%</span></div><div class="progress mt-2" style="height: 5px;"><div class="progress-bar bg-${cat.color}" style="width: ${peratus}%"></div></div></div></div></div>`;
         });
@@ -76,7 +102,6 @@ const KPIManager = {
         const stateList = filterNegeri.length > 0 ? filterNegeri : Object.keys(this.targetCrops).sort();
 
         if (this.currentDrillDownState) {
-            // LEVEL 2: Pecahan Kategori bagi 1 Negeri
             document.getElementById('stateChartTitle').innerHTML = `<i class="bi bi-pie-chart-fill me-2 text-primary"></i> Pecahan Kategori: ${this.currentDrillDownState}`;
             document.getElementById('btnBackState').style.display = 'block';
             const categories = ["BUAH-BUAHAN", "SAYUR-SAYURAN", "KONTAN", "KELAPA"];
@@ -86,7 +111,7 @@ const KPIManager = {
             categories.forEach(cat => {
                 let area = 0;
                 AppState.mData.forEach(d => {
-                    if(d.n === this.currentDrillDownState) {
+                    if(this.getEffectiveState(d) === this.currentDrillDownState) {
                         let dbKat = (d.kt || "").toUpperCase();
                         let isMatch = (cat === "BUAH-BUAHAN" && dbKat.includes("BUAH")) || 
                                      (cat === "SAYUR-SAYURAN" && dbKat.includes("SAYUR")) || 
@@ -98,13 +123,12 @@ const KPIManager = {
                 data.push(area.toFixed(2));
             });
         } else {
-            // LEVEL 1: Perbandingan Semua Negeri
             document.getElementById('stateChartTitle').innerHTML = `<i class="bi bi-bar-chart-fill me-2"></i> Perbandingan Luas Pencapaian Mengikut Negeri (Ha)`;
             document.getElementById('btnBackState').style.display = 'none';
             stateList.forEach(neg => {
-                labels.push(neg.replace("W.P. ", ""));
+                labels.push(neg.replace("W.P. ", "").replace("CAMERON HIGHLANDS", "C. HIGHLANDS"));
                 let total = 0;
-                AppState.mData.forEach(d => { if(d.n === neg) total += (parseFloat(d.lt) || 0); });
+                AppState.mData.forEach(d => { if(this.getEffectiveState(d) === neg) total += (parseFloat(d.lt) || 0); });
                 data.push(total.toFixed(2));
                 colors.push('#6c757d');
             });
@@ -134,18 +158,19 @@ const KPIManager = {
         this.renderStateChart(FilterManager.v('selNegeri'));
     },
 
-    // 3. GRAF TREND (FIX: Cut off at current month)
+    // 3. GRAF TREND (FIX: Cut off at current month & pemisahan)
     renderTrendChart: function(filterNegeri) {
         const ctx = document.getElementById('skuTrendChart');
         if(!ctx) return;
         if(this.trendChart) this.trendChart.destroy();
 
         const bulanLabelsAll = ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogo", "Sep", "Okt", "Nov", "Dis"];
-        const currentMonthIdx = new Date().getMonth(); // 0 = Jan, 4 = Mei
+        const currentMonthIdx = new Date().getMonth(); 
         
         let monthlyData = new Array(12).fill(0);
         AppState.mData.forEach(d => {
-            if(filterNegeri.length === 0 || filterNegeri.includes(d.n)) {
+            const effNegeri = this.getEffectiveState(d);
+            if(filterNegeri.length === 0 || filterNegeri.includes(effNegeri)) {
                 const date = new Date(d.t);
                 if(!isNaN(date)) monthlyData[date.getMonth()] += (parseFloat(d.lt) || 0);
             }
@@ -153,8 +178,6 @@ const KPIManager = {
 
         let cumulative = 0;
         let kumulatifData = monthlyData.map(v => cumulative += v);
-
-        // Potong label dan data supaya tak tunjuk Jun - Dis jika belum sampai tarikhnya
         const slicedLabels = bulanLabelsAll.slice(0, currentMonthIdx + 1);
         const slicedData = kumulatifData.slice(0, currentMonthIdx + 1);
 
@@ -172,20 +195,14 @@ const KPIManager = {
                     pointRadius: 4
                 }]
             },
-            options: { 
-                maintainAspectRatio: false, 
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
         });
     },
 
-    // 4. EXTRA CROPS (FIX: Grid Card Kemas)
+    // 4. EXTRA CROPS (Grid Card Kemas)
     renderExtraCrops: function(filterNegeri) {
         const container = document.getElementById('extraCropsContainer');
-        if(!container) return;
-        container.innerHTML = '';
-        
+        if(!container) return; container.innerHTML = '';
         const states = filterNegeri.length > 0 ? filterNegeri : Object.keys(this.targetCrops).sort();
         let hasData = false;
 
@@ -193,7 +210,7 @@ const KPIManager = {
             const sasaran = this.targetCrops[neg] || [];
             let extra = new Set();
             AppState.mData.forEach(d => { 
-                if(d.n === neg) { 
+                if(this.getEffectiveState(d) === neg) { 
                     let t = (d.tn || "").toUpperCase().trim(); 
                     if(!sasaran.includes(t) && t !== "") extra.add(t); 
                 } 
@@ -215,19 +232,27 @@ const KPIManager = {
                 container.appendChild(col);
             }
         });
-
         if(!hasData) container.innerHTML = '<div class="col-12 text-center text-muted fst-italic">Tiada tanaman luar sasaran dikesan.</div>';
     },
 
-    // Matrix Grid & PDF Summary (Dikekalkan logic asal Tuan)
+    // 5. MATRIX GRID
     renderMatrixGrid: function(filterNegeri) {
         const thead = document.getElementById('matrixHead');
         const tbody = document.getElementById('matrixBody');
         if(!thead || !tbody) return;
-        let states = (AppState.uProf.state !== "ALL") ? [AppState.uProf.state] : (filterNegeri.length > 0 ? filterNegeri : Object.keys(this.targetCrops).sort());
+        
+        let states = [];
+        if (AppState.uProf.state !== "ALL") {
+            // Jika user adalah orang Cameron Highlands, dia pun dikira standalone
+            states = [ (AppState.uProf.state === "PAHANG" && AppState.uProf.daerah === "CAMERON HIGHLANDS") ? "CAMERON HIGHLANDS" : AppState.uProf.state ];
+        } else {
+            states = filterNegeri.length > 0 ? filterNegeri : Object.keys(this.targetCrops).sort();
+        }
+        
         let headHTML = `<tr><th class="bg-dark text-white text-start px-3" style="width:180px;">NAMA TANAMAN</th>`;
-        states.forEach(neg => headHTML += `<th style="min-width: 90px;">${neg.replace("NEGERI SEMBILAN", "N. SEMBILAN").replace("W.P. ", "").replace("PULAU PINANG", "P. PINANG")}</th>`);
+        states.forEach(neg => headHTML += `<th style="min-width: 90px;">${neg.replace("NEGERI SEMBILAN", "N. SEMBILAN").replace("W.P. ", "").replace("PULAU PINANG", "P. PINANG").replace("CAMERON HIGHLANDS", "C. HIGHLANDS")}</th>`);
         thead.innerHTML = headHTML + `</tr>`;
+        
         let bodyHTML = '';
         this.allUniqueCrops.forEach(crop => {
             let rowHTML = `<tr><td class="text-start fw-bold px-3 bg-light" style="font-size:0.75rem">${crop}</td>`;
@@ -247,7 +272,11 @@ const KPIManager = {
 
     getCropStats: function(negeri, cropName) {
         let count = 0, area = 0;
-        AppState.mData.forEach(d => { if(d.n === negeri && (d.tn || "").toUpperCase().trim() === cropName) { count++; area += (parseFloat(d.lt) || 0); } });
+        AppState.mData.forEach(d => { 
+            if(this.getEffectiveState(d) === negeri && (d.tn || "").toUpperCase().trim() === cropName) { 
+                count++; area += (parseFloat(d.lt) || 0); 
+            } 
+        });
         return { count: count, area: area };
     },
 
@@ -260,7 +289,8 @@ const KPIManager = {
         if(!tbody) return;
         let sum = {};
         AppState.mData.forEach(d => {
-            if(filterNegeri.length === 0 || filterNegeri.includes(d.n)) {
+            const effNegeri = this.getEffectiveState(d);
+            if(filterNegeri.length === 0 || filterNegeri.includes(effNegeri)) {
                 let k = (d.kt || "LAIN").toUpperCase(); let t = (d.tn || "TIADA").toUpperCase();
                 let key = k + "_" + t;
                 if(!sum[key]) sum[key] = { k: k, t: t, c: 0, l: 0 };
