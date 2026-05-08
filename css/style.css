@@ -91,4 +91,25 @@
             }
             .mobile-overlay.active { display: block; }
         }
+
+/* =========================================
+   STYLE UNTUK CETAKAN PDF SKU VIEW  (A4)
+   ========================================= */
+@media print {
+    body { background-color: white !important; font-size: 10pt; }
+    .sidebar, .mobile-bottom-nav, .d-md-none, .btn-group { display: none !important; }
+    .main-content { margin-left: 0 !important; padding: 0 !important; }
+    
+    .card { border: 1px solid #ccc !important; box-shadow: none !important; margin-bottom: 20px !important; page-break-inside: avoid; }
+    .table th { background-color: #f8f9fa !important; color: #000 !important; -webkit-print-color-adjust: exact; }
+    .progress-bar { -webkit-print-color-adjust: exact; } /* Kekalkan warna progress bar */
+    
+    /* Betulkan saiz Matrik supaya muat A4 Landscape */
+    @page { size: A4 landscape; margin: 10mm; }
+    
+    /* Paksa Jadual Print untuk tunjuk */
+    .d-print-block { display: block !important; }
+    .d-print-none { display: none !important; }
+}
+
     </style>
