@@ -47,7 +47,23 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         document.getElementById('btnResetFilter').addEventListener('click', FilterManager.resetFilter);
     }
-});
+// Butang Daftar (Dalam Borang Daftar)
+    const btnDaftar = document.getElementById('btnSubmitDaftar');
+    if (btnDaftar) btnDaftar.addEventListener('click', AuthManager.toggleDaftar);
+    
+    // Butang Kembali (Dalam Borang Daftar)
+    const btnBack = document.getElementById('btnBackLogin');
+    if (btnBack) btnBack.addEventListener('click', () => {
+        document.getElementById('formDaftar').style.display = 'none';
+        document.getElementById('formLogin').style.display = 'block';
+    });
+
+    // Menukar paparan ke Borang Daftar
+    const btnShowDaftar = document.getElementById('btnShowDaftar');
+    if (btnShowDaftar) btnShowDaftar.addEventListener('click', () => {
+        document.getElementById('formLogin').style.display = 'none';
+        document.getElementById('formDaftar').style.display = 'block';
+    });
 
 // ==========================================
 // PENGURUSAN PAPARAN (UI / TABS)
