@@ -260,31 +260,74 @@ const KPIManager = {
         tbody.innerHTML = html;
     },
 
-    // Matrix Grid, Extra Crops & Utils
+   // 5. MATRIK TUGASAN (SUSUNAN GAYA BLOK/KANBAN MODEN)
     renderMatrixGrid: function(filterNegeri) {
-        const thead = document.getElementById('matrixHead');
-        const tbody = document.getElementById('matrixBody');
-        if(!thead || !tbody) return;
+        const container = document.getElementById('matrixBlocksContainer');
+        if(!container) return;
+        container.innerHTML = '';
+        
         let states = (AppState.uProf.state !== "ALL") ? [(AppState.uProf.state === "PAHANG" && AppState.uProf.daerah === "CAMERON HIGHLANDS") ? "CAMERON HIGHLANDS" : AppState.uProf.state] : (filterNegeri.length > 0 ? filterNegeri : Object.keys(this.targetCrops).sort());
-        let headHTML = `<tr><th class="bg-dark text-white text-start px-3" style="width:180px;">NAMA TANAMAN</th>`;
-        states.forEach(neg => headHTML += `<th style="min-width: 90px;">${neg.replace("NEGERI SEMBILAN", "N. SEMBILAN").replace("W.P. ", "").replace("PULAU PINANG", "P. PINANG").replace("CAMERON HIGHLANDS", "C. HIGHLANDS")}</th>`);
-        thead.innerHTML = headHTML + `</tr>`;
-        let bodyHTML = '';
-        this.allUniqueCrops.forEach(crop => {
-            let rowHTML = `<tr><td class="text-start fw-bold px-3 bg-light" style="font-size:0.75rem">${crop}</td>`;
-            states.forEach(neg => {
-                const targetList = this.targetCrops[neg] || [];
-                if(!targetList.includes(crop)) rowHTML += `<td class="bg-light opacity-50 small text-muted">-</td>`;
-                else {
-                    const stats = this.getCropStats(neg, crop);
-                    if(stats.count > 0) rowHTML += `<td><button class="btn btn-sm btn-success py-0 px-2 shadow-sm d-print-none" onclick="KPIManager.showDetails('${neg}', '${crop}', ${stats.count}, ${stats.area})">✅</button><span class="d-none d-print-block text-success fw-bold">✅</span></td>`;
-                    else rowHTML += `<td><div class="text-muted small">⭕</div></td>`;
+        
+        let html = '';
+        states.forEach(neg => {
+            const targetList = this.targetCrops[neg] || [];
+            if(targetList.length === 0) return; // Abaikan jika negeri tiada sasaran
+
+            // Mula Kad Untuk Setiap Negeri
+            let stateHTML = `
+            <div class="col print-block-col">
+                <div class="card h-100 border shadow-sm" style="border-radius: 10px; border-color: #dee2e6 !important;">
+                    <div class="card-header bg-white py-2 border-bottom text-center">
+                        <h6 class="fw-bold m-0 text-dark" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                            ${neg.replace("NEGERI SEMBILAN", "N. SEMBILAN").replace("W.P. ", "").replace("CAMERON HIGHLANDS", "C. HIGHLANDS")}
+                        </h6>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="d-flex flex-wrap gap-2 justify-content-center">
+            `;
+
+            // Masukkan Blok untuk Setiap Tanaman Sasaran
+            targetList.sort().forEach(crop => {
+                const stats = this.getCropStats(neg, crop);
+                if(stats.count > 0) {
+                    // BLOK SELESAI (Hijau & Boleh di-klik)
+                    stateHTML += `
+                        <div class="d-inline-flex align-items-center border border-success bg-success bg-opacity-10 rounded px-2 py-1 shadow-sm d-print-none" 
+                             onclick="KPIManager.showDetails('${neg}', '${crop}', ${stats.count}, ${stats.area})" 
+                             style="cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" title="Klik untuk info">
+                            <span class="fw-bold text-success me-2" style="font-size: 0.65rem; letter-spacing: 0.5px;">${crop}</span>
+                            <span style="font-size: 0.8rem;">✅</span>
+                        </div>
+                        <div class="d-none d-print-inline-flex align-items-center border border-success bg-success bg-opacity-10 rounded px-2 py-1">
+                            <span class="fw-bold text-success me-2" style="font-size: 0.65rem;">${crop}</span>
+                            <span style="font-size: 0.8rem;">✅</span>
+                        </div>
+                    `;
+                } else {
+                    // BLOK BELUM SELESAI (Dashed outline & Bulat Merah)
+                    stateHTML += `
+                        <div class="d-inline-flex align-items-center border rounded px-2 py-1" style="border-style: dashed !important; border-color: #adb5bd !important; background-color: #f8f9fa;">
+                            <span class="fw-bold text-muted me-2" style="font-size: 0.65rem; letter-spacing: 0.5px;">${crop}</span>
+                            <span class="text-danger" style="font-size: 0.8rem;">⭕</span>
+                        </div>
+                    `;
                 }
             });
-            bodyHTML += rowHTML + `</tr>`;
+
+            // Tutup Kad Negeri
+            stateHTML += `
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            
+            html += stateHTML;
         });
-        tbody.innerHTML = bodyHTML;
+        
+        container.innerHTML = html || '<div class="col-12 text-center text-muted fst-italic py-4">Tiada sasaran ditetapkan.</div>';
     },
+
+    
     getCropStats: function(negeri, cropName) {
         let count = 0, area = 0;
         AppState.mData.forEach(d => { if(this.getEffectiveState(d) === negeri && (d.tn || "").toUpperCase().trim() === cropName) { count++; area += (parseFloat(d.lt) || 0); } });
