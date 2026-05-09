@@ -50,32 +50,28 @@ const KPIManager = {
         this.renderPrintSummaryTable(currentNegeri);
     },
 
-    // 1. KAD KPI MODEN DENGAN SIMBOL RELEVAN
+ // 1. KAD KPI MODEN DENGAN SUSUNAN PERFECT LEVEL
     renderKPICards: function(filterNegeri) {
         const container = document.getElementById('kpiCardsModern');
         if(!container) return; container.innerHTML = '';
         
         const categories = [
             { id: "BUAH-BUAHAN", label: "Buah-buahan", icon: "bi-apple", color: "success" },
-            { id: "SAYUR-SAYURAN", label: "Sayur-sayuran", icon: "bi-leaf", color: "primary" }, // Ikon Daun
-            { id: "KONTAN", label: "Kontan & lain-lain", icon: "bi-cash-stack", color: "warning" }, // Ikon Duit
-            { id: "KELAPA", label: "Kelapa", icon: "bi-tree-fill", color: "info" } // Ikon Pokok (Palma)
+            { id: "SAYUR-SAYURAN", label: "Sayur-sayuran", icon: "bi-flower3", color: "primary" }, // Tukar ke ikon bunga (lebih stabil)
+            { id: "KONTAN", label: "Kontan & lain-lain", icon: "bi-cash-stack", color: "warning" },
+            { id: "KELAPA", label: "Kelapa", icon: "bi-tree-fill", color: "info" }
         ];
 
         categories.forEach(cat => {
             let totalSasaran = 0, totalActual = 0;
             
-            // Sasaran dari Sheet
             Object.keys(this.targetData).forEach(negKey => {
                 if(filterNegeri.length === 0 || filterNegeri.includes(negKey)) {
-                    // Penyelarasan kunci sasaran
-                    let targetKey = cat.id;
-                    if(cat.id === "KONTAN") targetKey = "KONTAN";
+                    let targetKey = cat.id === "KONTAN" ? "KONTAN" : cat.id;
                     totalSasaran += (this.targetData[negKey][targetKey] || 0);
                 }
             });
 
-            // Pencapaian dari DB
             AppState.mData.forEach(d => {
                 const effNegeri = this.getEffectiveState(d);
                 if(filterNegeri.length === 0 || filterNegeri.includes(effNegeri)) {
@@ -93,28 +89,32 @@ const KPIManager = {
             });
 
             const peratus = totalSasaran > 0 ? Math.min(100, (totalActual / totalSasaran) * 100).toFixed(1) : 0;
+            
+            // Perhatikan penggunaan d-flex flex-column dan mb-auto di bawah ini
             container.innerHTML += `
                 <div class="col-sm-6 col-xl-3">
                     <div class="card border-0 shadow-sm h-100" style="border-radius: 12px; border-left: 5px solid var(--bs-${cat.color}) !important;">
-                        <div class="card-body p-3">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="card-body p-3 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-auto">
                                 <h6 class="fw-bold text-muted small m-0">${cat.label}</h6>
-                                <i class="bi ${cat.icon} text-${cat.color} fs-5"></i>
+                                <i class="bi ${cat.icon} text-${cat.color} fs-5" style="line-height: 1;"></i>
                             </div>
-                            <h4 class="fw-bold mb-1">${totalActual.toLocaleString(undefined,{maximumFractionDigits:1})} <small class="text-muted" style="font-size:0.7rem">Ha</small></h4>
-                            <div class="d-flex justify-content-between small">
-                                <span class="text-muted">Prestasi</span>
-                                <span class="fw-bold text-${cat.color}">${peratus}%</span>
-                            </div>
-                            <div class="progress mt-2" style="height: 5px; border-radius: 10px;">
-                                <div class="progress-bar bg-${cat.color}" style="width: ${peratus}%"></div>
+                            <div class="mt-3">
+                                <div class="fs-4 fw-bold text-dark mb-1">${totalActual.toLocaleString(undefined,{maximumFractionDigits:1})} <small class="text-muted" style="font-size:0.7rem">Ha</small></div>
+                                <div class="d-flex justify-content-between small">
+                                    <span class="text-muted">Prestasi</span>
+                                    <span class="fw-bold text-${cat.color}">${peratus}%</span>
+                                </div>
+                                <div class="progress mt-2" style="height: 5px; border-radius: 10px;">
+                                    <div class="progress-bar bg-${cat.color}" style="width: ${peratus}%"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>`;
         });
     },
-
+    
     // 2. GRAF PERBANDINGAN NEGERI (DRILL-DOWN)
     renderStateChart: function(filterNegeri) {
         const ctx = document.getElementById('stateAchievementChart');
