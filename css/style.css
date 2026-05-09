@@ -93,23 +93,90 @@
         }
 
 /* =========================================
-   STYLE UNTUK CETAKAN PDF SKU VIEW  (A4)
+   STYLE CETAKAN A4 LANDSCAPE OPTIMUM
    ========================================= */
 @media print {
-    body { background-color: white !important; font-size: 10pt; }
-    .sidebar, .mobile-bottom-nav, .d-md-none, .btn-group { display: none !important; }
-    .main-content { margin-left: 0 !important; padding: 0 !important; }
-    
-    .card { border: 1px solid #ccc !important; box-shadow: none !important; margin-bottom: 20px !important; page-break-inside: avoid; }
-    .table th { background-color: #f8f9fa !important; color: #000 !important; -webkit-print-color-adjust: exact; }
-    .progress-bar { -webkit-print-color-adjust: exact; } /* Kekalkan warna progress bar */
-    
-    /* Betulkan saiz Matrik supaya muat A4 Landscape */
-    @page { size: A4 landscape; margin: 10mm; }
-    
-    /* Paksa Jadual Print untuk tunjuk */
-    .d-print-block { display: block !important; }
-    .d-print-none { display: none !important; }
-}
+    @page { 
+        size: A4 landscape; 
+        margin: 8mm 10mm; 
+    }
 
+    body { 
+        background-color: white !important; 
+        font-size: 9pt; /* Kecilkan sikit font untuk muat banyak data */
+        color: black !important;
+    }
+
+    /* Sembunyikan elemen UI */
+    .sidebar, .mobile-bottom-nav, .d-md-none, .btn-group, .d-print-none, #mobileOverlay { 
+        display: none !important; 
+    }
+
+    .main-content { 
+        margin: 0 !important; 
+        padding: 0 !important; 
+        width: 100% !important;
+    }
+
+    /* Tajuk Laporan */
+    h4 { font-size: 14pt !important; margin-bottom: 15px !important; border-bottom: 2px solid #333; padding-bottom: 5px; }
+
+    /* Susunan Kad KPI (4 Sebaris) */
+    #kpiCardsModern { 
+        display: flex !important; 
+        flex-wrap: nowrap !important; 
+        gap: 10px !important;
+        margin-bottom: 15px !important;
+    }
+    #kpiCardsModern .col-sm-6 { 
+        flex: 1 !important; 
+        max-width: 25% !important; 
+    }
+
+    /* OPTIMASI CARTA: Letak sebelah-menyebelah dalam 1 muka surat */
+    .print-chart-row {
+        display: flex !important;
+        gap: 15px;
+        margin-bottom: 15px;
+        page-break-inside: avoid;
+    }
+    .print-chart-row .card {
+        flex: 1;
+        height: 280px; /* Hadkan tinggi supaya muat 1 page dengan KPI card */
+    }
+
+    .card { 
+        border: 1px solid #dee2e6 !important; 
+        box-shadow: none !important; 
+        margin-bottom: 10px !important;
+        page-break-inside: avoid; 
+    }
+
+    .card-header { background-color: #f8f9fa !important; padding: 5px 10px !important; }
+    .card-body { padding: 10px !important; }
+
+    /* Matrik Grid (Akan duduk di page ke-2 jika tak muat page 1) */
+    #matrixTable { 
+        font-size: 7.5pt !important; 
+        width: 100% !important;
+    }
+    #matrixTable th, #matrixTable td { padding: 3px !important; }
+
+    /* Tanaman Extra (Susun padat) */
+    #extraCropsContainer {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 5px !important;
+    }
+
+    /* Jadual Ringkasan PDF */
+    #printSummaryTable { 
+        page-break-before: always; /* Biar jadual ni mula muka surat baru supaya tak terpotong */
+        width: 100% !important;
+    }
+    
+    .text-success { color: #198754 !important; }
+    .text-primary { color: #0d6efd !important; }
+    .progress, .progress-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
     </style>
