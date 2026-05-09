@@ -115,20 +115,30 @@ const KPIManager = {
         });
     },
     
-    // 2. GRAF PERBANDINGAN NEGERI (DRILL-DOWN)
+  // 2. GRAF PERBANDINGAN NEGERI (WARNA KORPORAT)
     renderStateChart: function(filterNegeri) {
         const ctx = document.getElementById('stateAchievementChart');
         if(!ctx) return;
         if(this.stateChart) this.stateChart.destroy();
+        
         let labels = [], data = [], colors = [];
         const stateList = filterNegeri.length > 0 ? filterNegeri : Object.keys(this.targetCrops).sort();
+
+        // Koleksi 14 Warna Tema Korporat Moden (Ala PowerBI / Tableau)
+        const modernPalette = [
+            '#0d6efd', '#20c997', '#fd7e14', '#6f42c1', '#e83e8c', 
+            '#198754', '#0dcaf0', '#f1c40f', '#dc3545', '#6610f2',
+            '#e67e22', '#16a085', '#2980b9', '#8e44ad'
+        ];
 
         if (this.currentDrillDownState) {
             document.getElementById('stateChartTitle').innerHTML = `<i class="bi bi-pie-chart-fill me-2 text-primary"></i> Pecahan Kategori: ${this.currentDrillDownState}`;
             document.getElementById('btnBackState').style.display = 'block';
             const cats = ["BUAH-BUAHAN", "SAYUR-SAYURAN", "KONTAN", "KELAPA"];
             labels = ["Buah", "Sayur", "Kontan", "Kelapa"]; 
-            colors = ['#198754', '#0d6efd', '#ffc107', '#0dcaf0'];
+            // Warna untuk drill-down kategori dikekalkan
+            colors = ['#198754', '#0d6efd', '#ffc107', '#0dcaf0']; 
+            
             cats.forEach(cId => {
                 let area = 0;
                 AppState.mData.forEach(d => {
@@ -142,21 +152,33 @@ const KPIManager = {
         } else {
             document.getElementById('stateChartTitle').innerHTML = `<i class="bi bi-bar-chart-fill me-2"></i> Perbandingan Luas Pencapaian Mengikut Negeri (Ha)`;
             document.getElementById('btnBackState').style.display = 'none';
-            stateList.forEach(neg => {
+            stateList.forEach((neg, index) => {
                 labels.push(neg.replace("W.P. ", "").replace("CAMERON HIGHLANDS", "C. HIGHLANDS"));
                 let total = 0;
                 AppState.mData.forEach(d => { if(this.getEffectiveState(d) === neg) total += (parseFloat(d.lt) || 0); });
                 data.push(total.toFixed(2));
-                colors.push('#6c757d');
+                
+                // Gunakan palet warna korporat secara automatik
+                colors.push(modernPalette[index % modernPalette.length]);
             });
         }
+        
         this.stateChart = new Chart(ctx, {
             type: 'bar',
             data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderRadius: 5 }] },
-            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, onClick: (e, elements) => { if (elements.length > 0 && !this.currentDrillDownState) { const idx = elements[0].index; this.currentDrillDownState = stateList[idx]; this.renderStateChart(filterNegeri); } } }
+            options: { 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } }, 
+                onClick: (e, elements) => { 
+                    if (elements.length > 0 && !this.currentDrillDownState) { 
+                        const idx = elements[0].index; 
+                        this.currentDrillDownState = stateList[idx]; 
+                        this.renderStateChart(filterNegeri); 
+                    } 
+                } 
+            }
         });
     },
-
     backToAllStates: function() { this.currentDrillDownState = null; this.renderStateChart(FilterManager.v('selNegeri')); },
 
     // 3. GRAF TREND BULANAN SEBENAR (NON-KUMULATIF)
