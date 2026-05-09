@@ -260,7 +260,7 @@ const KPIManager = {
         tbody.innerHTML = html;
     },
 
-  // 5. MATRIK TUGASAN (SUSUNAN FLOATING BLOCKS / KANBAN)
+    // 5. MATRIK TUGASAN (SUSUNAN FLOATING BLOCKS / KANBAN - SIAP DI ATAS)
     renderMatrixGrid: function(filterNegeri) {
         const container = document.getElementById('kanbanMatrixContainer');
         if(!container) return;
@@ -276,7 +276,6 @@ const KPIManager = {
             // Tajuk Negeri (Header Lajur)
             let shortNeg = neg.replace("NEGERI SEMBILAN", "N. SEMBILAN").replace("W.P. ", "").replace("CAMERON HIGHLANDS", "C. HIGHLANDS");
             
-            // Bina 1 Lajur (Column) untuk setiap negeri
             let stateHTML = `
             <div class="d-flex flex-column gap-2 kanban-column" style="min-width: 140px; max-width: 160px; flex: 0 0 auto;">
                 <div class="fw-bold text-center border-bottom border-2 border-dark pb-2 mb-1 text-dark text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">
@@ -284,32 +283,41 @@ const KPIManager = {
                 </div>
             `;
 
-            // Susun nama tanaman ikut abjad A-Z
-            let sortedCrops = [...targetList].sort();
+            // Asingkan tanaman kepada dua kumpulan (Dah Banci vs Belum Banci)
+            let siap = [];
+            let belum = [];
             
-            // Masukkan blok "batu bata" bagi setiap tanaman
-            sortedCrops.forEach(crop => {
+            // Susun A-Z dulu, baru agihkan
+            [...targetList].sort().forEach(crop => {
                 const stats = this.getCropStats(neg, crop);
                 if(stats.count > 0) {
-                    // BLOK SELESAI (Hijau & Boleh di-klik)
-                    stateHTML += `
-                    <div class="p-2 border border-success bg-success bg-opacity-10 rounded shadow-sm d-flex justify-content-between align-items-center"
-                         onclick="KPIManager.showDetails('${neg}', '${crop}', ${stats.count}, ${stats.area})"
-                         style="cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" title="Klik untuk maklumat">
-                        <span class="fw-bold text-success text-truncate me-1" style="font-size: 0.7rem;" title="${crop}">${crop}</span>
-                        <span style="font-size: 0.85rem;">✅</span>
-                    </div>
-                    `;
+                    siap.push({ name: crop, count: stats.count, area: stats.area });
                 } else {
-                    // BLOK BELUM SELESAI (Kelabu Dashed)
-                    stateHTML += `
-                    <div class="p-2 border rounded d-flex justify-content-between align-items-center bg-white" 
-                         style="border-style: dashed !important; border-color: #adb5bd !important;">
-                        <span class="fw-bold text-muted text-truncate me-1" style="font-size: 0.7rem;" title="${crop}">${crop}</span>
-                        <span class="text-danger" style="font-size: 0.85rem;">⭕</span>
-                    </div>
-                    `;
+                    belum.push(crop);
                 }
+            });
+            
+            // 1. RENDER BLOK YANG DAH SIAP DAHULU (HIJAU ✅)
+            siap.forEach(item => {
+                stateHTML += `
+                <div class="p-2 border border-success bg-success bg-opacity-10 rounded shadow-sm d-flex justify-content-between align-items-center"
+                     onclick="KPIManager.showDetails('${neg}', '${item.name}', ${item.count}, ${item.area})"
+                     style="cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" title="Klik untuk maklumat">
+                    <span class="fw-bold text-success text-truncate me-1" style="font-size: 0.7rem;" title="${item.name}">${item.name}</span>
+                    <span style="font-size: 0.85rem;">✅</span>
+                </div>
+                `;
+            });
+
+            // 2. RENDER BLOK YANG BELUM SIAP (KELABU ⭕)
+            belum.forEach(crop => {
+                stateHTML += `
+                <div class="p-2 border rounded d-flex justify-content-between align-items-center bg-white" 
+                     style="border-style: dashed !important; border-color: #adb5bd !important;">
+                    <span class="fw-bold text-muted text-truncate me-1" style="font-size: 0.7rem;" title="${crop}">${crop}</span>
+                    <span class="text-danger" style="font-size: 0.85rem;">⭕</span>
+                </div>
+                `;
             });
 
             stateHTML += `</div>`; // Tutup Lajur
@@ -318,6 +326,7 @@ const KPIManager = {
 
         container.innerHTML = html || '<div class="w-100 text-center text-muted fst-italic py-4">Tiada sasaran ditetapkan.</div>';
     },
+
     
     getCropStats: function(negeri, cropName) {
         let count = 0, area = 0;
