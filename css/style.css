@@ -93,21 +93,23 @@
         }
 
 /* =========================================
-   STYLE CETAKAN A4 LANDSCAPE OPTIMUM
+   STYLE CETAKAN A4 LANDSCAPE OPTIMUM (VERSI KORPORAT)
    ========================================= */
 @media print {
     @page { 
         size: A4 landscape; 
-        margin: 8mm 10mm; 
+        margin: 10mm; 
     }
 
     body { 
         background-color: white !important; 
-        font-size: 9pt; /* Kecilkan sikit font untuk muat banyak data */
+        font-size: 9pt; 
         color: black !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
 
-    /* Sembunyikan elemen UI */
+    /* Sembunyikan elemen UI & butang */
     .sidebar, .mobile-bottom-nav, .d-md-none, .btn-group, .d-print-none, #mobileOverlay { 
         display: none !important; 
     }
@@ -118,65 +120,82 @@
         width: 100% !important;
     }
 
-    /* Tajuk Laporan */
     h4 { font-size: 14pt !important; margin-bottom: 15px !important; border-bottom: 2px solid #333; padding-bottom: 5px; }
 
-    /* Susunan Kad KPI (4 Sebaris) */
+    /* 1. SUSUNAN KAD KPI (4 SEBARIS) */
     #kpiCardsModern { 
         display: flex !important; 
         flex-wrap: nowrap !important; 
-        gap: 10px !important;
-        margin-bottom: 15px !important;
+        gap: 15px !important;
+        margin-bottom: 20px !important;
     }
     #kpiCardsModern .col-sm-6 { 
         flex: 1 !important; 
         max-width: 25% !important; 
     }
 
-    /* OPTIMASI CARTA: Letak sebelah-menyebelah dalam 1 muka surat */
+    /* 2. CARTA ATAS BAWAH (BUKAN SEBELAH-MENYEBELAH) */
     .print-chart-row {
-        display: flex !important;
-        gap: 15px;
-        margin-bottom: 15px;
-        page-break-inside: avoid;
+        display: block !important; /* Paksa carta turun ke bawah */
     }
     .print-chart-row .card {
-        flex: 1;
-        height: 280px; /* Hadkan tinggi supaya muat 1 page dengan KPI card */
+        width: 100% !important;
+        margin-bottom: 20px !important;
+        page-break-inside: avoid;
+    }
+    .print-chart-row .card-body div {
+        height: 280px !important; /* Besarkan sikit tinggi carta untuk print */
     }
 
-    .card { 
-        border: 1px solid #dee2e6 !important; 
-        box-shadow: none !important; 
-        margin-bottom: 10px !important;
-        page-break-inside: avoid; 
-    }
-
-    .card-header { background-color: #f8f9fa !important; padding: 5px 10px !important; }
-    .card-body { padding: 10px !important; }
-
-    /* Matrik Grid (Akan duduk di page ke-2 jika tak muat page 1) */
+    /* 3. KEMASAN GARISAN MATRIK TABLE (BORDER) */
     #matrixTable { 
         font-size: 7.5pt !important; 
         width: 100% !important;
+        border-collapse: collapse !important; /* Cantumkan border supaya tak nampak berlapis */
     }
-    #matrixTable th, #matrixTable td { padding: 3px !important; }
+    #matrixTable th, #matrixTable td { 
+        padding: 4px !important; 
+        border: 1px solid #333 !important; /* Paksa warna border hitam pekat sekata */
+    }
+    #matrixTable th {
+        background-color: #e9ecef !important;
+    }
 
-    /* Tanaman Extra (Susun padat) */
+    /* Tanaman Extra (Susun 4 kotak sebaris padat) */
     #extraCropsContainer {
         display: grid !important;
         grid-template-columns: repeat(4, 1fr) !important;
-        gap: 5px !important;
+        gap: 10px !important;
     }
 
-    /* Jadual Ringkasan PDF */
-    #printSummaryTable { 
-        page-break-before: always; /* Biar jadual ni mula muka surat baru supaya tak terpotong */
-        width: 100% !important;
+    /* 4. PENYELESAIAN RUANG KOSONG JADUAL SUMMARY */
+    .d-print-block {
+        margin-top: 20px !important;
     }
-    
+    /* Pastikan tajuk dan jadual tidak terpisah */
+    .d-print-block h5 {
+        page-break-after: avoid !important;
+    }
+    #printSummaryTable { 
+        width: 100% !important;
+        border-collapse: collapse !important;
+        /* BUANG page-break-before di sini supaya dia boleh naik ke ruang kosong page 3 */
+    }
+    #printSummaryTable th, #printSummaryTable td {
+        border: 1px solid #333 !important; /* Garisan hitam pekat untuk jadual summary */
+        padding: 5px !important;
+    }
+    /* Elak baris (row) terpotong separuh di tengah-tengah muka surat */
+    #printSummaryTable tr {
+        page-break-inside: avoid !important;
+    }
+
+    .card { 
+        border: 1px solid #ccc !important; 
+        box-shadow: none !important; 
+    }
+
     .text-success { color: #198754 !important; }
     .text-primary { color: #0d6efd !important; }
-    .progress, .progress-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
     </style>
