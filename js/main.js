@@ -114,3 +114,35 @@ const ViewManager = {
         if(overlay) overlay.classList.remove('active');
     }
 };
+
+// ==========================================
+// SISTEM NOTIFIKASI LATAR BELAKANG (AUTO-SEMAK)
+// ==========================================
+function startBadgePolling() {
+    const semakBadges = () => {
+        // Pastikan user dah login (ada profile) sebelum buat semakan
+        if (typeof AppState !== 'undefined' && AppState.uProf && AppState.uProf.name) {
+            
+            // Semak badge Pengesahan (Admin/Penyelia sahaja)
+            if (typeof VerifyManager !== 'undefined' && VerifyManager.checkPendingCount) {
+                VerifyManager.checkPendingCount();
+            }
+            
+            // Semak badge Tugasan Saya (Semua staf)
+            if (typeof TaskManager !== 'undefined' && TaskManager.checkTaskCount) {
+                TaskManager.checkTaskCount();
+            }
+        }
+    };
+
+    // 1. Semak serta-merta selepas 3 saat sistem dibuka (memberi ruang untuk proses login selesai)
+    setTimeout(semakBadges, 3000);
+
+    // 2. Semak secara automatik setiap 60 saat (1 Minit)
+    setInterval(semakBadges, 60000);
+}
+
+// Aktifkan sistem notifikasi
+document.addEventListener("DOMContentLoaded", () => {
+    startBadgePolling();
+});
