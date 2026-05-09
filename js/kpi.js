@@ -260,9 +260,9 @@ const KPIManager = {
         tbody.innerHTML = html;
     },
 
-   // 5. MATRIK TUGASAN (SUSUNAN GAYA BLOK/KANBAN MODEN)
+  // 5. MATRIK TUGASAN (SUSUNAN FLOATING BLOCKS / KANBAN)
     renderMatrixGrid: function(filterNegeri) {
-        const container = document.getElementById('matrixBlocksContainer');
+        const container = document.getElementById('kanbanMatrixContainer');
         if(!container) return;
         container.innerHTML = '';
         
@@ -271,62 +271,53 @@ const KPIManager = {
         let html = '';
         states.forEach(neg => {
             const targetList = this.targetCrops[neg] || [];
-            if(targetList.length === 0) return; // Abaikan jika negeri tiada sasaran
+            if(targetList.length === 0) return; // Abaikan negeri tiada sasaran
 
-            // Mula Kad Untuk Setiap Negeri
+            // Tajuk Negeri (Header Lajur)
+            let shortNeg = neg.replace("NEGERI SEMBILAN", "N. SEMBILAN").replace("W.P. ", "").replace("CAMERON HIGHLANDS", "C. HIGHLANDS");
+            
+            // Bina 1 Lajur (Column) untuk setiap negeri
             let stateHTML = `
-            <div class="col print-block-col">
-                <div class="card h-100 border shadow-sm" style="border-radius: 10px; border-color: #dee2e6 !important;">
-                    <div class="card-header bg-white py-2 border-bottom text-center">
-                        <h6 class="fw-bold m-0 text-dark" style="font-size: 0.85rem; letter-spacing: 0.5px;">
-                            ${neg.replace("NEGERI SEMBILAN", "N. SEMBILAN").replace("W.P. ", "").replace("CAMERON HIGHLANDS", "C. HIGHLANDS")}
-                        </h6>
-                    </div>
-                    <div class="card-body p-3">
-                        <div class="d-flex flex-wrap gap-2 justify-content-center">
+            <div class="d-flex flex-column gap-2 kanban-column" style="min-width: 140px; max-width: 160px; flex: 0 0 auto;">
+                <div class="fw-bold text-center border-bottom border-2 border-dark pb-2 mb-1 text-dark text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                    ${shortNeg}
+                </div>
             `;
 
-            // Masukkan Blok untuk Setiap Tanaman Sasaran
-            targetList.sort().forEach(crop => {
+            // Susun nama tanaman ikut abjad A-Z
+            let sortedCrops = [...targetList].sort();
+            
+            // Masukkan blok "batu bata" bagi setiap tanaman
+            sortedCrops.forEach(crop => {
                 const stats = this.getCropStats(neg, crop);
                 if(stats.count > 0) {
                     // BLOK SELESAI (Hijau & Boleh di-klik)
                     stateHTML += `
-                        <div class="d-inline-flex align-items-center border border-success bg-success bg-opacity-10 rounded px-2 py-1 shadow-sm d-print-none" 
-                             onclick="KPIManager.showDetails('${neg}', '${crop}', ${stats.count}, ${stats.area})" 
-                             style="cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" title="Klik untuk info">
-                            <span class="fw-bold text-success me-2" style="font-size: 0.65rem; letter-spacing: 0.5px;">${crop}</span>
-                            <span style="font-size: 0.8rem;">✅</span>
-                        </div>
-                        <div class="d-none d-print-inline-flex align-items-center border border-success bg-success bg-opacity-10 rounded px-2 py-1">
-                            <span class="fw-bold text-success me-2" style="font-size: 0.65rem;">${crop}</span>
-                            <span style="font-size: 0.8rem;">✅</span>
-                        </div>
+                    <div class="p-2 border border-success bg-success bg-opacity-10 rounded shadow-sm d-flex justify-content-between align-items-center"
+                         onclick="KPIManager.showDetails('${neg}', '${crop}', ${stats.count}, ${stats.area})"
+                         style="cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" title="Klik untuk maklumat">
+                        <span class="fw-bold text-success text-truncate me-1" style="font-size: 0.7rem;" title="${crop}">${crop}</span>
+                        <span style="font-size: 0.85rem;">✅</span>
+                    </div>
                     `;
                 } else {
-                    // BLOK BELUM SELESAI (Dashed outline & Bulat Merah)
+                    // BLOK BELUM SELESAI (Kelabu Dashed)
                     stateHTML += `
-                        <div class="d-inline-flex align-items-center border rounded px-2 py-1" style="border-style: dashed !important; border-color: #adb5bd !important; background-color: #f8f9fa;">
-                            <span class="fw-bold text-muted me-2" style="font-size: 0.65rem; letter-spacing: 0.5px;">${crop}</span>
-                            <span class="text-danger" style="font-size: 0.8rem;">⭕</span>
-                        </div>
+                    <div class="p-2 border rounded d-flex justify-content-between align-items-center bg-white" 
+                         style="border-style: dashed !important; border-color: #adb5bd !important;">
+                        <span class="fw-bold text-muted text-truncate me-1" style="font-size: 0.7rem;" title="${crop}">${crop}</span>
+                        <span class="text-danger" style="font-size: 0.85rem;">⭕</span>
+                    </div>
                     `;
                 }
             });
 
-            // Tutup Kad Negeri
-            stateHTML += `
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-            
+            stateHTML += `</div>`; // Tutup Lajur
             html += stateHTML;
         });
-        
-        container.innerHTML = html || '<div class="col-12 text-center text-muted fst-italic py-4">Tiada sasaran ditetapkan.</div>';
-    },
 
+        container.innerHTML = html || '<div class="w-100 text-center text-muted fst-italic py-4">Tiada sasaran ditetapkan.</div>';
+    },
     
     getCropStats: function(negeri, cropName) {
         let count = 0, area = 0;
