@@ -197,7 +197,21 @@ const VerifyManager = {
 const TaskManager = {
     retainedImagesGlobal: [],
     currentFile: null,
-
+    checkTaskCount: async function() {
+        try {
+            if(!AppState.uProf || !AppState.uProf.name) return;
+            const d = await API.postData('getMyTasks', { name: AppState.uProf.name });
+            const b = document.getElementById('badgeTask');
+            if(b) {
+                if(d.rows && d.rows.length > 0) { 
+                    b.innerText = d.rows.length; 
+                    b.style.display = "inline-block"; 
+                } else { 
+                    b.style.display = "none"; 
+                }
+            }
+        } catch(e) { console.error("Error task count:", e); }
+    },
     loadMyTasks: async function() {
         const container = document.getElementById('taskContainer');
         container.innerHTML = '<div class="col-12 text-center p-5"><div class="spinner-border text-primary"></div></div>';
