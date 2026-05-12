@@ -150,7 +150,7 @@ const KPIManager = {
                 data.push(area.toFixed(2));
             });
         } else {
-            document.getElementById('stateChartTitle').innerHTML = `<i class="bi bi-bar-chart-fill me-2"></i> Perbandingan Luas Pencapaian Mengikut Negeri (Ha)`;
+            document.getElementById('stateChartTitle').innerHTML = `<i class="bi bi-bar-chart-fill me-2"></i> Perbandingan Luas Pencapaian Bancian Perosak Mengikut Negeri (Ha)`;
             document.getElementById('btnBackState').style.display = 'none';
             stateList.forEach((neg, index) => {
                 labels.push(neg.replace("W.P. ", "").replace("CAMERON HIGHLANDS", "C. HIGHLANDS"));
