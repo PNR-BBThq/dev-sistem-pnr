@@ -1,6 +1,6 @@
 // js/config.js
 const CONFIG = {
-    API_URL: "https://script.google.com/macros/s/AKfycbyKB5-TBuZ8JXs1pz9s7LBCT5stsFaNP8fMzw8UvbPYbKCWuus8mSuDdaLFaK1PNDG8/exec",
+    API_URL: "https://script.google.com/macros/s/AKfycbx1hlsIWN5MCo7ab_ytT_d_oFqVjy1XMJwM39oBC8yPp9OLukRSbk47Ufate26quu4k/exec",
     RPW_URL: "https://www.appsheet.com/start/55b088df-3ec1-469a-b5c6-1fca48052906",
     FREE_ROUTES: ['login', 'registerUser', 'verifyForgotPwd', 'updateMyAccess']
 };
