@@ -1,36 +1,32 @@
 // =======================================================================
-// FAIL: js/nlp-bot.js (NLP ENGINE V2 - FIXED DATA PARSING & SYNONYMS)
+// FAIL: js/nlp-bot.js (NLP ENGINE V3 - FULL DATA MAPPING & ARCHITECTURE)
 // =======================================================================
 
 const SmartNLPBot = {
-    // 1. KAMUS SINONIM & KATA KUNCI (Array Mapping untuk tangkap semua ejaan)
     kamus: {
         negeri: {
-            "johor": "JOHOR", "jhr": "JOHOR", "kedah": "KEDAH", "kdh": "KEDAH",
-            "kelantan": "KELANTAN", "klate": "KELANTAN", "melaka": "MELAKA",
-            "n9": "NEGERI SEMBILAN", "negeri sembilan": "NEGERI SEMBILAN", "sembilan": "NEGERI SEMBILAN",
-            "pahang": "PAHANG", "phg": "PAHANG", "perak": "PERAK", "prk": "PERAK",
-            "perlis": "PERLIS", "penang": "PULAU PINANG", "pulau pinang": "PULAU PINANG", "p.pinang": "PULAU PINANG",
-            "sabah": "SABAH", "sarawak": "SARAWAK", "selangor": "SELANGOR", "terengganu": "TERENGGANU", "trg": "TERENGGANU",
-            "kl": "W.P. KUALA LUMPUR", "kuala lumpur": "W.P. KUALA LUMPUR", "labuan": "W.P. LABUAN"
+            "johor": "JOHOR", "kedah": "KEDAH", "kelantan": "KELANTAN", "klate": "KELANTAN", 
+            "melaka": "MELAKA", "n9": "NEGERI SEMBILAN", "negeri sembilan": "NEGERI SEMBILAN", 
+            "pahang": "PAHANG", "perak": "PERAK", "perlis": "PERLIS", "penang": "PULAU PINANG", 
+            "pulau pinang": "PULAU PINANG", "sabah": "SABAH", "sarawak": "SARAWAK", 
+            "selangor": "SELANGOR", "terengganu": "TERENGGANU", "kl": "W.P. KUALA LUMPUR", "labuan": "W.P. LABUAN"
         },
         kategori: {
-            "buah": "BUAH-BUAHAN", "buah-buahan": "BUAH-BUAHAN", "buahan": "BUAH-BUAHAN",
-            "sayur": "SAYUR-SAYURAN", "sayur-sayuran": "SAYUR-SAYURAN", "sayuran": "SAYUR-SAYURAN",
-            "kontan": "KONTAN", "kelapa": "KELAPA", "industri": "KELAPA"
+            "buah": "BUAH-BUAHAN", "buah-buahan": "BUAH-BUAHAN", 
+            "sayur": "SAYUR-SAYURAN", "sayur-sayuran": "SAYUR-SAYURAN", 
+            "kontan": "KONTAN", "kelapa": "KELAPA", "padi": "PADI"
         },
-        // PERUBAHAN: Guna Array supaya AI cari semua kemungkinan ejaan dalam Database
         perosakMasyhur: {
             "faw": ["FAW", "FALL ARMYWORM", "ULAT RATUS"], 
             "fall armyworm": ["FAW", "FALL ARMYWORM", "ULAT RATUS"], 
-            "rpw": ["RPW", "RED PALM WEEVIL", "KUMBANG MERAH", "KUMBANG PENGOREK"], 
+            "rpw": ["RPW", "RED PALM WEEVIL", "KUMBANG MERAH"], 
             "kumbang tanduk": ["KUMBANG TANDUK", "RHINOCEROS BEETLE"],
-            "koya": ["KOYA", "MEALYBUG", "MEALY BUG"],
-            "ulat bungkus": ["ULAT BUNGKUS", "BAGWORM"]
+            "koya": ["KOYA", "MEALYBUG"],
+            "liriomyza": ["LIRIOMYZA", "LEAF MINER", "PELOMBONG DAUN"]
         }
     },
     
-    stopWords: ["tolong", "bagi", "beri", "apa", "di", "kat", "pada", "untuk", "yang", "dan", "ada", "tak", "nak", "tahu", "senarai", "tunjuk", "senaraikan", "berikan"],
+    stopWords: ["tolong", "bagi", "beri", "apa", "di", "kat", "pada", "untuk", "yang", "dan", "ada", "tak", "nak", "tahu", "senarai", "tunjuk", "berikan"],
 
     toggle: function() {
         const win = document.getElementById('nlp-chatbot-window');
@@ -67,10 +63,10 @@ const SmartNLPBot = {
         chatBody.scrollTop = chatBody.scrollHeight;
     },
 
-    // PERUBAHAN: Fungsi helper untuk baca JSON Perosak yang betul
+    // PERUBAHAN V3: Fungsi ini sekarang serasi 100% dengan struktur GAS Tuan
     getPestObj: function(dp) {
         if (!dp) return null;
-        if (typeof dp === 'object') return dp; 
+        if (typeof dp === 'object') return dp; // Memang dah Object dari Backend
         if (typeof dp === 'string' && dp.includes('{')) {
             try { return JSON.parse(dp); } catch(e) { return null; }
         }
@@ -78,74 +74,92 @@ const SmartNLPBot = {
     },
 
     prosesAyat: function(soalan) {
-        if (!AppState.mData || AppState.mData.length === 0) return "Sistem masih tiada data untuk disemak.";
+        const db = AppState.mData;
+        if (!db || db.length === 0) return "Sistem masih tiada data untuk disemak.";
 
         let query = soalan.toLowerCase().trim();
-        let entitiNegeri = null, entitiKategori = null, entitiPerosak = null;
+        let tokens = query.split(" ").filter(w => !this.stopWords.includes(w));
         
-        for (let key in this.kamus.negeri) { if (query.includes(key)) entitiNegeri = this.kamus.negeri[key]; }
-        for (let key in this.kamus.kategori) { if (query.includes(key)) entitiKategori = this.kamus.kategori[key]; }
-        for (let key in this.kamus.perosakMasyhur) { if (query.includes(key)) entitiPerosak = this.kamus.perosakMasyhur[key]; }
+        let eNegeri = null, eKategori = null, ePerosak = null, eTanamanSpesifik = null, eDaerah = null;
+        
+        // 1. Tangkap Negeri & Kategori dari Kamus Tetap
+        for (let key in this.kamus.negeri) { if (query.includes(key)) eNegeri = this.kamus.negeri[key]; }
+        for (let key in this.kamus.kategori) { if (query.includes(key)) eKategori = this.kamus.kategori[key]; }
+        for (let key in this.kamus.perosakMasyhur) { if (query.includes(key)) ePerosak = this.kamus.perosakMasyhur[key]; }
 
-        const db = AppState.mData;
+        // 2. Tangkap Daerah & Tanaman Spesifik secara Dinamik dari Database!
+        // Ini magic AI V3: Dia belajar nama tanaman & daerah on-the-fly
+        if (!eKategori && !eNegeri && tokens.length > 0) {
+            db.forEach(d => {
+                let namaTanaman = (d.tn || "").toLowerCase().trim();
+                let namaDaerah = (d.d || "").toLowerCase().trim();
+                tokens.forEach(t => {
+                    if (t.length > 3 && namaTanaman.includes(t)) eTanamanSpesifik = d.tn.toUpperCase();
+                    if (t.length > 3 && namaDaerah.includes(t)) eDaerah = d.d.toUpperCase();
+                });
+            });
+        }
 
-        // NIAT 1: RUMUSAN / TOTAL
-        if (query.includes("rumusan") || query.includes("ringkas") || query.includes("status keseluruhan") || query.includes("statistik")) {
+        // --- NIAT 1: RUMUSAN RINGKAS ---
+        if (query.includes("rumusan") || query.includes("ringkas") || query.includes("status")) {
             let tTanam = 0, tSerang = 0;
             db.forEach(d => { 
-                if((!entitiNegeri || (d.n||"").toUpperCase().includes(entitiNegeri)) && 
-                   (!entitiKategori || (d.kt||"").toUpperCase().includes(entitiKategori))) {
+                if((!eNegeri || (d.n||"").toUpperCase().includes(eNegeri)) && 
+                   (!eDaerah || (d.d||"").toUpperCase().includes(eDaerah)) &&
+                   (!eKategori || (d.kt||"").toUpperCase().includes(eKategori)) &&
+                   (!eTanamanSpesifik || (d.tn||"").toUpperCase().includes(eTanamanSpesifik))) {
                     tTanam += (parseFloat(d.lt)||0); tSerang += (parseFloat(d.ls)||0); 
                 }
             });
             let pct = tTanam > 0 ? ((tSerang/tTanam)*100).toFixed(2) : 0;
-            let filterTeks = (entitiNegeri ? ` di <b>${entitiNegeri}</b>` : ` <b>Nasional</b>`) + (entitiKategori ? ` bagi <b>${entitiKategori}</b>` : "");
+            let filterTeks = "";
+            if(eDaerah) filterTeks += ` di <b>${eDaerah}</b>`; else if(eNegeri) filterTeks += ` di <b>${eNegeri}</b>`; else filterTeks += ` <b>Nasional</b>`;
+            if(eTanamanSpesifik) filterTeks += ` (Tanaman: ${eTanamanSpesifik})`; else if(eKategori) filterTeks += ` (Kategori: ${eKategori})`;
+            
             return `📊 <b>Rumusan Terkini${filterTeks}:</b><br>• Luas Bancian: <b>${tTanam.toLocaleString()} Ha</b><br>• Luas Serangan: <b>${tSerang.toLocaleString()} Ha</b><br>• Peratus Serangan: <b><span class="${pct>5?'text-danger':'text-success'}">${pct}%</span></b>`;
         }
 
-        // NIAT 2: PEROSAK SPESIFIK (Contoh: "FAW", "Ada FAW di Melaka?")
-        if (entitiPerosak || (query.includes("serangan") && !query.includes("top"))) {
-            let targetPestArr = entitiPerosak;
-            
-            // Jika tak jumpa dalam kamus, cuba teka dari ayat (Contoh: "serangan liriomyza")
-            if(!targetPestArr) {
-                let tokens = query.split(" ").filter(w => !this.stopWords.includes(w));
+        // --- NIAT 2: CARI PEROSAK SPESIFIK (Cth: FAW) ---
+        if (ePerosak || query.includes("serangan")) {
+            let targetPestArr = ePerosak;
+            if(!targetPestArr && query.includes("serangan")) {
                 if(tokens.length > 0) targetPestArr = [tokens[tokens.length-1].toUpperCase()]; 
             }
 
             if (targetPestArr) {
                 let senaraiLokasi = [];
                 db.forEach(d => {
-                    if(!entitiNegeri || (d.n||"").toUpperCase().includes(entitiNegeri)) {
+                    if((!eNegeri || (d.n||"").toUpperCase().includes(eNegeri)) && (!eDaerah || (d.d||"").toUpperCase().includes(eDaerah))) {
                         let pestObj = this.getPestObj(d.p);
                         if (pestObj) {
-                            // Cari padanan ejaan dalam Database
                             let matchKey = Object.keys(pestObj).find(dbKey => 
                                 targetPestArr.some(synonym => dbKey.toUpperCase().includes(synonym))
                             );
                             if(matchKey && parseFloat(pestObj[matchKey]) > 0) {
-                                senaraiLokasi.push({ lok: d.l, neg: d.n, nama: matchKey, luas: parseFloat(pestObj[matchKey]) });
+                                senaraiLokasi.push({ lok: d.l, daerah: d.d, neg: d.n, tanam: d.tn, luas: parseFloat(pestObj[matchKey]) });
                             }
                         }
                     }
                 });
 
-                if(senaraiLokasi.length === 0) return `✅ Tiada rekod serangan <b>${targetPestArr[0] || "perosak tersebut"}</b> ${entitiNegeri ? 'di '+entitiNegeri : 'ditemui'}.`;
+                if(senaraiLokasi.length === 0) return `✅ Tiada rekod serangan <b>${targetPestArr[0] || "perosak tersebut"}</b> ditemui.`;
                 senaraiLokasi.sort((a,b) => b.luas - a.luas);
                 
-                let filterTeks = entitiNegeri ? ` di <b>${entitiNegeri}</b>` : "";
+                let filterTeks = eDaerah ? ` di <b>${eDaerah}</b>` : (eNegeri ? ` di <b>${eNegeri}</b>` : "");
                 let html = `🐛 <b>Senarai Serangan ${targetPestArr[0]}${filterTeks}:</b><br>`;
-                senaraiLokasi.slice(0, 10).forEach((x, i) => html += `${i+1}. ${x.lok} (${x.neg}) - <b>${x.luas.toFixed(2)} Ha</b><br>`);
+                senaraiLokasi.slice(0, 5).forEach((x, i) => html += `<div class="mb-1 border-bottom pb-1"><b>${i+1}. ${x.lok}</b> (${x.daerah}, ${x.neg})<br><small class="text-muted">🌱 ${x.tanam} | ⚠️ ${x.luas.toFixed(2)} Ha</small></div>`);
                 return html;
             }
         }
 
-        // NIAT 3: PEROSAK TERTINGGI / Carian Umum (Contoh: "Top perosak", "Perosak di Melaka")
+        // --- NIAT 3: TOP PEROSAK (Cth: "Top perosak", "Perosak Cili di Melaka") ---
         if (query.includes("top") || query.includes("tinggi") || query.includes("teruk") || query.includes("perosak")) {
             let kumpul = {};
             db.forEach(d => {
-                if((!entitiNegeri || (d.n||"").toUpperCase().includes(entitiNegeri)) && 
-                   (!entitiKategori || (d.kt||"").toUpperCase().includes(entitiKategori))) {
+                if((!eNegeri || (d.n||"").toUpperCase().includes(eNegeri)) && 
+                   (!eDaerah || (d.d||"").toUpperCase().includes(eDaerah)) &&
+                   (!eTanamanSpesifik || (d.tn||"").toUpperCase().includes(eTanamanSpesifik)) &&
+                   (!eKategori || (d.kt||"").toUpperCase().includes(eKategori))) {
                     
                     let pestObj = this.getPestObj(d.p);
                     if (pestObj) {
@@ -158,16 +172,18 @@ const SmartNLPBot = {
             });
             
             let sortPest = Object.entries(kumpul).sort((a,b) => b[1] - a[1]);
+            let filterTeks = "";
+            if(eDaerah) filterTeks += ` di <b>${eDaerah}</b>`; else if(eNegeri) filterTeks += ` di <b>${eNegeri}</b>`; else filterTeks += ` <b>Nasional</b>`;
+            if(eTanamanSpesifik) filterTeks += ` (Tanaman: ${eTanamanSpesifik})`; else if(eKategori) filterTeks += ` (Kategori: ${eKategori})`;
+
+            if(sortPest.length === 0) return `✅ Tiada serangan perosak direkodkan ${filterTeks}.`;
             
-            if(sortPest.length === 0) return `✅ Tiada serangan perosak direkodkan${entitiNegeri ? ' di <b>'+entitiNegeri+'</b>' : ''}${entitiKategori ? ' untuk tanaman <b>'+entitiKategori+'</b>' : ''}.`;
-            
-            let filterTeks = (entitiNegeri ? ` di <b>${entitiNegeri}</b>` : ` (Nasional)`) + (entitiKategori ? ` bagi <b>${entitiKategori}</b>` : "");
-            let html = `🔥 <b>Perosak Utama${filterTeks}:</b><br>`;
+            let html = `🔥 <b>Perosak Utama ${filterTeks}:</b><br>`;
             sortPest.slice(0, 5).forEach((x, i) => html += `${i+1}. ${x[0]} - <b>${x[1].toFixed(2)} Ha</b><br>`);
             return html;
         }
 
         // DEFAULT FALLBACK
-        return "Saya kurang jelas dengan arahan tersebut. Cuba gunakan kata kunci seperti <b>'Top'</b>, <b>'Rumusan'</b>, atau nama perosak spesifik seperti <b>'FAW'</b>.";
+        return "Saya kurang jelas. Cuba gunakan kata kunci seperti <b>'Top perosak'</b>, <b>'Rumusan'</b>, atau nama perosak seperti <b>'FAW'</b>.";
     }
 };
