@@ -1,5 +1,5 @@
 // =======================================================================
-// FAIL: js/nlp-bot.js (NLP ENGINE V7 - INTENT EXPANSION & ZERO-ATTACK FIX)
+// FAIL: js/nlp-bot.js (NLP ENGINE V8 - THE ULTIMATE BULLETPROOF FIX)
 // =======================================================================
 
 const SmartNLPBot = {
@@ -14,8 +14,11 @@ const SmartNLPBot = {
             "pulau pinang": "PULAU PINANG", "sabah": "SABAH", "sarawak": "SARAWAK", 
             "selangor": "SELANGOR", "terengganu": "TERENGGANU", "kl": "W.P. KUALA LUMPUR", "labuan": "W.P. LABUAN"
         },
+        // 'Kelapa' dan 'Padi' dibuang dari sini supaya ia dibaca sebagai Tanaman (Crop) secara automatik
         kategori: {
-            "buah": "BUAH-BUAHAN", "sayur": "SAYUR-SAYURAN", "kontan": "KONTAN", "kelapa": "KELAPA", "padi": "PADI"
+            "buah": "BUAH-BUAHAN", "buahan": "BUAH-BUAHAN", 
+            "sayur": "SAYUR-SAYURAN", "sayuran": "SAYUR-SAYURAN", 
+            "kontan": "KONTAN", "ladang": "KONTAN"
         },
         perosakMasyhur: {
             "faw": ["FAW", "FALL ARMYWORM", "SPODOPTERA FRUGIPERDA"], 
@@ -72,42 +75,58 @@ const SmartNLPBot = {
         return null;
     },
 
-    findEntity: function(query, entityList) {
-        for (let word of entityList) {
-            let regex = new RegExp("\\b" + word.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "\\b", "i");
-            if (regex.test(query)) return word;
+    // TEKNIK BARU: Padded Space Matching (Sangat tepat & kebal dari masalah tanda sengkang)
+    findEntity: function(query, entityArray) {
+        let q = " " + query.replace(/[^\w\s-]/gi, ' ') + " ";
+        for (let word of entityArray) {
+            if (!word) continue;
+            let w = word.replace(/[^\w\s-]/gi, ' ').trim();
+            if (w.length < 3) continue;
+            if (q.includes(" " + w.toLowerCase() + " ")) return word;
         }
         return null;
     },
 
+    // ==============================================================
+    // CORE AI ENGINE V8 (THE ULTIMATE MASTERPIECE)
+    // ==============================================================
     prosesAyat: function(soalan) {
         const db = AppState.mData;
         if (!db || db.length === 0) return "Sistem sedang memuatkan pangkalan data. Sila cuba sebentar lagi.";
 
         let query = soalan.toLowerCase().trim();
         
-        // 1. DATA HARVESTING
+        // 1. DATA HARVESTING PINTAR (Tuai data dari Database secara live)
         let dbCrops = new Set(), dbDistricts = new Set(), dbPests = new Set();
         db.forEach(d => {
             if(d.tn) {
-                dbCrops.add(d.tn.toUpperCase().trim());
-                d.tn.split(" ").forEach(w => { if(w.length > 3) dbCrops.add(w.toUpperCase().trim()); });
+                let tnRaw = d.tn.toUpperCase().trim();
+                dbCrops.add(tnRaw);
+                // Pecahkan nama panjang supaya user boleh taip satu perkataan (Cth: KELAPA SAWIT -> SAWIT)
+                tnRaw.replace(/[^\w\s]/g, ' ').split(/\s+/).forEach(w => { if(w.length >= 4) dbCrops.add(w); });
             }
             if(d.d) dbDistricts.add(d.d.toUpperCase().trim());
             let pObj = this.getPestObj(d.p);
             if(pObj) Object.keys(pObj).forEach(k => dbPests.add(k.toUpperCase().trim()));
         });
 
-        // 2. EXTRAKSI ENTITI
+        // Sort by length supaya AI padankan nama yang lebih panjang dulu (Cth: KELAPA SAWIT dulu, baru KELAPA)
+        let arrCrops = Array.from(dbCrops).sort((a,b) => b.length - a.length);
+        let arrDistricts = Array.from(dbDistricts).sort((a,b) => b.length - a.length);
+        let arrPests = Array.from(dbPests).sort((a,b) => b.length - a.length);
+
+        // 2. EXTRAKSI ENTITI (BACA KONTEKS AYAT)
         let fNegeri = null, fKategori = null, fCrop = null, fDaerah = null, fPestSearch = null, fPestDisplayName = null;
         let clearMemory = query.includes("nasional") || query.includes("semua") || query.includes("reset") || query.includes("seluruh");
 
         if (!clearMemory) {
             for (let key in this.kamus.negeri) { if (new RegExp("\\b" + key + "\\b", "i").test(query)) fNegeri = this.kamus.negeri[key]; }
             for (let key in this.kamus.kategori) { if (new RegExp("\\b" + key + "\\b", "i").test(query)) fKategori = this.kamus.kategori[key]; }
-            fCrop = this.findEntity(query, Array.from(dbCrops));
-            fDaerah = this.findEntity(query, Array.from(dbDistricts));
+            
+            fCrop = this.findEntity(query, arrCrops);
+            fDaerah = this.findEntity(query, arrDistricts);
 
+            // Pengesanan Perosak Berperingkat
             for (let key in this.kamus.perosakMasyhur) { 
                 if (new RegExp("\\b" + key.replace(/\s/g, '\\s?') + "\\b", "i").test(query)) {
                     fPestSearch = this.kamus.perosakMasyhur[key]; 
@@ -115,11 +134,11 @@ const SmartNLPBot = {
                 } 
             }
             if (!fPestSearch) {
-                let foundPest = this.findEntity(query, Array.from(dbPests));
+                let foundPest = this.findEntity(query, arrPests);
                 if (foundPest) { fPestSearch = [foundPest]; fPestDisplayName = foundPest; }
             }
 
-            // LOGIK MEMORI
+            // WARISAN MEMORI JIKA TIADA ENTITI BARU DIBERIKAN
             if (!fNegeri && this.lastContext.negeri) fNegeri = this.lastContext.negeri;
             if (!fDaerah && this.lastContext.daerah) fDaerah = this.lastContext.daerah;
             if (!fKategori && this.lastContext.kategori) fKategori = this.lastContext.kategori;
@@ -127,18 +146,16 @@ const SmartNLPBot = {
             if (!fPestSearch && this.lastContext.pest) { fPestSearch = this.lastContext.pest.search; fPestDisplayName = this.lastContext.pest.display; }
         }
 
+        // SIMPAN KE MEMORI BARU
         this.lastContext = { negeri: fNegeri, daerah: fDaerah, kategori: fKategori, crop: fCrop, pest: fPestSearch ? {search: fPestSearch, display: fPestDisplayName} : null };
 
-        // 3. INTENT CLASSIFICATION (V7 - Ditambah 'luas', 'bancian', 'hektar')
-        let isTopPest = /top|tinggi|teruk|utama|perosak/.test(query);
-        let isLocation = /mana|lokasi|tempat|senarai|kawasan/.test(query);
+        // 3. INTENT CLASSIFICATION (BACA NIAT SOALAN)
         let isSummary = /rumusan|ringkas|status|statistik|jumlah|berapa|luas|bancian|hektar/.test(query);
+        let isTopPest = /top|tinggi|teruk|utama|perosak|ancaman|bahaya/.test(query);
+        let isLocation = /mana|lokasi|tempat|senarai|kawasan|jejak/.test(query);
         let isTopCrop = /tanaman|pokok|komoditi|jenis/.test(query);
 
-        if (!isTopPest && !isLocation && !isSummary && !isTopCrop && !fPestSearch && (fNegeri || fCrop || fKategori || fDaerah)) {
-            isSummary = true; isTopPest = true; isLocation = true; 
-        }
-
+        // BINA TAG FILTER UI
         let filterTags = [];
         if(fDaerah) filterTags.push(fDaerah);
         if(fNegeri) filterTags.push(fNegeri);
@@ -146,19 +163,45 @@ const SmartNLPBot = {
         if(fKategori && !fCrop) filterTags.push(fKategori);
         let tagHtml = filterTags.length > 0 ? `<div class="mb-3"><span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-2 py-1"><i class="bi bi-funnel-fill"></i> Konteks: ${filterTags.join(" | ")}</span></div>` : `<div class="mb-3"><span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary px-2 py-1"><i class="bi bi-globe"></i> Konteks: Nasional</span></div>`;
 
-        let htmlResponse = tagHtml;
-        let hasData = false;
-        let masterLuasTanam = 0; 
-
-        // KIRA MASTER LUAS TANAM DAHULU
+        // 4. PENGIRAAN ASAS UNTUK KONTEKS INI (Sangat penting untuk semak kawasan selamat)
+        let masterLuasTanam = 0, masterLuasSerang = 0;
         db.forEach(d => {
             let matchCrop = !fCrop || (d.tn||"").toUpperCase().includes(fCrop);
             if((!fNegeri || (d.n||"").toUpperCase().includes(fNegeri)) && (!fDaerah || (d.d||"").toUpperCase().includes(fDaerah)) && (!fKategori || (d.kt||"").toUpperCase().includes(fKategori)) && matchCrop) {
                 masterLuasTanam += (parseFloat(d.lt)||0);
+                masterLuasSerang += (parseFloat(d.ls)||0);
             }
         });
 
-        // --- NIAT: SENARAI TANAMAN TERLIBAT ---
+        // Jika langsung tiada data bancian direkodkan untuk kombinasi ini
+        if (masterLuasTanam === 0) {
+            return `${tagHtml}✅ Tiada sebarang data bancian mahupun serangan ditemui untuk konteks ini.`;
+        }
+
+        // AUTO-DASHBOARD (Jika soalan umum, kita beri Rumusan & Top Perosak)
+        if (!isSummary && !isTopPest && !isLocation && !isTopCrop && !fPestSearch) {
+            isSummary = true;
+            if (masterLuasSerang > 0) isTopPest = true;
+        }
+
+        let htmlResponse = tagHtml;
+
+        // --- BLOK: RUMUSAN ---
+        if (isSummary) {
+            let pct = masterLuasTanam > 0 ? ((masterLuasSerang/masterLuasTanam)*100).toFixed(2) : 0;
+            htmlResponse += `<div class="bg-light p-2 rounded border mb-2" style="font-size:0.85rem;">📊 <b>Rumusan Keluasan:</b><br>• Bancian: <b>${masterLuasTanam.toLocaleString()} Ha</b><br>• Serangan: <b class="${pct>5?'text-danger':'text-warning'}">${masterLuasSerang.toLocaleString()} Ha</b> (${pct}%)</div>`;
+        }
+
+        // --- PENYELAMAT KAWASAN SELAMAT (ZERO ATTACK) ---
+        if (masterLuasSerang === 0 && !fPestSearch) {
+            if (!isSummary) { 
+                htmlResponse += `<div class="bg-light p-2 rounded border mb-2" style="font-size:0.85rem;">📊 <b>Rumusan Keluasan:</b><br>• Bancian: <b>${masterLuasTanam.toLocaleString()} Ha</b><br>• Serangan: <b class="text-success">0 Ha</b> (0%)</div>`;
+            }
+            htmlResponse += `✅ Alhamdulillah, <b>tiada sebarang serangan perosak</b> direkodkan bagi kawasan ini. Tanaman selamat.`;
+            return htmlResponse;
+        }
+
+        // --- BLOK: SENARAI TANAMAN TERLIBAT ---
         if (isTopCrop) {
             let kumpulTanam = {};
             db.forEach(d => {
@@ -173,32 +216,14 @@ const SmartNLPBot = {
                 htmlResponse += `🌾 <b>Tanaman Terjejas:</b><br>`;
                 sortTanam.slice(0, 5).forEach((x, i) => {
                     let pct = masterLuasTanam > 0 ? ((x[1]/masterLuasTanam)*100).toFixed(1) : 0;
-                    let color = pct > 5 ? 'text-danger' : 'text-warning';
-                    htmlResponse += `<div class="mb-1 d-flex justify-content-between border-bottom pb-1" style="font-size:0.8rem;"><span>${i+1}. ${x[0]}</span> <span><b>${x[1].toFixed(2)} Ha</b> <small class="${color}">(${pct}%)</small></span></div>`;
+                    htmlResponse += `<div class="mb-1 d-flex justify-content-between border-bottom pb-1" style="font-size:0.8rem;"><span>${i+1}. ${x[0]}</span> <span><b>${x[1].toFixed(2)} Ha</b> <small class="${pct>5?'text-danger':'text-warning'}">(${pct}%)</small></span></div>`;
                 });
                 htmlResponse += `<br>`;
-                hasData = true;
             }
         }
 
-        // --- NIAT: RUMUSAN (Sekarang merangkumi 'luas' dan 'bancian') ---
-        if (isSummary || (!isTopPest && !isLocation && !isTopCrop && !fPestSearch)) {
-            let tSerang = 0;
-            db.forEach(d => { 
-                let matchCrop = !fCrop || (d.tn||"").toUpperCase().includes(fCrop);
-                if((!fNegeri || (d.n||"").toUpperCase().includes(fNegeri)) && (!fDaerah || (d.d||"").toUpperCase().includes(fDaerah)) && (!fKategori || (d.kt||"").toUpperCase().includes(fKategori)) && matchCrop) {
-                    tSerang += (parseFloat(d.ls)||0); 
-                }
-            });
-            let pct = masterLuasTanam > 0 ? ((tSerang/masterLuasTanam)*100).toFixed(2) : 0;
-            if(masterLuasTanam > 0) {
-                htmlResponse += `<div class="bg-light p-2 rounded border mb-2" style="font-size:0.85rem;">📊 <b>Rumusan Keluasan:</b><br>• Bancian: <b>${masterLuasTanam.toLocaleString()} Ha</b><br>• Serangan: <b class="${pct>5?'text-danger':'text-warning'}">${tSerang.toLocaleString()} Ha</b> (${pct}%)</div>`;
-                hasData = true;
-            }
-        }
-
-        // --- NIAT: TOP PEROSAK ---
-        if (isTopPest) {
+        // --- BLOK: TOP PEROSAK KESELURUHAN ---
+        if (isTopPest && !fPestSearch) {
             let kumpul = {};
             db.forEach(d => {
                 let matchCrop = !fCrop || (d.tn||"").toUpperCase().includes(fCrop);
@@ -217,15 +242,13 @@ const SmartNLPBot = {
                 htmlResponse += `🔥 <b>Ancaman Tertinggi:</b><br>`;
                 sortPest.slice(0, 5).forEach((x, i) => {
                     let pct = masterLuasTanam > 0 ? ((x[1]/masterLuasTanam)*100).toFixed(1) : 0;
-                    let color = pct > 5 ? 'text-danger' : 'text-warning';
-                    htmlResponse += `<div class="mb-1 d-flex justify-content-between border-bottom pb-1" style="font-size:0.8rem;"><span>${i+1}. ${x[0]}</span> <span><b>${x[1].toFixed(2)} Ha</b> <small class="${color}">(${pct}%)</small></span></div>`;
+                    htmlResponse += `<div class="mb-1 d-flex justify-content-between border-bottom pb-1" style="font-size:0.8rem;"><span>${i+1}. ${x[0]}</span> <span><b>${x[1].toFixed(2)} Ha</b> <small class="${pct>5?'text-danger':'text-warning'}">(${pct}%)</small></span></div>`;
                 });
                 htmlResponse += `<br>`;
-                hasData = true;
             }
         }
 
-        // --- NIAT: TOP LOKASI / JEJAK PEROSAK ---
+        // --- BLOK: TOP LOKASI (ATAU JEJAK PEROSAK SPESIFIK) ---
         if (isLocation || fPestSearch) {
             let locList = [];
             db.forEach(d => {
@@ -255,21 +278,11 @@ const SmartNLPBot = {
                     let color = pct > 10 ? 'text-danger' : (pct > 5 ? 'text-warning' : 'text-success');
                     htmlResponse += `<div class="mb-2 p-2 bg-light rounded" style="font-size:0.8rem; border-left: 3px solid ${pct > 10 ? '#dc3545' : '#ffc107'};"><b>${i+1}. ${x.lok}</b> (${x.daerah||x.neg})<br><span class="text-muted">🌱 ${x.tanam} | ⚠️ <b>${x.luasSerang.toFixed(2)} Ha</b> <span class="fw-bold ${color}">(${pct}%)</span></span></div>`;
                 });
-                hasData = true;
             } else if (fPestSearch) {
-                htmlResponse += `✅ Tiada serangan aktif bagi <b>${fPestDisplayName}</b> dalam konteks ini.`;
-                hasData = true;
+                htmlResponse += `✅ Tiada serangan aktif bagi <b>${fPestDisplayName}</b> ditemui dalam kawasan ini.`;
             }
         }
 
-        // FALLBACK JIKA TIADA DATA SERANGAN (V7 FIX)
-        if(!hasData) {
-            if (masterLuasTanam > 0) {
-                return `${tagHtml}✅ Tiada serangan direkodkan. Jumlah keluasan bancian berdaftar adalah <b>${masterLuasTanam.toLocaleString()} Ha</b>.`;
-            }
-            return `${tagHtml}✅ Tiada rekod bancian atau serangan ditemui untuk carian ini.`;
-        }
-        
         return htmlResponse;
     }
 };
