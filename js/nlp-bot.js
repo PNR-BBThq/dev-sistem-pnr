@@ -1,9 +1,9 @@
 // =======================================================================
-// FAIL: js/nlp-bot.js (NLP ENGINE V6 - STATEFUL MEMORY & DEEP ANALYTICS)
+// FAIL: js/nlp-bot.js (NLP ENGINE V7 - INTENT EXPANSION & ZERO-ATTACK FIX)
 // =======================================================================
 
 const SmartNLPBot = {
-    // MEMORI CHATBOT (Untuk ingat konteks soalan sebelumnya)
+    // MEMORI CHATBOT
     lastContext: { negeri: null, daerah: null, kategori: null, crop: null, pest: null },
 
     kamus: {
@@ -80,16 +80,13 @@ const SmartNLPBot = {
         return null;
     },
 
-    // ==============================================================
-    // CORE AI ENGINE V6 (STATEFUL + DEEP ANALYTICS)
-    // ==============================================================
     prosesAyat: function(soalan) {
         const db = AppState.mData;
         if (!db || db.length === 0) return "Sistem sedang memuatkan pangkalan data. Sila cuba sebentar lagi.";
 
         let query = soalan.toLowerCase().trim();
         
-        // 1. DATA HARVESTING (Dinamik)
+        // 1. DATA HARVESTING
         let dbCrops = new Set(), dbDistricts = new Set(), dbPests = new Set();
         db.forEach(d => {
             if(d.tn) {
@@ -101,7 +98,7 @@ const SmartNLPBot = {
             if(pObj) Object.keys(pObj).forEach(k => dbPests.add(k.toUpperCase().trim()));
         });
 
-        // 2. EXTRAKSI ENTITI SEMASA
+        // 2. EXTRAKSI ENTITI
         let fNegeri = null, fKategori = null, fCrop = null, fDaerah = null, fPestSearch = null, fPestDisplayName = null;
         let clearMemory = query.includes("nasional") || query.includes("semua") || query.includes("reset") || query.includes("seluruh");
 
@@ -122,7 +119,7 @@ const SmartNLPBot = {
                 if (foundPest) { fPestSearch = [foundPest]; fPestDisplayName = foundPest; }
             }
 
-            // 3. LOGIK MEMORI (WARISAN KONTEKS LAMA JIKA TIADA YANG BARU)
+            // LOGIK MEMORI
             if (!fNegeri && this.lastContext.negeri) fNegeri = this.lastContext.negeri;
             if (!fDaerah && this.lastContext.daerah) fDaerah = this.lastContext.daerah;
             if (!fKategori && this.lastContext.kategori) fKategori = this.lastContext.kategori;
@@ -130,20 +127,18 @@ const SmartNLPBot = {
             if (!fPestSearch && this.lastContext.pest) { fPestSearch = this.lastContext.pest.search; fPestDisplayName = this.lastContext.pest.display; }
         }
 
-        // Simpan memori terkini untuk soalan seterusnya
         this.lastContext = { negeri: fNegeri, daerah: fDaerah, kategori: fKategori, crop: fCrop, pest: fPestSearch ? {search: fPestSearch, display: fPestDisplayName} : null };
 
-        // 4. INTENT CLASSIFICATION (BACA NIAT SOALAN)
+        // 3. INTENT CLASSIFICATION (V7 - Ditambah 'luas', 'bancian', 'hektar')
         let isTopPest = /top|tinggi|teruk|utama|perosak/.test(query);
         let isLocation = /mana|lokasi|tempat|senarai|kawasan/.test(query);
-        let isSummary = /rumusan|ringkas|status|statistik|jumlah|berapa/.test(query);
-        let isTopCrop = /tanaman|pokok|komoditi|jenis/.test(query); // NIAT BARU: Tanya Tanaman
+        let isSummary = /rumusan|ringkas|status|statistik|jumlah|berapa|luas|bancian|hektar/.test(query);
+        let isTopCrop = /tanaman|pokok|komoditi|jenis/.test(query);
 
         if (!isTopPest && !isLocation && !isSummary && !isTopCrop && !fPestSearch && (fNegeri || fCrop || fKategori || fDaerah)) {
             isSummary = true; isTopPest = true; isLocation = true; 
         }
 
-        // BINA TAG FILTER UI
         let filterTags = [];
         if(fDaerah) filterTags.push(fDaerah);
         if(fNegeri) filterTags.push(fNegeri);
@@ -153,9 +148,9 @@ const SmartNLPBot = {
 
         let htmlResponse = tagHtml;
         let hasData = false;
-        let masterLuasTanam = 0; // Untuk pengiraan peratus
+        let masterLuasTanam = 0; 
 
-        // KIRA MASTER LUAS TANAM DAHULU UNTUK FILTER INI
+        // KIRA MASTER LUAS TANAM DAHULU
         db.forEach(d => {
             let matchCrop = !fCrop || (d.tn||"").toUpperCase().includes(fCrop);
             if((!fNegeri || (d.n||"").toUpperCase().includes(fNegeri)) && (!fDaerah || (d.d||"").toUpperCase().includes(fDaerah)) && (!fKategori || (d.kt||"").toUpperCase().includes(fKategori)) && matchCrop) {
@@ -163,7 +158,7 @@ const SmartNLPBot = {
             }
         });
 
-        // --- NIAT BARU: SENARAI TANAMAN TERLIBAT ---
+        // --- NIAT: SENARAI TANAMAN TERLIBAT ---
         if (isTopCrop) {
             let kumpulTanam = {};
             db.forEach(d => {
@@ -186,7 +181,7 @@ const SmartNLPBot = {
             }
         }
 
-        // --- NIAT: RUMUSAN ---
+        // --- NIAT: RUMUSAN (Sekarang merangkumi 'luas' dan 'bancian') ---
         if (isSummary || (!isTopPest && !isLocation && !isTopCrop && !fPestSearch)) {
             let tSerang = 0;
             db.forEach(d => { 
@@ -202,7 +197,7 @@ const SmartNLPBot = {
             }
         }
 
-        // --- NIAT: TOP PEROSAK (DENGAN PERATUSAN) ---
+        // --- NIAT: TOP PEROSAK ---
         if (isTopPest) {
             let kumpul = {};
             db.forEach(d => {
@@ -230,7 +225,7 @@ const SmartNLPBot = {
             }
         }
 
-        // --- NIAT: TOP LOKASI / JEJAK PEROSAK SPESIFIK (DENGAN PERATUSAN) ---
+        // --- NIAT: TOP LOKASI / JEJAK PEROSAK ---
         if (isLocation || fPestSearch) {
             let locList = [];
             db.forEach(d => {
@@ -238,14 +233,14 @@ const SmartNLPBot = {
                 if((!fNegeri || (d.n||"").toUpperCase().includes(fNegeri)) && (!fDaerah || (d.d||"").toUpperCase().includes(fDaerah)) && matchCrop && (!fKategori || (d.kt||"").toUpperCase().includes(fKategori))) {
                     
                     let luasAtt = 0;
-                    if(fPestSearch) { // Cari spesifik perosak
+                    if(fPestSearch) { 
                         let pObj = this.getPestObj(d.p);
                         if (pObj) {
                             let matchKey = Object.keys(pObj).find(dbKey => fPestSearch.some(synonym => dbKey.toUpperCase().includes(synonym)));
                             if(matchKey) luasAtt = parseFloat(pObj[matchKey]) || 0;
                         }
                     } else {
-                        luasAtt = parseFloat(d.ls) || 0; // Ambil total luas serang
+                        luasAtt = parseFloat(d.ls) || 0;
                     }
 
                     if(luasAtt > 0) locList.push({ lok: d.l, daerah: d.d, neg: d.n, tanam: d.tn, luasTanam: parseFloat(d.lt)||0, luasSerang: luasAtt });
@@ -267,7 +262,14 @@ const SmartNLPBot = {
             }
         }
 
-        if(!hasData) return `${tagHtml}✅ Tiada rekod serangan ditemui.`;
+        // FALLBACK JIKA TIADA DATA SERANGAN (V7 FIX)
+        if(!hasData) {
+            if (masterLuasTanam > 0) {
+                return `${tagHtml}✅ Tiada serangan direkodkan. Jumlah keluasan bancian berdaftar adalah <b>${masterLuasTanam.toLocaleString()} Ha</b>.`;
+            }
+            return `${tagHtml}✅ Tiada rekod bancian atau serangan ditemui untuk carian ini.`;
+        }
+        
         return htmlResponse;
     }
 };
