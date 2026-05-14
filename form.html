@@ -418,12 +418,17 @@
         }
     }
 
-    // --- LOGIK UI BORANG ---
-    function updateDaerah() { 
+   function updateDaerah() { 
         const n = document.getElementById('negeriSelect').value; 
         const d = document.getElementById('daerahSelect');
         d.innerHTML = "<option value=''>- Pilih -</option>";
         if(n && districtData[n]) districtData[n].forEach(x => d.add(new Option(x, x)));
+
+        // TAMBAHAN: Semak semula koordinat jika negeri ditukar
+        const gpsBox = document.getElementById('gpsInput');
+        if (gpsBox && gpsBox.value.trim() !== "") {
+            validateCoord(gpsBox);
+        }
     }
 
     function updateTanamanList() {
@@ -532,29 +537,45 @@
         }); 
     }
 
-    function validateCoord(input) {
-        const val = input.value.trim();
-        const errDiv = document.getElementById('coordError');
-        const negeriDipilih = document.getElementById('negeriSelect').value;
-        const match = val.match(/^(-?\d+(\.\d+)?),\s*(-?\d+(\.\d+)?)$/);
+   function validateCoord(inputEl) {
+        if(!inputEl) return false;
+        const val = inputEl.value.trim();
+        
+        // 1. Cek kalau kotak kosong
+        if (!val) {
+            Swal.fire('Ralat GPS', 'Sila dapatkan koordinat GPS terlebih dahulu.', 'error');
+            inputEl.classList.add('is-invalid');
+            return false;
+        }
+        
+        // 2. Cek format guna Regex
+        const regexKetat = /^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/;
+        if (!regexKetat.test(val)) {
+            Swal.fire('Format GPS Tidak Sah', 'Sila pastikan koordinat mempunyai Latitud dan Longitud yang dipisahkan dengan koma (,).<br><br>Contoh yang betul: <b>3.1234, 101.5678</b>', 'warning');
+            inputEl.classList.add('is-invalid');
+            return false;
+        }
 
-        if(errDiv) errDiv.style.display = 'none';
-        input.classList.remove('is-invalid');
-        if (val === "") return true;
-
-        if (!match) { showError(input, "Format salah! Guna: Lat, Long (4.2105, 101.9758)"); return false; }
-        const lat = parseFloat(match[1]); const lng = parseFloat(match[3]);
-
-        if (lat < 0.8 || lat > 7.5 || lng < 99.0 || lng > 120.0) { showError(input, "Koordinat LUAR MALAYSIA."); return false; }
-        if (negeriDipilih && stateBounds[negeriDipilih]) {
-            const b = stateBounds[negeriDipilih]; const buffer = 0.05;
-            if (lat < (b.minLat-buffer) || lat > (b.maxLat+buffer) || lng < (b.minLng-buffer) || lng > (b.maxLng+buffer)) {
-                showError(input, `Koordinat tidak sepadan dengan negeri ${negeriDipilih}.`); return false;
+        // 3. SEMAKAN GEOFENCING (Amaran Serta-Merta!)
+        const nilaiNegeri = document.getElementById('negeriSelect').value;
+        if (nilaiNegeri && val) {
+            if (!semakPagarKoordinat(nilaiNegeri, val)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Pencerobohan Sempadan!',
+                    html: `Titik koordinat <b>${val}</b> berada di luar peta negeri <b>${nilaiNegeri}</b>.<br><br>Sila semak semula lokasi anda atau pilih negeri yang betul.`,
+                    confirmButtonColor: '#dc3545'
+                });
+                inputEl.classList.add('is-invalid');
+                inputEl.value = ""; // Kosongkan kotak supaya user PAKSA masukkan yang betul
+                return false;
             }
         }
+        
+        // LULUS SEMUA SEMAKAN
+        inputEl.classList.remove('is-invalid');
         return true;
-    }
-
+    } 
     function showError(input, msg) {
         const errDiv = document.getElementById('coordError');
         if(errDiv) { errDiv.innerText = msg; errDiv.style.display = 'block'; }
