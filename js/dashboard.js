@@ -160,10 +160,13 @@ const DashboardManager = {
                 <td class="text-danger fw-bold">${d.ls.toFixed(2)}</td>
                 <td class="text-center">
                    <button class="btn btn-sm btn-danger" 
-                    data-lokasi="${d.l}" data-pegawai="${d.pg}" data-coord="${d.c}" data-tarikh="${d.t}" 
-                    onclick="event.stopPropagation(); ExportManager.klikJanaHTML(this)">
-                    <i class="bi bi-file-earmark-pdf-fill"></i> PDF
-                </button>
+                    data-lokasi="${d.l}" 
+                    data-pegawai="${d.pg}" 
+                    data-coord="${d.c}" 
+                     data-tarikh="${d.t}" 
+                    onclick="event.stopPropagation(); ExportManager.klikJanaPDF(this)">
+                <i class="bi bi-file-earmark-pdf-fill"></i> PDF
+            </button>
                 </td>
             </tr>`; 
         }).join('') : '<tr><td colspan="7" class="text-center text-muted p-4">Tiada rekod.</td></tr>'; 
