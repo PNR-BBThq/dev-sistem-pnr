@@ -96,7 +96,21 @@ const ExportManager = {
         btn.disabled = false; 
     },
 
- klikJanaHTML: async function(btnElement) {
+// ============================================
+// export-manager.js
+// ============================================
+
+/**
+ * ExportManager - Menguruskan eksport laporan dalam pelbagai format
+ * Kaedah 3: Frontend Print-to-PDF via GAS HTML generation
+ */
+const ExportManager = (function() {
+    'use strict';
+
+    // ============================================================
+    // KAEDAH 3: Print-to-PDF (HTML dari GAS)
+    // ============================================================
+    async function klikJanaHTML(btnElement) {
         if (!navigator.onLine) {
             Swal.fire('Mod Offline', 'Penjanaan laporan memerlukan capaian internet.', 'warning');
             return;
@@ -109,7 +123,7 @@ const ExportManager = {
 
         Swal.fire({
             title: 'Sedia untuk Cetak...',
-            html: 'Memuatkan laporan ke pelayar...<br><br><div class="spinner-border text-success" role="status"></div>',
+            html: 'Memuatkan laporan ke pelayar...<<br><br><div class="spinner-border text-success" role="status"></div>',
             showConfirmButton: false,
             allowOutsideClick: false
         });
@@ -124,7 +138,6 @@ const ExportManager = {
             
             if ((r.success || r.status === 'success') && r.htmlContent) {
                 
-                // Buka window baru dengan HTML content
                 const printWindow = window.open('', '_blank');
                 
                 if (!printWindow) {
@@ -132,17 +145,25 @@ const ExportManager = {
                     return;
                 }
                 
-                // Tulis HTML ke window baru
                 printWindow.document.open();
                 printWindow.document.write(r.htmlContent);
                 printWindow.document.close();
                 
-                // Tunggu resources load kemudian auto-trigger print dialog
+                // Tunggu CSS dan images load
                 printWindow.onload = function() {
                     setTimeout(() => {
+                        printWindow.focus();
                         printWindow.print();
-                    }, 600);
+                    }, 800);
                 };
+                
+                // Fallback jika onload tidak trigger (kadang berlaku)
+                setTimeout(() => {
+                    if (printWindow.document.readyState === 'complete') {
+                        printWindow.focus();
+                        printWindow.print();
+                    }
+                }, 1500);
                 
                 Swal.close();
                 
@@ -150,21 +171,26 @@ const ExportManager = {
                 Swal.fire('Ralat', r.message || 'Gagal memuatkan laporan.', 'error');
             }
         } catch (err) {
-            console.error(err);
-            Swal.fire('Ralat', 'Gagal berhubung dengan pelayan.', 'error');
+            console.error('ExportManager Error:', err);
+            Swal.fire('Ralat', 'Gagal berhubung dengan pelayan: ' + err.message, 'error');
         }
-    },
-
-    // ============================================================
-    // KAEDAH LAMA (Backend PDF) - Simpan sebagai backup jika perlu
-    // ============================================================
-    klikJanaPDF: async function(btnElement) {
-        // ... kod lama anda kekal di sini sebagai fallback ...
-        // atau buang sekiranya tidak diperlukan lagi
     }
 
-};
+    // ============================================================
+    // PUBLIC API
+    // ============================================================
+    return {
+        klikJanaHTML: klikJanaHTML,
+        // Backup: Kaedah lama jika perlu
+        klikJanaPDF: klikJanaHTML  // Alias untuk compatibility
+    };
 
+})();
+
+// ============================================================
+// CRITICAL: Attach ke window untuk onclick inline HTML
+// ============================================================
+window.ExportManager = ExportManager;
     downloadGeoJSON: function() {
         if (!AppState.fData.length) { alert("Tiada data untuk dimuat turun!"); return; }
 
