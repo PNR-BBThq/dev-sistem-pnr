@@ -97,45 +97,64 @@ const ExportManager = {
     },
 
     klikJanaPDF: async function(btnElement) {
-        if (!navigator.onLine) {
-            Swal.fire('Mod Offline', 'Harap maklum, penjanaan PDF memerlukan capaian internet.', 'warning');
-            return;
-        }
+    if (!navigator.onLine) {
+        Swal.fire('Mod Offline', 'Penjanaan laporan memerlukan capaian internet.', 'warning');
+        return;
+    }
 
-        const lokasiStr = btnElement.getAttribute('data-lokasi');
-        const pegawaiStr = btnElement.getAttribute('data-pegawai');
-        const coordStr = btnElement.getAttribute('data-coord');      
-        const tarikhStr = btnElement.getAttribute('data-tarikh');   
+    const lokasiStr = btnElement.getAttribute('data-lokasi');
+    const pegawaiStr = btnElement.getAttribute('data-pegawai');
+    const coordStr = btnElement.getAttribute('data-coord');      
+    const tarikhStr = btnElement.getAttribute('data-tarikh');   
 
-        Swal.fire({
-            title: 'Menjana Laporan PDF...',
-            html: 'Sila tunggu sebentar. Memproses data & gambar...<br><br><div class="spinner-border text-danger" role="status"></div>',
-            showConfirmButton: false,
-            allowOutsideClick: false
+    Swal.fire({
+        title: 'Sedia untuk Cetak...',
+        html: 'Memuatkan laporan ke pelayar...<<br><br><div class="spinner-border text-success" role="status"></div>',
+        showConfirmButton: false,
+        allowOutsideClick: false
+    });
+
+    try {
+        // Panggil GAS untuk dapatkan HTML content
+        const r = await API.postData('janaHTMLLaporan', { 
+            lokasi: lokasiStr, 
+            pegawai: pegawaiStr, 
+            coord: coordStr, 
+            tarikh: tarikhStr 
         });
-
-        try {
-            const r = await API.postData('janaPDFBaris', { 
-                lokasi: lokasiStr, pegawai: pegawaiStr, coord: coordStr, tarikh: tarikhStr 
-            });
+        
+        if ((r.success || r.status === 'success') && r.htmlContent) {
             
-            if ((r.success || r.status === 'success') && r.base64) {
-                const link = document.createElement('a');
-                link.href = "data:application/pdf;base64," + r.base64;
-                link.download = r.fileName || ("Laporan_" + lokasiStr.replace(/[^a-zA-Z0-9]/g, "_") + ".pdf");
-                
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                Swal.fire({ icon: 'success', title: 'Berjaya!', text: 'Laporan PDF telah disimpan ke dalam peranti anda.', timer: 3000, showConfirmButton: false });
-            } else {
-                Swal.fire('Ralat', r.message || r.error || 'Gagal memuatkan data PDF.', 'error');
+            // Buka window baru
+            const printWindow = window.open('', '_blank');
+            
+            if (!printWindow) {
+                Swal.fire('Dihalang', 'Sila benarkan pop-up untuk mencetak laporan.', 'warning');
+                return;
             }
-        } catch (err) {
-            Swal.fire('Ralat API', 'Gagal berhubung dengan pelayan. Sila cuba lagi.', 'error');
+            
+            // Tulis HTML ke window baru
+            printWindow.document.write(r.htmlContent);
+            printWindow.document.close();
+            
+            // Tunggu resources load kemudian auto print
+            printWindow.onload = function() {
+                setTimeout(() => {
+                    printWindow.print();
+                    // Optional: close window selepas print (user boleh disable)
+                    // printWindow.close(); 
+                }, 800);
+            };
+            
+            Swal.close();
+            
+        } else {
+            Swal.fire('Ralat', r.message || 'Gagal memuatkan laporan.', 'error');
         }
-    },
+    } catch (err) {
+        Swal.fire('Ralat', 'Gagal berhubung dengan pelayan.', 'error');
+    }
+}
 
     downloadGeoJSON: function() {
         if (!AppState.fData.length) { alert("Tiada data untuk dimuat turun!"); return; }
