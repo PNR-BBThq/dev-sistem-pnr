@@ -96,65 +96,74 @@ const ExportManager = {
         btn.disabled = false; 
     },
 
-    klikJanaPDF: async function(btnElement) {
-    if (!navigator.onLine) {
-        Swal.fire('Mod Offline', 'Penjanaan laporan memerlukan capaian internet.', 'warning');
-        return;
-    }
-
-    const lokasiStr = btnElement.getAttribute('data-lokasi');
-    const pegawaiStr = btnElement.getAttribute('data-pegawai');
-    const coordStr = btnElement.getAttribute('data-coord');      
-    const tarikhStr = btnElement.getAttribute('data-tarikh');   
-
-    Swal.fire({
-        title: 'Sedia untuk Cetak...',
-        html: 'Memuatkan laporan ke pelayar...<<br><br><div class="spinner-border text-success" role="status"></div>',
-        showConfirmButton: false,
-        allowOutsideClick: false
-    });
-
-    try {
-        // Panggil GAS untuk dapatkan HTML content
-        const r = await API.postData('janaHTMLLaporan', { 
-            lokasi: lokasiStr, 
-            pegawai: pegawaiStr, 
-            coord: coordStr, 
-            tarikh: tarikhStr 
-        });
-        
-        if ((r.success || r.status === 'success') && r.htmlContent) {
-            
-            // Buka window baru
-            const printWindow = window.open('', '_blank');
-            
-            if (!printWindow) {
-                Swal.fire('Dihalang', 'Sila benarkan pop-up untuk mencetak laporan.', 'warning');
-                return;
-            }
-            
-            // Tulis HTML ke window baru
-            printWindow.document.write(r.htmlContent);
-            printWindow.document.close();
-            
-            // Tunggu resources load kemudian auto print
-            printWindow.onload = function() {
-                setTimeout(() => {
-                    printWindow.print();
-                    // Optional: close window selepas print (user boleh disable)
-                    // printWindow.close(); 
-                }, 800);
-            };
-            
-            Swal.close();
-            
-        } else {
-            Swal.fire('Ralat', r.message || 'Gagal memuatkan laporan.', 'error');
+ klikJanaHTML: async function(btnElement) {
+        if (!navigator.onLine) {
+            Swal.fire('Mod Offline', 'Penjanaan laporan memerlukan capaian internet.', 'warning');
+            return;
         }
-    } catch (err) {
-        Swal.fire('Ralat', 'Gagal berhubung dengan pelayan.', 'error');
+
+        const lokasiStr = btnElement.getAttribute('data-lokasi');
+        const pegawaiStr = btnElement.getAttribute('data-pegawai');
+        const coordStr = btnElement.getAttribute('data-coord');      
+        const tarikhStr = btnElement.getAttribute('data-tarikh');   
+
+        Swal.fire({
+            title: 'Sedia untuk Cetak...',
+            html: 'Memuatkan laporan ke pelayar...<br><br><div class="spinner-border text-success" role="status"></div>',
+            showConfirmButton: false,
+            allowOutsideClick: false
+        });
+
+        try {
+            const r = await API.postData('janaHTMLLaporan', { 
+                lokasi: lokasiStr, 
+                pegawai: pegawaiStr, 
+                coord: coordStr, 
+                tarikh: tarikhStr 
+            });
+            
+            if ((r.success || r.status === 'success') && r.htmlContent) {
+                
+                // Buka window baru dengan HTML content
+                const printWindow = window.open('', '_blank');
+                
+                if (!printWindow) {
+                    Swal.fire('Dihalang', 'Sila benarkan pop-up untuk mencetak laporan.', 'warning');
+                    return;
+                }
+                
+                // Tulis HTML ke window baru
+                printWindow.document.open();
+                printWindow.document.write(r.htmlContent);
+                printWindow.document.close();
+                
+                // Tunggu resources load kemudian auto-trigger print dialog
+                printWindow.onload = function() {
+                    setTimeout(() => {
+                        printWindow.print();
+                    }, 600);
+                };
+                
+                Swal.close();
+                
+            } else {
+                Swal.fire('Ralat', r.message || 'Gagal memuatkan laporan.', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            Swal.fire('Ralat', 'Gagal berhubung dengan pelayan.', 'error');
+        }
+    },
+
+    // ============================================================
+    // KAEDAH LAMA (Backend PDF) - Simpan sebagai backup jika perlu
+    // ============================================================
+    klikJanaPDF: async function(btnElement) {
+        // ... kod lama anda kekal di sini sebagai fallback ...
+        // atau buang sekiranya tidak diperlukan lagi
     }
-}
+
+};
 
     downloadGeoJSON: function() {
         if (!AppState.fData.length) { alert("Tiada data untuk dimuat turun!"); return; }
