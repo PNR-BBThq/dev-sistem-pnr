@@ -1,10 +1,13 @@
 // ==========================================
 // FAIL: js/exports.js
-// FUNGSI: Menguruskan Muat Turun (Excel, PDF, KML, GeoJSON)
+// FUNGSI: Menguruskan Muat Turun (Excel, PDF, KML, GeoJSON, Print-to-PDF)
 // ==========================================
 
 const ExportManager = {
 
+    // ============================================================
+    // A. EXCEL EXPORT (Sedia Ada - Tidak Diubah)
+    // ============================================================
     downloadDualExcel: async function() { 
         if (!AppState.fData.length) { alert("Tiada data!"); return; } 
         const workbook = new ExcelJS.Workbook(); 
@@ -57,6 +60,9 @@ const ExportManager = {
         anchor.click(); window.URL.revokeObjectURL(url); 
     },
 
+    // ============================================================
+    // B. PDF LAMA - BULK REPORT (Sedia Ada - Tidak Diubah)
+    // ============================================================
     dlPDF: async function() { 
         const btn = document.getElementById('btnDlPDF'); 
         const originalText = btn.innerHTML;
@@ -96,21 +102,11 @@ const ExportManager = {
         btn.disabled = false; 
     },
 
-// ============================================
-// export-manager.js
-// ============================================
-
-/**
- * ExportManager - Menguruskan eksport laporan dalam pelbagai format
- * Kaedah 3: Frontend Print-to-PDF via GAS HTML generation
- */
-const ExportManager = (function() {
-    'use strict';
-
     // ============================================================
-    // KAEDAH 3: Print-to-PDF (HTML dari GAS)
+    // C. KAEDAH 3: PRINT-TO-PDF (BARU - Individual Report)
+    // Dipanggil oleh onclick="ExportManager.klikJanaPDF(this)"
     // ============================================================
-    async function klikJanaHTML(btnElement) {
+    klikJanaPDF: async function(btnElement) {
         if (!navigator.onLine) {
             Swal.fire('Mod Offline', 'Penjanaan laporan memerlukan capaian internet.', 'warning');
             return;
@@ -157,7 +153,7 @@ const ExportManager = (function() {
                     }, 800);
                 };
                 
-                // Fallback jika onload tidak trigger (kadang berlaku)
+                // Fallback jika onload tidak trigger
                 setTimeout(() => {
                     if (printWindow.document.readyState === 'complete') {
                         printWindow.focus();
@@ -174,23 +170,11 @@ const ExportManager = (function() {
             console.error('ExportManager Error:', err);
             Swal.fire('Ralat', 'Gagal berhubung dengan pelayan: ' + err.message, 'error');
         }
-    }
+    },
 
     // ============================================================
-    // PUBLIC API
+    // D. GEOJSON EXPORT (Sedia Ada - Tidak Diubah)
     // ============================================================
-    return {
-        klikJanaHTML: klikJanaHTML,
-        // Backup: Kaedah lama jika perlu
-        klikJanaPDF: klikJanaHTML  // Alias untuk compatibility
-    };
-
-})();
-
-// ============================================================
-// CRITICAL: Attach ke window untuk onclick inline HTML
-// ============================================================
-window.ExportManager = ExportManager;
     downloadGeoJSON: function() {
         if (!AppState.fData.length) { alert("Tiada data untuk dimuat turun!"); return; }
 
@@ -230,6 +214,9 @@ window.ExportManager = ExportManager;
         downloadAnchorNode.remove();
     },
 
+    // ============================================================
+    // E. KML EXPORT (Sedia Ada - Tidak Diubah)
+    // ============================================================
     downloadKML: function() {
         if (!AppState.fData.length) { alert("Tiada data!"); return; }
         
@@ -242,7 +229,7 @@ window.ExportManager = ExportManager;
             "W.P. LABUAN": "ff008000", "W.P. PUTRAJAYA": "ff8080c0", "HQ / IBU PEJABAT": "ff000000"
         };
 
-        let kml = `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n    <name>Laporan Spatial PNR</name>\n`;
+        let kml = `<?xml version="1.0" encoding="UTF-8"?>\n<<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n    <name>Laporan Spatial PNR</name>\n`;
 
         AppState.fData.forEach(d => {
             let pestObj = {};
@@ -293,3 +280,8 @@ window.ExportManager = ExportManager;
         document.body.appendChild(a); a.click(); document.body.removeChild(a); window.URL.revokeObjectURL(url);
     }
 };
+
+// ============================================================
+// CRITICAL: Attach ke window untuk onclick inline HTML
+// ============================================================
+window.ExportManager = ExportManager;
