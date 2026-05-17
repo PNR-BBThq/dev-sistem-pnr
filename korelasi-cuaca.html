@@ -222,20 +222,27 @@
         }
     }
 
-    // =========================================================
-    // 3. INISIALISASI SISTEM & FILTER
+  // =========================================================
+    // 3. INISIALISASI SISTEM & FILTER (KEMASKINI URUTAN KOD)
     // =========================================================
     function inisialisasiSistem() {
-        // Setup Select2 GUI
-        $('#filterNegeri, #filterTanaman, #filterBulan').select2({ placeholder: "Pilih / Semua (Kosongkan)", allowClear: true, width: '100%' });
-        
-        // Listener apabila user pilih/buang pilihan filter
-        $('#filterNegeri, #filterTanaman, #filterBulan').on('change', function(e) { applyDependentFilters(); });
-        
-        // Panggil filter kali pertama untuk setup dropdown
-        applyDependentFilters(); 
+        // LAgkah 1: WAJIB Cipta graf kosong dahulu supaya objek chart wujud di memori!
         inisialisasiGrafKosong();
-        kemaskiniVisualisasi();
+
+        // Langkah 2: Setup Select2 GUI untuk dropdown
+        $('#filterNegeri, #filterTanaman, #filterBulan').select2({ 
+            placeholder: "Pilih / Semua (Kosongkan)", 
+            allowClear: true, 
+            width: '100%' 
+        });
+        
+        // Langkah 3: Pasang Listener apabila user pilih/buang pilihan filter
+        $('#filterNegeri, #filterTanaman, #filterBulan').on('change', function(e) { 
+            applyDependentFilters(); 
+        });
+        
+        // Langkah 4: Jalankan penapis untuk setup dropdown & render data pertama kali
+        applyDependentFilters(); 
     }
 
     // Enjin Penapis Dinamik & Bersilang (Cascading Logic)
