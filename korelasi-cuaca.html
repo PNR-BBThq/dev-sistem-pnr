@@ -136,7 +136,7 @@
             return;
         }
 
-        const sessionData = JSON.parse(savedSessionStr);
+       const sessionData = JSON.parse(savedSessionStr);
         const savedToken = sessionData.userToken;       
         const currentUser = sessionData.currentUserID;  
 
@@ -145,7 +145,16 @@
             return;
         }
 
-        const payloadPerosak = { action: 'getAnalytics', state: 'ALL', u: currentUser, token: savedToken };
+        // KITA JADIKAN IA DINAMIK MENGIKUT PROFIL USER!
+        const userState = sessionData.uProf.state || 'ALL'; 
+
+        const payloadPerosak = { 
+            action: 'getAnalytics', 
+            state: userState,   // <-- Sekarang ia automatik ikut negeri user/admin
+            u: currentUser, 
+            token: savedToken 
+        };
+        
         const payloadCuaca = { action: 'getWeatherData', u: currentUser, token: savedToken };
 
         try {
