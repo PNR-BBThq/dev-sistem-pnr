@@ -126,12 +126,13 @@
         });
     }
 
-  // =========================================================
-    // 3. ENJIN SEDUT & CANTUM DATA (KEMASKINI KESELAMATAN)
-    // =========================================================
-    async function muatTurunData() {
-        // Ambil token yang telah disimpan semasa proses Login di sistem utama Tuan
-        // NOTA: Tuan perlu pastikan nama 'pnr_session_token' ini sama dengan apa yang Tuan guna di sistem login
+ async function muatTurunData() {
+        // --- BYPASS SEMENTARA UNTUK TESTING ---
+        const currentUser = "admin"; // Gantikan dengan ID Tuan (contoh: "syed")
+        const SECRET_KEY = "PNR-DIGITAL-SECURE-2026-XY"; // Masukkan Secret Key GAS Tuan
+        const savedToken = currentUser + "_" + SECRET_KEY; 
+
+        /* KOD ASAL YANG KITA TUTUP SEMENTARA
         const savedToken = localStorage.getItem('pnr_session_token'); 
         const currentUser = localStorage.getItem('pnr_user_id') || USER_ID;
 
@@ -139,10 +140,13 @@
             Swal.fire('Akses Ditolak', 'Sila log masuk ke sistem utama terlebih dahulu.', 'error');
             return;
         }
+        */
+        // --------------------------------------
 
         const urlPerosak = `${API_URL}?action=getPerosakGeoJSON&u=${currentUser}&token=${savedToken}`;
         const urlCuaca = `${API_URL}?action=getWeatherData&u=${currentUser}&token=${savedToken}`;
-
+        
+        // ... (kod seterusnya kekal sama) ...
         try {
             Swal.fire({ title: 'Menyemak Data...', html: 'AI sedang mencantumkan data <b>Perosak</b> dan <b>Cuaca</b>.', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
 
