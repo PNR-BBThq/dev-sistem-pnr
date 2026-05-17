@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Analisis Korelasi Cuaca & Perosak - PNR Digital</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        body { background-color: #f8fafc; font-family: 'Inter', 'Segoe UI', sans-serif; }
+        .card { border-radius: 12px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid py-4 px-4">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h3 class="fw-bold text-dark mb-1"><i class="bi bi-cloud-haze2 text-success"></i> Hub Korelasi Saintifik</h3>
+            <p class="text-muted small mb-0">Analisis Mikroklimat & Corak Serangan Perosak (Automatik dari Enjin AI)</p>
+        </div>
+        <div class="col-md-6 d-flex justify-content-end gap-2">
+            <select id="filterPerosak" class="form-select border-0 shadow-sm" style="width: 250px; border-radius: 8px;">
+                <option value="SEMUA">Semua Perosak</option>
+                <option value="FAW">Fall Armyworm (FAW)</option>
+                <option value="BINTIK DAUN">Bintik Daun</option>
+                <option value="KOYA">Koya</option>
+            </select>
+            <button class="btn btn-success shadow-sm" onclick="muatTurunData()"><i class="bi bi-arrow-clockwise"></i> Muat Semula Data</button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-xl-7 col-lg-12">
+            <div class="card h-100">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">Profil Cuaca Perosak (Microclimate Signature)</h5>
+                    <div style="height: 350px;">
+                        <canvas id="scatterChart"></canvas>
+                    </div>
+                    <hr class="mt-4">
+                    <div class="d-flex align-items-start text-muted small">
+                        <i class="bi bi-info-circle-fill text-success me-2 mt-1"></i>
+                        <p class="mb-0"><b>Fungsi Analisis:</b> Memaparkan taburan titik serangan berdasarkan Purata Suhu (Paksi X) dan Kelembapan (Paksi Y). Titik yang berkelompok menunjukkan 'Zon Selesa' perosak.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-5 col-lg-12">
+            <div class="card h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Taburan Hujan vs Serangan</h5>
+                    </div>
+                    <div style="height: 350px;">
+                        <canvas id="barLineChart"></canvas>
+                    </div>
+                    <hr class="mt-4">
+                    <div class="d-flex align-items-start text-muted small">
+                        <i class="bi bi-info-circle-fill text-success me-2 mt-1"></i>
+                        <p class="mb-0"><b>Fungsi Analisis:</b> Membandingkan purata curahan hujan (Bar Biru) dengan keluasan serangan (Garis Oren) untuk melihat korelasi musim tengkujuh/kemarau mengikut Negeri.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card" style="border-left: 5px solid #10b981 !important;">
+                <div class="card-body p-3 d-flex align-items-center">
+                    <div class="bg-success bg-opacity-10 text-success rounded-circle p-3 me-3">
+                        <i class="bi bi-lightbulb-fill fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Rumusan AI & Analitik</h6>
+                        <p class="mb-0 text-muted" id="aiInsightText">Sistem sedang memuat turun dan menganalisis data korelasi...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // =========================================================
+    // 1. KONFIGURASI API (SILA KEMASKINI MAKLUMAT INI)
+    // =========================================================
+    const API_URL = "MASUKKAN_URL_WEB_APP_TUAN_DI_SINI"; 
+    const USER_ID = "admin"; // Boleh ambil dari sistem Login Tuan
+    const SECRET_KEY = "MASUKKAN_SECRET_KEY_TUAN"; // Mesti sama dengan di GAS
+
+    // Pembolehubah Global
+    let dataGabunganGlobal = [];
+    let scatterChartObj, barLineChartObj;
+
+    // =========================================================
+    // 2. INISIALISASI GRAF KOSONG (CHART.JS)
+    // =========================================================
+    function inisialisasiGrafKosong() {
+        // Graf Scatter
+        const ctxScatter = document.getElementById('scatterChart').getContext('2d');
+        scatterChartObj = new Chart(ctxScatter, {
+            type: 'scatter',
+            data: { datasets: [
+                { label: 'Perosak Sasaran', data: [], backgroundColor: 'rgba(220, 53, 69, 0.8)', borderColor: '#dc3545', pointRadius: 6 },
+                { label: 'Perosak Lain', data: [], backgroundColor: 'rgba(108, 117, 125, 0.5)', borderColor: '#6c757d', pointRadius: 4 }
+            ]},
+            options: { responsive: true, maintainAspectRatio: false, scales: { x: { title: { display: true, text: 'Suhu Purata (°C)' } }, y: { title: { display: true, text: 'Kelembapan (%)' } } } }
+        });
+
+        // Graf Bar/Line
+        const ctxBar = document.getElementById('barLineChart').getContext('2d');
+        barLineChartObj = new Chart(ctxBar, {
+            type: 'bar',
+            data: { labels: [], datasets: [
+                { type: 'line', label: 'Serangan (Ha)', data: [], borderColor: '#fd7e14', backgroundColor: '#fd7e14', borderWidth: 3, tension: 0.3, yAxisID: 'y1' },
+                { type: 'bar', label: 'Purata Hujan (mm)', data: [], backgroundColor: 'rgba(13, 110, 253, 0.5)', yAxisID: 'y' }
+            ]},
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { type: 'linear', position: 'left', title: {display: true, text: 'Hujan (mm)'} }, y1: { type: 'linear', position: 'right', title: {display: true, text: 'Serangan (Ha)'}, grid: {drawOnChartArea: false} } } }
+        });
+    }
+
+  // =========================================================
+    // 3. ENJIN SEDUT & CANTUM DATA (KEMASKINI KESELAMATAN)
+    // =========================================================
+    async function muatTurunData() {
+        // Ambil token yang telah disimpan semasa proses Login di sistem utama Tuan
+        // NOTA: Tuan perlu pastikan nama 'pnr_session_token' ini sama dengan apa yang Tuan guna di sistem login
+        const savedToken = localStorage.getItem('pnr_session_token'); 
+        const currentUser = localStorage.getItem('pnr_user_id') || USER_ID;
+
+        if (!savedToken) {
+            Swal.fire('Akses Ditolak', 'Sila log masuk ke sistem utama terlebih dahulu.', 'error');
+            return;
+        }
+
+        const urlPerosak = `${API_URL}?action=getPerosakGeoJSON&u=${currentUser}&token=${savedToken}`;
+        const urlCuaca = `${API_URL}?action=getWeatherData&u=${currentUser}&token=${savedToken}`;
+
+        try {
+            Swal.fire({ title: 'Menyemak Data...', html: 'AI sedang mencantumkan data <b>Perosak</b> dan <b>Cuaca</b>.', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+
+            const [resPerosak, resCuaca] = await Promise.all([ fetch(urlPerosak), fetch(urlCuaca) ]);
+            
+            // ... (KOD PENCANTUMAN DATA DI BAWAH KEKAL SAMA SEPERTI SEBELUM INI) ...
+            const dataGeoJSON = await resPerosak.json();
+            const jsonCuaca = await resCuaca.json();
+
+            // (Semak jika token ditolak oleh backend)
+            if (dataGeoJSON.success === false || jsonCuaca.success === false) {
+                 Swal.fire('Sesi Tamat', 'Token keselamatan tidak sah atau telah tamat tempoh.', 'error');
+                 return;
+            }
+
+            const senaraiPerosak = dataGeoJSON.features || [];
+            const senaraiCuaca = jsonCuaca.data || [];
+            dataGabunganGlobal = [];
+
+            senaraiPerosak.forEach(feature => {
+                let prop = feature.properties;
+                if (!prop.Tarikh || !prop.Negeri || !prop.Daerah) return;
+
+                let tarikhKes = prop.Tarikh.split('T')[0]; 
+                let profilCuaca = senaraiCuaca.find(c => c.timestamp === tarikhKes && String(c.state).toUpperCase().trim() === prop.Negeri.toUpperCase().trim() && String(c.district).toUpperCase().trim() === prop.Daerah.toUpperCase().trim());
+
+                if (profilCuaca) {
+                    dataGabunganGlobal.push({
+                        tarikh: tarikhKes, negeri: prop.Negeri, perosak: String(prop.Perosak).toUpperCase(),
+                        hektar: parseFloat(prop.Luas_Serangan_Ha) || 0,
+                        suhu: parseFloat(profilCuaca.temp_c) || 0, kelembapan: parseFloat(profilCuaca.humidity) || 0, hujan: parseFloat(profilCuaca.precip_mm) || 0
+                    });
+                }
+            });
+
+            Swal.close();
+            if(dataGabunganGlobal.length === 0) {
+                Swal.fire('Tiada Korelasi', 'Tiada rekod cuaca yang sepadan dengan tarikh dan lokasi serangan.', 'info');
+            } else {
+                kemaskiniVisualisasi();
+            }
+
+        } catch (error) {
+            console.error("Ralat:", error);
+            Swal.fire('Ralat Sistem', 'Gagal memuat turun data dari pelayan.', 'error');
+        }
+    }
+
+    // =========================================================
+    // 4. KEMASKINI PAPARAN GRAF
+    // =========================================================
+    function kemaskiniVisualisasi() {
+        let filterPilihan = document.getElementById('filterPerosak').value.toUpperCase();
+        let dataTapis = dataGabunganGlobal;
+
+        // --- A. KEMASKINI SCATTER PLOT ---
+        let plotTarget = [], plotLain = [];
+        dataTapis.forEach(d => {
+            let point = { x: d.suhu, y: d.kelembapan, tooltip: `Tarikh: ${d.tarikh} | Lokasi: ${d.negeri} | Luas: ${d.hektar}Ha` };
+            
+            if (filterPilihan === "SEMUA" || d.perosak.includes(filterPilihan)) {
+                plotTarget.push(point); // Masuk kategori sasaran
+            } else {
+                plotLain.push(point); // Masuk kategori kelabu
+            }
+        });
+
+        scatterChartObj.data.datasets[0].label = filterPilihan === "SEMUA" ? "Semua Perosak" : filterPilihan;
+        scatterChartObj.data.datasets[0].data = plotTarget;
+        scatterChartObj.data.datasets[1].data = filterPilihan === "SEMUA" ? [] : plotLain;
+        scatterChartObj.update();
+
+        // --- B. KEMASKINI BAR CHART (Negeri) ---
+        let agregatNegeri = {};
+        dataTapis.forEach(d => {
+            // Jika user filter spesifik perosak, kita hanya jumlahkan hujan & serangan untuk kes perosak itu shj
+            if (filterPilihan !== "SEMUA" && !d.perosak.includes(filterPilihan)) return;
+
+            if(!agregatNegeri[d.negeri]) agregatNegeri[d.negeri] = { serangan: 0, hujan: 0, count: 0 };
+            agregatNegeri[d.negeri].serangan += d.hektar;
+            agregatNegeri[d.negeri].hujan += d.hujan;
+            agregatNegeri[d.negeri].count += 1;
+        });
+
+        let labelNegeri = [], dataSerangan = [], dataHujan = [];
+        for (let ng in agregatNegeri) {
+            labelNegeri.push(ng);
+            dataSerangan.push(agregatNegeri[ng].serangan.toFixed(2));
+            dataHujan.push((agregatNegeri[ng].hujan / agregatNegeri[ng].count).toFixed(2));
+        }
+
+        barLineChartObj.data.labels = labelNegeri;
+        barLineChartObj.data.datasets[0].data = dataSerangan;
+        barLineChartObj.data.datasets[1].data = dataHujan;
+        barLineChartObj.update();
+
+        // --- C. AI INSIGHTS ---
+        if(plotTarget.length > 0) {
+            let avgSuhu = (plotTarget.reduce((sum, p) => sum + p.x, 0) / plotTarget.length).toFixed(1);
+            let avgHum = (plotTarget.reduce((sum, p) => sum + p.y, 0) / plotTarget.length).toFixed(1);
+            document.getElementById('aiInsightText').innerHTML = `Analisis algoritma mendapati kes <b>${filterPilihan}</b> bertumpu pada profil mikroklimat dengan purata suhu <b>${avgSuhu}°C</b> dan kelembapan <b>${avgHum}%</b>.`;
+        } else {
+            document.getElementById('aiInsightText').innerHTML = "Tiada data yang mencukupi untuk menjana analisis mikroklimat.";
+        }
+    }
+
+    // Listeners
+    document.getElementById('filterPerosak').addEventListener('change', kemaskiniVisualisasi);
+
+    // Mula bila halaman dibuka
+    window.onload = function() {
+        inisialisasiGrafKosong();
+        // muatTurunData(); // Tuan boleh 'uncomment' baris ini supaya ia auto-run bila masuk page
+    };
+</script>
+
+</body>
+</html>
