@@ -1,613 +1,497 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-  <title>PNR Digital | Korelasi Cuaca & Perosak</title>
-  <!-- Bootstrap 5 + Icons + Select2 + Chart.js -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-  <style>
-    body {
-      background: #f4f7fc;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      color: #1e293b;
-    }
-    .navbar-brand {
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      color: #0f4c3a !important;
-    }
-    .dashboard-card {
-      border-radius: 20px;
-      border: 1px solid rgba(15, 76, 58, 0.12);
-      background: rgba(255,255,255,0.9);
-      backdrop-filter: blur(12px);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.03);
-      transition: all 0.2s ease;
-    }
-    .metric-card {
-      border-left: 6px solid #0f4c3a;
-      background: white;
-      border-radius: 18px;
-      padding: 1.25rem 1.5rem;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.02);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .metric-icon {
-      width: 48px;
-      height: 48px;
-      background: #e8f5e9;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #0f4c3a;
-      font-size: 1.6rem;
-    }
-    .metric-value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #0a2e24;
-      line-height: 1.2;
-    }
-    .select2-container--bootstrap-5 .select2-selection {
-      border-radius: 12px !important;
-      border: 1px solid #dee2e6;
-      padding: 0.4rem 0.75rem;
-      min-height: 44px;
-    }
-    .btn-outline-success {
-      border-radius: 30px;
-      padding: 0.5rem 1.4rem;
-      font-weight: 600;
-    }
-    .insight-panel {
-      background: #f0f7f4;
-      border-radius: 18px;
-      border-left: 5px solid #0f4c3a;
-    }
-    .drill-badge {
-      background: #0f4c3a;
-      color: white;
-      border-radius: 30px;
-      padding: 0.3rem 1.2rem;
-      font-size: 0.8rem;
-    }
-    .chart-container {
-      position: relative;
-      width: 100%;
-      height: 360px;
-      margin: auto;
-    }
-    @media (max-width: 768px) {
-      .metric-value {
-        font-size: 1.6rem;
-      }
-    }
-  </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Analisis Korelasi Cuaca & Perosak - PNR Digital</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Inter', 'Segoe UI', sans-serif; }
+        .card { border-radius: 10px; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.04); transition: 0.3s; }
+        .select2-container--default .select2-selection--multiple { border-radius: 6px; border: 1px solid #ced4da; padding: 2px; }
+        .select2-container--default.select2-container--focus .select2-selection--multiple { border-color: #198754; }
+        #btnBack { display: none; position: absolute; top: 15px; right: 20px; z-index: 10; }
+        .chart-container { position: relative; height: 340px; width: 100%; }
+        .insight-card { background-color: #fdfdfd; border-left: 4px solid #198754; }
+    </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top border-bottom">
-  <div class="container-fluid px-4">
-    <span class="navbar-brand"><i class="bi bi-cloud-sun me-2"></i>PNR Digital · Korelasi Cuaca</span>
-    <div class="d-flex align-items-center gap-3">
-      <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill" id="userStateBadge">
-        <i class="bi bi-geo-alt me-1"></i><span id="displayState">JOHOR</span>
-      </span>
-      <i class="bi bi-person-circle fs-4 text-secondary"></i>
-    </div>
-  </div>
-</nav>
-
-<main class="container-fluid px-4 py-4">
-  <!-- Top Metrics -->
-  <div class="row g-3 mb-4">
-    <div class="col-sm-6 col-lg-3">
-      <div class="metric-card">
+<div class="container-fluid py-4 px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <div class="text-muted small">Keluasan Serangan (Ha)</div>
-          <div class="metric-value" id="totalLuas">0.0</div>
+            <h4 class="fw-bold text-dark mb-1"><i class="bi bi-cloud-haze2 text-success"></i> Hub Korelasi Iklim & Perosak</h4>
+            <p class="text-muted small mb-0">Platform Business Intelligence (BI) Pemantauan Serangan Semasa</p>
         </div>
-        <div class="metric-icon"><i class="bi bi-bug"></i></div>
-      </div>
+        <button class="btn btn-sm btn-outline-success shadow-sm px-3" onclick="muatTurunData()">
+            <i class="bi bi-arrow-clockwise"></i> Muat Semula Data
+        </button>
     </div>
-    <div class="col-sm-6 col-lg-3">
-      <div class="metric-card">
-        <div>
-          <div class="text-muted small">Purata Suhu (°C)</div>
-          <div class="metric-value" id="avgTemp">--</div>
-        </div>
-        <div class="metric-icon"><i class="bi bi-thermometer-half"></i></div>
-      </div>
-    </div>
-    <div class="col-sm-6 col-lg-3">
-      <div class="metric-card">
-        <div>
-          <div class="text-muted small">Purata Hujan (mm)</div>
-          <div class="metric-value" id="avgRain">--</div>
-        </div>
-        <div class="metric-icon"><i class="bi bi-cloud-drizzle"></i></div>
-      </div>
-    </div>
-    <div class="col-sm-6 col-lg-3">
-      <div class="metric-card">
-        <div>
-          <div class="text-muted small">Perosak Dominan</div>
-          <div class="metric-value fs-5" id="dominantPest">-</div>
-        </div>
-        <div class="metric-icon"><i class="bi bi-shield-exclamation"></i></div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Filters Row -->
-  <div class="row g-3 mb-3 align-items-end">
-    <div class="col-md-3">
-      <label class="form-label fw-semibold small">Negeri</label>
-      <select class="form-select select2-filter" id="filterNegeri" multiple="multiple" data-placeholder="Pilih Negeri"></select>
-    </div>
-    <div class="col-md-3">
-      <label class="form-label fw-semibold small">Tanaman</label>
-      <select class="form-select select2-filter" id="filterTanaman" multiple="multiple" data-placeholder="Pilih Tanaman"></select>
-    </div>
-    <div class="col-md-3">
-      <label class="form-label fw-semibold small">Perosak</label>
-      <select class="form-select select2-filter" id="filterPerosak" multiple="multiple" data-placeholder="Pilih Perosak"></select>
-    </div>
-    <div class="col-md-2">
-      <label class="form-label fw-semibold small">Bulan Analisis</label>
-      <select class="form-select select2-filter" id="filterBulan" multiple="multiple" data-placeholder="Bulan"></select>
-    </div>
-    <div class="col-md-1 d-flex align-items-end">
-      <button class="btn btn-outline-secondary w-100" id="resetFiltersBtn" title="Reset"><i class="bi bi-arrow-repeat"></i></button>
-    </div>
-  </div>
-
-  <!-- Charts Section -->
-  <div class="row g-4 mb-4">
-    <div class="col-lg-7">
-      <div class="dashboard-card p-3 h-100">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h5 class="fw-bold mb-0"><i class="bi bi-graph-up me-2 text-success"></i>Serangan & Hujan (Dual-Axis)</h5>
-          <button id="drillBackBtn" class="btn btn-sm drill-badge d-none"><i class="bi bi-arrow-left"></i> Makro</button>
+    <div class="card mb-4">
+        <div class="card-body bg-white rounded-3 p-3">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="small fw-bold text-muted mb-1"><i class="bi bi-geo-alt"></i> Negeri</label>
+                    <select id="filterNegeri" class="form-control" multiple="multiple"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="small fw-bold text-muted mb-1"><i class="bi bi-tree"></i> Tanaman</label>
+                    <select id="filterTanaman" class="form-control" multiple="multiple"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="small fw-bold text-muted mb-1"><i class="bi bi-bug"></i> Perosak</label>
+                    <select id="filterPerosak" class="form-control" multiple="multiple"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="small fw-bold text-muted mb-1"><i class="bi bi-calendar-event"></i> Bulan Analisis</label>
+                    <select id="filterBulan" class="form-control" multiple="multiple"></select>
+                </div>
+            </div>
         </div>
-        <div class="chart-container">
-          <canvas id="dualAxisChart"></canvas>
-        </div>
-        <small class="text-muted">Klik bar negeri untuk fokus daerah.</small>
-      </div>
     </div>
-    <div class="col-lg-5">
-      <div class="dashboard-card p-3 h-100">
-        <h5 class="fw-bold mb-2"><i class="bi bi-scatter-chart me-2 text-success"></i>Profil Mikroiklim</h5>
-        <div class="chart-container">
-          <canvas id="scatterChart"></canvas>
-        </div>
-        <small class="text-muted">Suhu vs Kelembapan (warna ikut perosak teratas)</small>
-      </div>
-    </div>
-  </div>
 
-  <!-- AI Automated Insights -->
-  <div class="dashboard-card p-4 insight-panel">
-    <h5 class="fw-bold mb-3"><i class="bi bi-robot me-2"></i>Penemuan Korelasi Automatik</h5>
-    <div id="aiInsightsContent" class="text-secondary small">
-      <p>Memuatkan analisis...</p>
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 border-start border-4 border-success bg-white">
+                <div class="card-body py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted fw-bold text-uppercase d-block small mb-1">Luas Serangan</small>
+                        <h3 class="fw-bold text-dark mb-0"><span id="kpiLuas">0.00</span> <small class="fs-6 text-muted fw-normal">Ha</small></h3>
+                    </div>
+                    <div class="text-success fs-3"><i class="bi bi-fullscreen-exit"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 border-start border-4 border-warning bg-white">
+                <div class="card-body py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted fw-bold text-uppercase d-block small mb-1">Purata Suhu</small>
+                        <h3 class="fw-bold text-dark mb-0"><span id="kpiSuhu">0.0</span> <small class="fs-6 text-muted fw-normal">°C</small></h3>
+                    </div>
+                    <div class="text-warning fs-3"><i class="bi bi-thermometer-sun"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 border-start border-4 border-info bg-white">
+                <div class="card-body py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted fw-bold text-uppercase d-block small mb-1">Purata Hujan</small>
+                        <h3 class="fw-bold text-dark mb-0"><span id="kpiHujan">0.0</span> <small class="fs-6 text-muted fw-normal">mm</small></h3>
+                    </div>
+                    <div class="text-info fs-3"><i class="bi bi-cloud-drizzle"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card h-100 border-start border-4 border-danger bg-white">
+                <div class="card-body py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted fw-bold text-uppercase d-block small mb-1">Perosak Dominan</small>
+                        <h5 class="fw-bold text-danger mb-0 text-truncate mt-1" style="max-width: 180px;" id="kpiPerosak">TIADA DATA</h5>
+                    </div>
+                    <div class="text-danger fs-3"><i class="bi bi-virus"></i></div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</main>
 
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <div class="row g-4 mb-4">
+        <div class="col-xl-7 col-lg-12">
+            <div class="card h-100 position-relative">
+                <div class="card-body p-4">
+                    <button id="btnBack" class="btn btn-xs btn-dark shadow px-2 py-1 small" onclick="kembaliKeNegeri()">
+                        <i class="bi bi-arrow-left"></i> Kembali ke Makro Negeri
+                    </button>
+                    <h5 class="fw-bold text-dark mb-1" id="tajukCartaBar">Taburan Hujan vs Serangan (Makro)</h5>
+                    <p class="text-muted small mb-3">Klik pada baris negeri untuk menerobos (Drill-Down) analisis mengikut Daerah</p>
+                    <div class="chart-container">
+                        <canvas id="barLineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-5 col-lg-12">
+            <div class="card h-100">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-dark mb-1" id="tajukCartaScatter">Profil Mikroklimat Perosak</h5>
+                    <p class="text-muted small mb-3">Korelasi taburan Suhu vs Kelembapan bagi kes aktif</p>
+                    <div class="chart-container">
+                        <canvas id="scatterChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card insight-card shadow-sm">
+        <div class="card-body p-4">
+            <h6 class="fw-bold text-success mb-2"><i class="bi bi-cpu"></i> Rumusan Analisis & Model Korelasi Am</h6>
+            <div id="aiInsightsText" class="text-secondary small lh-base">
+                Memuatkan analisis trend persekitaran semasa...
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
-  (function() {
-    // ---------- STATE NORMALIZATION MAPPER ----------
-    const stateNormalizeMap = {
-      "P.PINANG": "PULAU PINANG", "PENANG": "PULAU PINANG", "PULAU PINANG": "PULAU PINANG",
-      "MELAKA ": "MELAKA", "MALACCA": "MELAKA", "MELAKA": "MELAKA",
-      "JOHOR": "JOHOR", "KEDAH": "KEDAH", "KELANTAN": "KELANTAN",
-      "NEGERI SEMBILAN": "NEGERI SEMBILAN", "PAHANG": "PAHANG",
-      "PERAK": "PERAK", "PERLIS": "PERLIS", "SABAH": "SABAH",
-      "SARAWAK": "SARAWAK", "SELANGOR": "SELANGOR", "TERENGGANU": "TERENGGANU"
-    };
-    function normalizeState(str) {
-      if (!str) return "UNKNOWN";
-      let trimmed = String(str).trim().toUpperCase();
-      return stateNormalizeMap[trimmed] || trimmed;
+    // =========================================================
+    // 1. KONFIGURASI KUNCI DAN GLOBAL
+    // =========================================================
+    const API_URL = "https://script.google.com/macros/s/AKfycbx1hlsIWN5MCo7ab_ytT_d_oFqVjy1XMJwM39oBC8yPp9OLukRSbk47Ufate26quu4k/exec"; 
+    
+    let dataGabunganGlobal = []; 
+    let scatterChartObj, barLineChartObj;
+    let currentDrillState = null; 
+    let isUpdatingFilters = false; 
+
+    const warnaPest = [ '#dc3545', '#0dcaf0', '#ffc107', '#6c757d' ];
+
+    // ENJIN NORMALISASI NEGERI (ANTI-TYPO)
+    function normalisasiNegeri(negeri) {
+        if (!negeri) return "TIADA NEGERI";
+        let n = String(negeri).toUpperCase().trim().replace(/\s+/g, ' ');
+        if (n.includes("MELAKA") || n === "MALACCA") return "MELAKA";
+        if (n.includes("PULAU PINANG") || n.includes("P.PINANG") || n === "PENANG") return "PULAU PINANG";
+        if (n.includes("KUALA LUMPUR") || n.includes("W.P.")) return "KUALA LUMPUR";
+        if (n.includes("SEMBILAN") || n === "N.SEMBILAN") return "NEGERI SEMBILAN";
+        if (n.includes("JOHOR") || n === "JOHORE") return "JOHOR";
+        return n;
     }
 
-    // ---------- SESSION & GLOBAL VARIABLES ----------
-    let session = null;
-    let rawPestData = [];
-    let rawWeatherData = [];
-    let blendedData = [];            // merged array
-    let currentDrillState = null;   // for chart drill down
+    // =========================================================
+    // 2. ENJIN SEDUT DATA (POST METHOD - STATE-LEVEL MATCH)
+    // =========================================================
+    async function muatTurunData() {
+        const savedSessionStr = localStorage.getItem('pnr_session'); 
+        if (!savedSessionStr) { Swal.fire('Akses Ditolak', 'Sila log masuk ke sistem utama.', 'error'); return; }
 
-    // Chart.js instances
-    let dualChart, scatterChart;
+        const sessionData = JSON.parse(savedSessionStr);
+        const savedToken = sessionData.userToken;       
+        const currentUser = sessionData.currentUserID;  
+        const userState = sessionData.uProf.state || 'ALL'; 
 
-    // ---------- AUTH & SESSION ----------
-    function getSession() {
-      try {
-        const stored = localStorage.getItem('pnr_session');
-        if (!stored) throw new Error('Tiada sesi');
-        const parsed = JSON.parse(stored);
-        if (!parsed.uProf || !parsed.userToken) throw new Error('Sesi tidak sah');
-        return {
-          userToken: parsed.userToken,
-          currentUserID: parsed.currentUserID || parsed.uProf.name || 'admin',
-          state: parsed.uProf.state || 'ALL',
-          role: parsed.uProf.role || 'ADMIN'
-        };
-      } catch (e) {
-        console.error('Session error', e);
-        return null;
-      }
-    }
+        if (!savedToken || !currentUser) return;
 
-    // ---------- API CALLS ----------
-    const API_URL = 'https://script.google.com/macros/s/AKfycbw7GdZrxP8K9yL1s3Y9vqHlMj2Nc0R4UvX5Wz5qY7tLb6rTyQ/exec'; // placeholder
+        const payloadPerosak = { action: 'getAnalytics', state: userState, u: currentUser, token: savedToken };
+        const payloadCuaca = { action: 'getWeatherData', u: currentUser, token: savedToken };
 
-    async function fetchPestData(token, userId, userState) {
-      const payload = {
-        action: 'getAnalytics',
-        state: userState === 'ALL' ? 'ALL' : userState,
-        u: userId,
-        token: token
-      };
-      try {
-        const resp = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const json = await resp.json();
-        return json.records || [];
-      } catch (err) {
-        console.warn('Pest API error', err);
-        return [];
-      }
-    }
+        try {
+            Swal.fire({ title: 'Menyemak Data...', html: 'Menyelaras data iklim makro negeri...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
 
-    async function fetchWeatherData(token, userId) {
-      const payload = {
-        action: 'getWeatherData',
-        u: userId,
-        token: token
-      };
-      try {
-        const resp = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const json = await resp.json();
-        return json.data || [];
-      } catch (err) {
-        console.warn('Weather API error', err);
-        return [];
-      }
-    }
+            const [resPerosak, resCuaca] = await Promise.all([ 
+                fetch(API_URL, { method: 'POST', body: JSON.stringify(payloadPerosak) }), 
+                fetch(API_URL, { method: 'POST', body: JSON.stringify(payloadCuaca) }) 
+            ]);
+            
+            const jsonPerosak = await resPerosak.json();
+            const jsonCuaca = await resCuaca.json();
 
-    // ---------- DATA BLENDING ----------
-    function blendDatasets(pestRecords, weatherRecords) {
-      const blended = [];
-      if (!pestRecords.length || !weatherRecords.length) return [];
+            const senaraiPerosak = jsonPerosak.records || []; 
+            const senaraiCuaca = jsonCuaca.data || [];
 
-      // Index weather by date+state (normalized)
-      const weatherMap = new Map();
-      weatherRecords.forEach(w => {
-        const rawDate = w.timestamp ? w.timestamp.substring(0,10) : null;
-        if (!rawDate) return;
-        const stateNorm = normalizeState(w.state);
-        const key = `${rawDate}||${stateNorm}`;
-        if (!weatherMap.has(key)) weatherMap.set(key, []);
-        weatherMap.get(key).push(w);
-      });
-
-      pestRecords.forEach(pest => {
-        const pestDate = pest.t ? pest.t.substring(0,10) : null;
-        if (!pestDate) return;
-        const pestState = normalizeState(pest.n);
-        const luas = parseFloat(pest.ls) || 0;
-        if (luas === 0) return; // guard clause
-
-        const pestObj = pest.p || {};
-        const pestNames = Object.keys(pestObj).filter(name => name.toUpperCase() !== 'SERANGAN UMUM');
-        if (pestNames.length === 0) return; // skip if only umum
-
-        const weatherKey = `${pestDate}||${pestState}`;
-        const weatherEntries = weatherMap.get(weatherKey) || [];
-        
-        weatherEntries.forEach(weather => {
-          pestNames.forEach(pestName => {
-            blended.push({
-              date: pestDate,
-              state: pestState,
-              district: pest.d || weather.district || '',
-              tanaman: pest.tn || 'Tidak Diketahui',
-              pest: pestName,
-              luasSerangan: luas,
-              pestValue: pestObj[pestName] || 0,
-              temp: weather.temp_c,
-              humidity: weather.humidity,
-              precip: weather.precip_mm
-            });
-          });
-        });
-      });
-      return blended;
-    }
-
-    // ---------- FILTER LOGIC (Interdependent) ----------
-    function getFilteredData() {
-      let data = [...blendedData];
-      const negeriSel = $('#filterNegeri').val() || [];
-      const tanamanSel = $('#filterTanaman').val() || [];
-      const perosakSel = $('#filterPerosak').val() || [];
-      const bulanSel = $('#filterBulan').val() || [];
-
-      if (negeriSel.length) data = data.filter(d => negeriSel.includes(d.state));
-      if (tanamanSel.length) data = data.filter(d => tanamanSel.includes(d.tanaman));
-      if (perosakSel.length) data = data.filter(d => perosakSel.includes(d.pest));
-      if (bulanSel.length) {
-        data = data.filter(d => {
-          const month = d.date.substring(5,7);
-          return bulanSel.includes(month);
-        });
-      }
-      return data;
-    }
-
-    function populateFilterOptions() {
-      const states = [...new Set(blendedData.map(d => d.state))].sort();
-      const tanamans = [...new Set(blendedData.map(d => d.tanaman))].sort();
-      const perosaks = [...new Set(blendedData.map(d => d.pest))].sort();
-      const months = [...new Set(blendedData.map(d => d.date.substring(5,7)))].sort();
-
-      const setSelect2Options = (id, options) => {
-        const select = $(id);
-        select.empty();
-        options.forEach(opt => select.append(new Option(opt, opt, false, false)));
-        select.trigger('change');
-      };
-
-      setSelect2Options('#filterNegeri', states);
-      setSelect2Options('#filterTanaman', tanamans);
-      setSelect2Options('#filterPerosak', perosaks);
-      setSelect2Options('#filterBulan', months);
-    }
-
-    function updateFiltersAndUI() {
-      updateMetricsAndCharts();
-    }
-
-    // ---------- METRICS & CHARTS ----------
-    function computeMetrics(filtered) {
-      if (!filtered.length) return { totalLuas: 0, avgTemp: 0, avgRain: 0, dominantPest: '-' };
-      const totalLuas = filtered.reduce((sum, d) => sum + d.luasSerangan, 0);
-      const temps = filtered.map(d => d.temp).filter(v => v != null);
-      const rains = filtered.map(d => d.precip).filter(v => v != null);
-      const avgTemp = temps.length ? (temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1) : '--';
-      const avgRain = rains.length ? (rains.reduce((a,b)=>a+b,0)/rains.length).toFixed(1) : '--';
-      
-      const pestCount = {};
-      filtered.forEach(d => { pestCount[d.pest] = (pestCount[d.pest]||0) + d.luasSerangan; });
-      const dominant = Object.entries(pestCount).sort((a,b)=>b[1]-a[1])[0];
-      return { totalLuas: totalLuas.toFixed(1), avgTemp, avgRain, dominantPest: dominant ? dominant[0] : '-' };
-    }
-
-    function updateMetricsAndCharts() {
-      const filtered = getFilteredData();
-      const metrics = computeMetrics(filtered);
-      $('#totalLuas').text(metrics.totalLuas);
-      $('#avgTemp').text(metrics.avgTemp);
-      $('#avgRain').text(metrics.avgRain);
-      $('#dominantPest').text(metrics.dominantPest);
-      
-      renderDualAxisChart(filtered);
-      renderScatterChart(filtered);
-      generateAIInsights(filtered);
-    }
-
-    // Chart 1: Dual Axis (Line Serangan + Bar Hujan) with drill
-    function renderDualAxisChart(data) {
-      if (!dualChart) return;
-      const ctx = document.getElementById('dualAxisChart').getContext('2d');
-      
-      let grouped = {};
-      if (currentDrillState) {
-        data = data.filter(d => d.state === currentDrillState);
-        data.forEach(d => {
-          const key = d.district || 'Tidak Diketahui';
-          if (!grouped[key]) grouped[key] = { luas: 0, hujan: 0, count: 0 };
-          grouped[key].luas += d.luasSerangan;
-          grouped[key].hujan += d.precip;
-          grouped[key].count++;
-        });
-      } else {
-        data.forEach(d => {
-          if (!grouped[d.state]) grouped[d.state] = { luas: 0, hujan: 0, count: 0 };
-          grouped[d.state].luas += d.luasSerangan;
-          grouped[d.state].hujan += d.precip;
-          grouped[d.state].count++;
-        });
-      }
-
-      const labels = Object.keys(grouped);
-      const luasData = labels.map(l => grouped[l].luas);
-      const hujanData = labels.map(l => grouped[l].count ? grouped[l].hujan / grouped[l].count : 0);
-
-      dualChart.data.labels = labels;
-      dualChart.data.datasets[0].data = luasData;
-      dualChart.data.datasets[1].data = hujanData;
-      dualChart.update();
-
-      // drill handler on click
-      dualChart.canvas.onclick = function(evt) {
-        const points = dualChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
-        if (points.length && !currentDrillState) {
-          const label = dualChart.data.labels[points[0].index];
-          if (label) {
-            currentDrillState = label;
-            $('#drillBackBtn').removeClass('d-none');
-            updateMetricsAndCharts();
-          }
-        }
-      };
-    }
-
-    document.getElementById('drillBackBtn').addEventListener('click', function(){
-      currentDrillState = null;
-      $(this).addClass('d-none');
-      updateMetricsAndCharts();
-    });
-
-    // Chart 2: Scatter
-    function renderScatterChart(data) {
-      if (!scatterChart) return;
-      const topPests = [...new Set(data.map(d=>d.pest))].slice(0,3);
-      const colorMap = ['#0f4c3a', '#2e7d32', '#66bb6a'];
-      const datasets = topPests.map((pest, idx) => {
-        const points = data.filter(d => d.pest === pest).map(d => ({ x: d.temp, y: d.humidity }));
-        return {
-          label: pest,
-          data: points,
-          backgroundColor: colorMap[idx % colorMap.length],
-          pointRadius: 4,
-        };
-      });
-      scatterChart.data.datasets = datasets;
-      scatterChart.update();
-    }
-
-    // AI Insights
-    function generateAIInsights(filtered) {
-      const container = $('#aiInsightsContent');
-      if (!filtered.length) {
-        container.html('<p><i class="bi bi-info-circle"></i> Tiada data untuk dianalisis berdasarkan penapis.</p>');
-        return;
-      }
-      const total = filtered.length;
-      const highRain = filtered.filter(d => d.precip > 20).length;
-      const highTemp = filtered.filter(d => d.temp > 32).length;
-      const pests = [...new Set(filtered.map(d=>d.pest))];
-      
-      let html = `<ul class="mb-0">`;
-      html += `<li><strong>${total}</strong> titik data dianalisis selepas penapisan.</li>`;
-      if (highRain > total*0.4) html += `<li>Taburan hujan tinggi (>20mm) dikesan pada <strong>${((highRain/total)*100).toFixed(0)}%</strong> rekod, berpotensi meningkatkan serangan perosak.</li>`;
-      if (pests.length) html += `<li>Perosak dominan: <span class="badge bg-success">${pests[0]}</span>. Fokus kawalan disyorkan.</li>`;
-      html += `<li>Korelasi suhu-kelembapan menunjukkan corak mikroiklim aktif.</li>`;
-      html += `</ul>`;
-      container.html(html);
-    }
-
-    // ---------- INITIALIZATION ----------
-    async function initializeDashboard() {
-      session = getSession();
-      if (!session) {
-        alert('Sesi tamat. Sila log masuk semula.');
-        window.location.href = 'login.html';
-        return;
-      }
-      $('#displayState').text(session.state === 'ALL' ? 'Semua Negeri' : session.state);
-
-      try {
-        const [pest, weather] = await Promise.all([
-          fetchPestData(session.userToken, session.currentUserID, session.state),
-          fetchWeatherData(session.userToken, session.currentUserID)
-        ]);
-        rawPestData = pest;
-        rawWeatherData = weather;
-        blendedData = blendDatasets(rawPestData, rawWeatherData);
-        
-        populateFilterOptions();
-        initCharts();
-        updateMetricsAndCharts();
-        
-        // Filter change events
-        $('.select2-filter').on('change', updateFiltersAndUI);
-        $('#resetFiltersBtn').on('click', function(){
-          $('.select2-filter').val(null).trigger('change');
-        });
-      } catch (error) {
-        console.error(error);
-        alert('Ralat memuat data.');
-      }
-    }
-
-    function initCharts() {
-      const dualCtx = document.getElementById('dualAxisChart').getContext('2d');
-      dualChart = new Chart(dualCtx, {
-        type: 'bar',
-        data: {
-          labels: [],
-          datasets: [
-            {
-              label: 'Serangan (Ha)',
-              data: [],
-              backgroundColor: '#0f4c3a99',
-              borderColor: '#0f4c3a',
-              borderWidth: 1,
-              yAxisID: 'y',
-              order: 2
-            },
-            {
-              label: 'Purata Hujan (mm)',
-              data: [],
-              type: 'line',
-              borderColor: '#1e88e5',
-              backgroundColor: 'transparent',
-              tension: 0.3,
-              yAxisID: 'y1',
-              order: 1
+            if (senaraiPerosak.length === 0) {
+                 Swal.fire('Tiada Data', 'Tiada rekod laporan perosak aktif dijumpai.', 'warning');
+                 return;
             }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: { beginAtZero: true, position: 'left', title: { display: true, text: 'Ha' } },
-            y1: { position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'mm' } }
-          }
-        }
-      });
+            
+            dataGabunganGlobal = [];
 
-      const scatterCtx = document.getElementById('scatterChart').getContext('2d');
-      scatterChart = new Chart(scatterCtx, {
-        type: 'scatter',
-        data: { datasets: [] },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: { title: { display: true, text: 'Suhu (°C)' } },
-            y: { title: { display: true, text: 'Kelembapan (%)' } }
-          }
+            senaraiPerosak.forEach(rekod => {
+                let tarikh = rekod.t, negeri = rekod.n, daerah = rekod.d, luasS = parseFloat(rekod.ls) || 0, objPest = rekod.p, tanaman = rekod.tn;
+                
+                // 🛑 IMPERATIVE PENAPISAN: Singkir rekod sihat (luas serangan = 0)
+                if (!tarikh || !negeri || !daerah || negeri === "-" || daerah === "-") return;
+                if (luasS === 0) return; 
+
+                let tarikhKes = String(tarikh).split('T')[0]; 
+                let tarikhObj = new Date(tarikhKes);
+                let labelBulan = tarikhObj.toLocaleString('ms-MY', { month: 'long', year: 'numeric' });
+                
+                let negeriNormal = normalisasiNegeri(negeri);
+                let daerahNormal = String(daerah).toUpperCase().trim();
+
+                // ⭐ STRATEGI PENYELARASAN: Cari cuaca berdasarkan TARIKH + NEGERI SAHAJA (Abaikan daerah typo)
+                let profilCuaca = senaraiCuaca.find(c => 
+                    c.timestamp === tarikhKes && 
+                    normalisasiNegeri(c.state) === negeriNormal
+                );
+
+                if (profilCuaca) {
+                    let senaraiNamaPest = Object.keys(objPest || {});
+                    senaraiNamaPest = senaraiNamaPest.filter(name => {
+                        let pName = name.toUpperCase().trim();
+                        return pName !== "SERANGAN UMUM" && parseFloat(objPest[name]) > 0;
+                    });
+
+                    if (senaraiNamaPest.length > 0) {
+                        senaraiNamaPest.forEach(namaPest => {
+                            dataGabunganGlobal.push({
+                                tarikh: tarikhKes, bulan: labelBulan, negeri: negeriNormal, daerah: daerahNormal,
+                                tanaman: String(tanaman || "UMUM").toUpperCase().trim(), perosak: String(namaPest).toUpperCase().trim(),
+                                hektar: parseFloat(objPest[namaPest]) || 0,
+                                suhu: parseFloat(profilCuaca.temp_c) || 0, kelembapan: parseFloat(profilCuaca.humidity) || 0, hujan: parseFloat(profilCuaca.precip_mm) || 0
+                            });
+                        });
+                    } else {
+                        dataGabunganGlobal.push({
+                            tarikh: tarikhKes, bulan: labelBulan, negeri: negeriNormal, daerah: daerahNormal,
+                            tanaman: String(tanaman || "UMUM").toUpperCase().trim(), perosak: "PEROSAK UMUM",
+                            hektar: luasS,
+                            suhu: parseFloat(profilCuaca.temp_c) || 0, kelembapan: parseFloat(profilCuaca.humidity) || 0, hujan: parseFloat(profilCuaca.precip_mm) || 0
+                        });
+                    }
+                }
+            });
+
+            Swal.close(); 
+            inisialisasiSistem();
+
+        } catch (error) {
+            console.error(error);
+            Swal.fire('Ralat Rangkaian', 'Gagal memproses penyelarasan data data.', 'error');
         }
-      });
     }
 
-    // Select2 bootstrap5 theme
-    $(document).ready(function() {
-      $('.select2-filter').select2({
-        theme: 'bootstrap-5',
-        width: '100%',
-        closeOnSelect: false
-      });
-      initializeDashboard();
-    });
-  })();
+    // =========================================================
+    // 3. PENGURUSAN FILTER BERSILANG (4 DROPDOWNS)
+    // =========================================================
+    function inisialisasiSistem() {
+        inisialisasiGrafKosong(); // Graf dibina awal (Anti-Error undefined)
+
+        $('#filterNegeri, #filterTanaman, #filterBulan, #filterPerosak').select2({ 
+            placeholder: "Semua (Sila Pilih)", allowClear: true, width: '100%' 
+        });
+        
+        $('#filterNegeri, #filterTanaman, #filterBulan, #filterPerosak').on('change', function(e) { 
+            applyDependentFilters(); 
+        });
+        
+        applyDependentFilters(); 
+    }
+
+    function applyDependentFilters() {
+        if (isUpdatingFilters) return;
+        isUpdatingFilters = true;
+
+        let valNegeri = $('#filterNegeri').val() || [];
+        let valTanaman = $('#filterTanaman').val() || [];
+        let valBulan = $('#filterBulan').val() || [];
+        let valPerosak = $('#filterPerosak').val() || [];
+
+        // Rantaian logik bersilang 4 penjuru
+        let setNegeri = dapatkanPilihanUnik(dataGabunganGlobal.filter(d => (valTanaman.length === 0 || valTanaman.includes(d.tanaman)) && (valBulan.length === 0 || valBulan.includes(d.bulan)) && (valPerosak.length === 0 || valPerosak.includes(d.perosak))), 'negeri');
+        let setTanaman = dapatkanPilihanUnik(dataGabunganGlobal.filter(d => (valNegeri.length === 0 || valNegeri.includes(d.negeri)) && (valBulan.length === 0 || valBulan.includes(d.bulan)) && (valPerosak.length === 0 || valPerosak.includes(d.perosak))), 'tanaman');
+        let setBulan = dapatkanPilihanUnik(dataGabunganGlobal.filter(d => (valNegeri.length === 0 || valNegeri.includes(d.negeri)) && (valTanaman.length === 0 || valTanaman.includes(d.tanaman)) && (valPerosak.length === 0 || valPerosak.includes(d.perosak))), 'bulan');
+        let setPerosak = dapatkanPilihanUnik(dataGabunganGlobal.filter(d => (valNegeri.length === 0 || valNegeri.includes(d.negeri)) && (valTanaman.length === 0 || valTanaman.includes(d.tanaman)) && (valBulan.length === 0 || valBulan.includes(d.bulan))), 'perosak');
+
+        isiDropdown('#filterNegeri', setNegeri, valNegeri);
+        isiDropdown('#filterTanaman', setTanaman, valTanaman);
+        isiDropdown('#filterBulan', setBulan, valBulan);
+        isiDropdown('#filterPerosak', setPerosak, valPerosak);
+
+        if (currentDrillState !== null) kembaliKeNegeri();
+        kemaskiniVisualisasi();
+        
+        isUpdatingFilters = false;
+    }
+
+    function dapatkanPilihanUnik(arrayData, key) {
+        return [...new Set(arrayData.map(item => item[key]))].sort();
+    }
+
+    function isiDropdown(id, senaraiPilihan, pilihanSemasa) {
+        let select = $(id);
+        select.empty();
+        senaraiPilihan.forEach(p => {
+            let isSelected = pilihanSemasa.includes(p) ? 'selected' : '';
+            select.append(`<option value="${p}" ${isSelected}>${p}</option>`);
+        });
+    }
+
+    // =========================================================
+    // 4. KEMASKINI VISUALISASI & AI INSIGHTS ENGINE
+    // =========================================================
+    function kemaskiniVisualisasi() {
+        let valNegeri = $('#filterNegeri').val() || [];
+        let valTanaman = $('#filterTanaman').val() || [];
+        let valBulan = $('#filterBulan').val() || [];
+        let valPerosak = $('#filterPerosak').val() || [];
+
+        let dataDitapis = dataGabunganGlobal.filter(d => {
+            let pN = valNegeri.length === 0 || valNegeri.includes(d.negeri);
+            let pT = valTanaman.length === 0 || valTanaman.includes(d.tanaman);
+            let pB = valBulan.length === 0 || valBulan.includes(d.bulan);
+            let pP = valPerosak.length === 0 || valPerosak.includes(d.perosak);
+            return pN && pT && pB && pP;
+        });
+
+        // Hitung Metrik Kad KPI
+        let totHektar = 0, totSuhu = 0, totHujan = 0, kiraPest = {};
+        dataDitapis.forEach(d => {
+            totHektar += d.hektar; totSuhu += d.suhu; totHujan += d.hujan;
+            kiraPest[d.perosak] = (kiraPest[d.perosak] || 0) + d.hektar;
+        });
+        
+        document.getElementById('kpiLuas').innerText = totHektar.toFixed(2);
+        document.getElementById('kpiSuhu').innerText = dataDitapis.length ? (totSuhu/dataDitapis.length).toFixed(1) : "0.0";
+        document.getElementById('kpiHujan').innerText = dataDitapis.length ? (totHujan/dataDitapis.length).toFixed(1) : "0.0";
+        
+        let senaraiRankingPest = Object.keys(kiraPest).sort((a,b) => kiraPest[b] - kiraPest[a]);
+        document.getElementById('kpiPerosak').innerText = senaraiRankingPest.length ? senaraiRankingPest[0] : "TIADA DATA";
+
+        // Agregat Data Bar Chart
+        let agregatKawasan = {};
+        let dataKawasan = currentDrillState ? dataDitapis.filter(d => d.negeri === currentDrillState) : dataDitapis;
+
+        dataKawasan.forEach(d => {
+            let kunciBar = currentDrillState ? d.daerah : d.negeri;
+            if(!agregatKawasan[kunciBar]) agregatKawasan[kunciBar] = { serangan: 0, hujan: 0, rekod: 0 };
+            agregatKawasan[kunciBar].serangan += d.hektar;
+            agregatKawasan[kunciBar].hujan += d.hujan;
+            agregatKawasan[kunciBar].rekod += 1;
+        });
+
+        let labelBar = Object.keys(agregatKawasan);
+        let barSerangan = labelBar.map(k => agregatKawasan[k].serangan.toFixed(2));
+        let barHujan = labelBar.map(k => (agregatKawasan[k].hujan / agregatKawasan[k].rekod).toFixed(1));
+
+        barLineChartObj.data.labels = labelBar;
+        barLineChartObj.data.datasets[0].data = barSerangan;
+        barLineChartObj.data.datasets[1].data = barHujan;
+        barLineChartObj.update();
+
+        // Agregat Data Scatter Plot
+        let top3Pest = senaraiRankingPest.slice(0, 3);
+        let scatterDatasets = [];
+
+        top3Pest.forEach((pestName, index) => {
+            let pointPest = dataKawasan.filter(d => d.perosak === pestName).map(d => ({ x: d.suhu, y: d.kelembapan, raw: d }));
+            scatterDatasets.push({ label: pestName, data: pointPest, backgroundColor: warnaPest[index], pointRadius: 5 });
+        });
+
+        let pointLain = dataKawasan.filter(d => !top3Pest.includes(d.perosak)).map(d => ({ x: d.suhu, y: d.kelembapan, raw: d }));
+        if(pointLain.length > 0) {
+            scatterDatasets.push({ label: 'Lain-lain', data: pointLain, backgroundColor: warnaPest[3], pointRadius: 3 });
+        }
+
+        scatterChartObj.data.datasets = scatterDatasets;
+        scatterChartObj.update();
+
+        // PANGGIL ENJIN AI INSIGHTS AUTOMATIK
+        janakanAnalisisPintar(dataKawasan, totHektar, senaraiRankingPest[0]);
+    }
+
+    // ENJIN PENERANGAN ANALISIS AUTOMATIK (JS METRIC TRANSLATOR)
+    function janakanAnalisisPintar(data, totalLuas, perosakUtama) {
+        const panel = document.getElementById('aiInsightsText');
+        if (!data || data.length === 0) {
+            panel.innerHTML = "Tiada rekod aktif ditemui untuk padanan parameter semasa.";
+            return;
+        }
+
+        // Jalankan pengiraan taburan data
+        let kesLembap = data.filter(d => d.kelembapan > 75).length;
+        let kesPanas = data.filter(d => d.suhu >= 30).length;
+        let kesHujanTinggi = data.filter(d => d.hujan > 15).length;
+        let totalRekod = data.length;
+
+        let peratusLembap = ((kesLembap / totalRekod) * 100).toFixed(0);
+        let peratusPanas = ((kesPanas / totalRekod) * 100).toFixed(0);
+        let peratusHujan = ((kesHujanTinggi / totalRekod) * 100).toFixed(0);
+
+        let ulasanIklim = "Suhu dan kelembapan berada pada paras optimum pembiakan normal.";
+        if (peratusLembap > 60) ulasanIklim = "Majoriti serangan tertumpu pada zon mikroklimat berkelembapan tinggi (>75% RH). Persekitaran tepu ini mempercepatkan pengeraman telur serangga/spora penyakit.";
+        if (peratusPanas > 60) ulasanIklim = "Data condong kepada persekitaran suhu tinggi/kering, memicu peningkatan populasi kitaran hidup perosak jenis mengunyah.";
+
+        let ulasanHujan = "Taburan hujan direkodkan adalah sederhana atau stabil pada waktu tinjauan.";
+        if (peratusHujan > 40) ulasanHujan = "Terdapat korelasi kuat antara peningkatan serangan hektar sejurus selepas fasa taburan hujan lebat berganti panas (maklum balas kelembapan mendadak).";
+
+        panel.innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <ul class="mb-0 ps-3">
+                        <li class="mb-1"><b>Impak Dinamik:</b> Kluster serangan perosak utama <b>${perosakUtama || 'KATEGORI UMUM'}</b> merangkumi jumlah keluasan <b>${totalLuas.toFixed(2)} Ha</b> berdasarkan zon tapisan aktif.</li>
+                        <li class="mb-1"><b>Profil Kelembapan Bidang:</b> Sebanyak <b>${peratusLembap}%</b> daripada kes serangan perosak membiak dalam ekosistem mikro basah/lembap.</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="mb-0 ps-3">
+                        <li class="mb-1"><b>Analisis Termal:</b> Sebanyak <b>${peratusPanas}%</b> kes serangan dikesan berlaku pada hari berkeadaan suhu tinggi melebihi 30°C.</li>
+                        <li class="mb-1"><b>Syor Strategik:</b> ${ulasanIklim} ${ulasanHujan} Jadualkan pemantauan berkala 3 hari selepas perubahan cuaca drastik.</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+    }
+
+    function kembaliKeNegeri() {
+        currentDrillState = null;
+        $('#btnBack').hide();
+        document.getElementById('tajukCartaBar').innerText = "Taburan Hujan vs Serangan (Makro)";
+        document.getElementById('tajukCartaScatter').innerText = "Profil Mikroklimat Perosak";
+        kemaskiniVisualisasi();
+    }
+
+    function inisialisasiGrafKosong() {
+        if(barLineChartObj) barLineChartObj.destroy();
+        if(scatterChartObj) scatterChartObj.destroy();
+
+        const ctxBar = document.getElementById('barLineChart').getContext('2d');
+        barLineChartObj = new Chart(ctxBar, {
+            type: 'bar',
+            data: { labels: [], datasets: [
+                { type: 'line', label: 'Serangan (Ha)', data: [], borderColor: '#fd7e14', backgroundColor: '#fd7e14', borderWidth: 2.5, tension: 0.25, yAxisID: 'y1' },
+                { type: 'bar', label: 'Purata Hujan (mm)', data: [], backgroundColor: 'rgba(25, 135, 84, 0.55)', borderRadius: 4, yAxisID: 'y' }
+            ]},
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                interaction: { mode: 'index', intersect: false },
+                onClick: (e, activeElements) => {
+                    if (activeElements.length > 0 && currentDrillState === null) {
+                        const idx = activeElements[0].index;
+                        currentDrillState = barLineChartObj.data.labels[idx];
+                        $('#btnBack').fadeIn();
+                        document.getElementById('tajukCartaBar').innerText = "Analisis Perincian Daerah: " + currentDrillState;
+                        document.getElementById('tajukCartaScatter').innerText = "Mikroklimat Spesifik: " + currentDrillState;
+                        kemaskiniVisualisasi();
+                    }
+                },
+                scales: { 
+                    y: { type: 'linear', position: 'left', title: {display: true, text: 'Hujan (mm)', font: {size: 11}} }, 
+                    y1: { type: 'linear', position: 'right', title: {display: true, text: 'Serangan (Ha)', font: {size: 11}}, grid: {drawOnChartArea: false} } 
+                } 
+            }
+        });
+
+        const ctxScatter = document.getElementById('scatterChart').getContext('2d');
+        scatterChartObj = new Chart(ctxScatter, {
+            type: 'scatter', data: { datasets: [] },
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { tooltip: { callbacks: { label: function(ctx) { let d = ctx.raw.raw; return `${d.perosak} | ${d.daerah} | ${d.hektar}Ha`; } } } },
+                scales: { x: { title: { display: true, text: 'Suhu (°C)', font: {size: 11} } }, y: { title: { display: true, text: 'Kelembapan (%)', font: {size: 11} } } } 
+            }
+        });
+    }
+
+    window.onload = function() {
+        muatTurunData(); 
+    };
 </script>
+
 </body>
 </html>
