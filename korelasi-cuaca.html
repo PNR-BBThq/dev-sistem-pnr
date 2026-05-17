@@ -126,23 +126,32 @@
         });
     }
 
- // =========================================================
-    // 3. ENJIN SEDUT & CANTUM DATA (KEMASKINI: GUNA POST JSON)
+// =========================================================
+    // 3. ENJIN SEDUT & CANTUM DATA (KEMASKINI BACA JSON SESSION)
     // =========================================================
     async function muatTurunData() {
-        const savedToken = localStorage.getItem('pnr_session_token'); 
-        const currentUser = localStorage.getItem('pnr_user_id') || USER_ID;
+        // 1. Baca kotak 'pnr_session' dari memori pelayar web
+        const savedSessionStr = localStorage.getItem('pnr_session'); 
 
-        if (!savedToken) {
+        if (!savedSessionStr) {
             Swal.fire('Akses Ditolak', 'Sila log masuk ke sistem utama terlebih dahulu.', 'error');
             return;
         }
 
-        // KITA GUNA METHOD POST MACAM SISTEM ASAL TUAN
-        // PENTING: Sila tukar 'getAnalytics' jika Tuan guna action lain untuk tarik data dashboard perosak
+        // 2. Pecahkan (Parse) JSON string tersebut untuk keluarkan isi dalamnya
+        const sessionData = JSON.parse(savedSessionStr);
+        const savedToken = sessionData.userToken;       // Ambil Token
+        const currentUser = sessionData.currentUserID;  // Ambil ID User
+
+        if (!savedToken || !currentUser) {
+            Swal.fire('Sesi Rosak', 'Maklumat log masuk tidak lengkap. Sila log masuk semula.', 'error');
+            return;
+        }
+
+        // 3. Masukkan ke dalam Payload (Data Hantaran)
         const payloadPerosak = { 
-            action: 'getAnalytics', // <-- Guna action Tuan yang sedia ada
-            state: 'SEMUA',         // Parameter jika perlu
+            action: 'getAnalytics', // Pastikan action ini betul untuk tarik data perosak Tuan
+            state: 'SEMUA',         
             u: currentUser, 
             token: savedToken 
         };
@@ -153,22 +162,14 @@
             token: savedToken 
         };
 
+        // ... (Teruskan dengan kod Swal.fire Loading dan fetch macam biasa di bawah ini) ...
         try {
             Swal.fire({ title: 'Menyemak Data...', html: 'AI sedang mencantumkan data <b>Perosak</b> dan <b>Cuaca</b>.', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
 
-            // Tarik data menggunakan method POST (Kalis CORS)
             const [resPerosak, resCuaca] = await Promise.all([ 
                 fetch(API_URL, { method: 'POST', body: JSON.stringify(payloadPerosak) }), 
                 fetch(API_URL, { method: 'POST', body: JSON.stringify(payloadCuaca) }) 
             ]);
-            
-            const jsonPerosak = await resPerosak.json();
-            const jsonCuaca = await resCuaca.json();
-
-            if (jsonPerosak.success === false || jsonCuaca.success === false) {
-                 Swal.fire('Sesi Tamat/Ralat', 'Token tidak sah atau ralat dari server.', 'error');
-                 return;
-            }
 
             // Akses array data JSON Tuan (Bergantung pada struktur output getAnalytics Tuan)
             // Contoh jika output Tuan: { success: true, data: [...] }
