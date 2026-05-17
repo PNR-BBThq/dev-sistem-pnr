@@ -125,12 +125,11 @@
             options: { responsive: true, maintainAspectRatio: false, scales: { y: { type: 'linear', position: 'left', title: {display: true, text: 'Hujan (mm)'} }, y1: { type: 'linear', position: 'right', title: {display: true, text: 'Serangan (Ha)'}, grid: {drawOnChartArea: false} } } }
         });
     }
-
 // =========================================================
-    // 3. ENJIN SEDUT & CANTUM DATA (KEMASKINI BACA JSON SESSION)
+    // 3. ENJIN SEDUT & CANTUM DATA (KEMASKINI PENUH)
     // =========================================================
     async function muatTurunData() {
-        // 1. Baca kotak 'pnr_session' dari memori pelayar web
+        // 1. Baca data sesi dari LocalStorage
         const savedSessionStr = localStorage.getItem('pnr_session'); 
 
         if (!savedSessionStr) {
@@ -138,19 +137,19 @@
             return;
         }
 
-        // 2. Pecahkan (Parse) JSON string tersebut untuk keluarkan isi dalamnya
         const sessionData = JSON.parse(savedSessionStr);
-        const savedToken = sessionData.userToken;       // Ambil Token
-        const currentUser = sessionData.currentUserID;  // Ambil ID User
+        const savedToken = sessionData.userToken;       
+        const currentUser = sessionData.currentUserID;  
 
         if (!savedToken || !currentUser) {
             Swal.fire('Sesi Rosak', 'Maklumat log masuk tidak lengkap. Sila log masuk semula.', 'error');
             return;
         }
 
-        // 3. Masukkan ke dalam Payload (Data Hantaran)
+        // 2. Sediakan Format Permintaan (Payload)
+        // NOTA: Saya guna 'getAnalytics' untuk tarik data, jika Tuan guna nama lain, tukar di sini
         const payloadPerosak = { 
-            action: 'getAnalytics', // Pastikan action ini betul untuk tarik data perosak Tuan
+            action: 'getAnalytics', 
             state: 'SEMUA',         
             u: currentUser, 
             token: savedToken 
@@ -162,29 +161,39 @@
             token: savedToken 
         };
 
-        // ... (Teruskan dengan kod Swal.fire Loading dan fetch macam biasa di bawah ini) ...
         try {
-            Swal.fire({ title: 'Menyemak Data...', html: 'AI sedang mencantumkan data <b>Perosak</b> dan <b>Cuaca</b>.', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            // Tunjuk Loading
+            Swal.fire({ title: 'Menyemak Data...', html: 'AI sedang memuat turun dan memproses data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
 
+            // 3. Mula Tarik Data (Fetch POST)
             const [resPerosak, resCuaca] = await Promise.all([ 
                 fetch(API_URL, { method: 'POST', body: JSON.stringify(payloadPerosak) }), 
                 fetch(API_URL, { method: 'POST', body: JSON.stringify(payloadCuaca) }) 
             ]);
+            
+            // 4. Tukar Response ke JSON
+            const jsonPerosak = await resPerosak.json();
+            const jsonCuaca = await resCuaca.json();
 
-            // Akses array data JSON Tuan (Bergantung pada struktur output getAnalytics Tuan)
-            // Contoh jika output Tuan: { success: true, data: [...] }
+            // Semak jika Backend tendang token
+            if (jsonPerosak.success === false || jsonCuaca.success === false) {
+                 Swal.fire('Ralat Server', 'Token tidak sah atau gagal ditarik dari server.', 'error');
+                 return;
+            }
+
+            // 5. Ekstrak Array Data
             const senaraiPerosak = jsonPerosak.data || jsonPerosak || [];
             const senaraiCuaca = jsonCuaca.data || [];
             
             dataGabunganGlobal = [];
 
-            // LOGIK PENCANTUMAN (FUSION) MENGGUNAKAN KEY JSON ASAL TUAN
+            // 6. Enjin Pencantuman
             senaraiPerosak.forEach(rekod => {
-                // Sila pastikan nama key ini tepat dengan output JSON getAnalytics Tuan
-                let tarikh = rekod.Tarikh || rekod.tarikh;
+                // Ambil nilai dari JSON (Support huruf besar atau kecil ikut database Tuan)
+                let tarikh = rekod.Tarikh || rekod.tarikh || rekod.TarikhBancian;
                 let negeri = rekod.Negeri || rekod.negeri;
                 let daerah = rekod.Daerah || rekod.daerah;
-                let perosak = rekod.Perosak || rekod.perosak;
+                let perosak = rekod.Perosak || rekod.perosak || rekod.SenaraiPerosak;
                 let hektar = rekod.Luas_Serangan_Ha || rekod.luas_serangan || 0;
 
                 if (!tarikh || !negeri || !daerah) return;
@@ -210,16 +219,17 @@
                 }
             });
 
-            Swal.close();
+            Swal.close(); // Tutup Loading
+
             if(dataGabunganGlobal.length === 0) {
-                Swal.fire('Tiada Korelasi', 'Tiada rekod cuaca yang sepadan dengan tarikh dan lokasi serangan.', 'info');
+                Swal.fire('Selesai', 'Data ditarik, tetapi tiada korelasi cuaca ditemui untuk tarikh dan lokasi serangan tersebut.', 'info');
             } else {
                 kemaskiniVisualisasi();
             }
 
         } catch (error) {
-            console.error("Ralat:", error);
-            Swal.fire('Ralat Sistem', 'Gagal memuat turun data dari pelayan. (Sila semak Console)', 'error');
+            console.error("Ralat penuh:", error);
+            Swal.fire('Ralat Sistem', 'Gagal memproses data. Sila lihat Console (F12).', 'error');
         }
     }
 
