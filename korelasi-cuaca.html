@@ -145,7 +145,7 @@
             return;
         }
 
-        const payloadPerosak = { action: 'getAnalytics', state: 'SEMUA', u: currentUser, token: savedToken };
+        const payloadPerosak = { action: 'getAnalytics', state: 'ALL', u: currentUser, token: savedToken };
         const payloadCuaca = { action: 'getWeatherData', u: currentUser, token: savedToken };
 
         try {
