@@ -31,7 +31,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="fw-bold text-dark mb-1"><i class="bi bi-cloud-haze2 text-success"></i> Hub Korelasi Iklim & Perosak</h3>
-            <p class="text-muted small mb-0">Analitik berpusat dengan fungsi Drill-Down Daerah</p>
+            <p class="text-muted small mb-0">Analitik berpusat dengan penapis bersilang dan Drill-Down Daerah</p>
         </div>
         <button class="btn btn-outline-success shadow-sm" onclick="muatTurunData()"><i class="bi bi-arrow-clockwise"></i> Muat Semula Data</button>
     </div>
@@ -39,15 +39,19 @@
     <div class="card mb-4">
         <div class="card-body bg-white rounded-3 shadow-sm p-3">
             <div class="row g-3">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="small fw-bold text-muted mb-1">Negeri</label>
                     <select id="filterNegeri" class="form-control" multiple="multiple"></select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="small fw-bold text-muted mb-1">Tanaman</label>
                     <select id="filterTanaman" class="form-control" multiple="multiple"></select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <label class="small fw-bold text-muted mb-1">Perosak</label>
+                    <select id="filterPerosak" class="form-control" multiple="multiple"></select>
+                </div>
+                <div class="col-md-3">
                     <label class="small fw-bold text-muted mb-1">Bulan Analisis</label>
                     <select id="filterBulan" class="form-control" multiple="multiple"></select>
                 </div>
@@ -131,11 +135,23 @@
     
     let dataGabunganGlobal = []; 
     let scatterChartObj, barLineChartObj;
-    let currentDrillState = null; // Menyimpan rekod klik negeri
-    let isUpdatingFilters = false; // Mencegah infinite loop filter
+    let currentDrillState = null; 
+    let isUpdatingFilters = false; 
 
-    // Senarai warna untuk Scatter Plot (Top 3 Perosak)
     const warnaPest = [ '#dc3545', '#0dcaf0', '#ffc107', '#6c757d' ];
+
+    // KAMUS PENYELARASAN EJEAN NEGERI (ANTI-TYPO MAPPER)
+    function normalisasiNegeri(negeri) {
+        if (!negeri) return "TIADA NEGERI";
+        let n = String(negeri).toUpperCase().trim().replace(/\s+/g, ' ');
+        
+        if (n.includes("MELAKA") || n === "MALACCA") return "MELAKA";
+        if (n.includes("PULAU PINANG") || n.includes("P.PINANG") || n === "PENANG") return "PULAU PINANG";
+        if (n.includes("KUALA LUMPUR") || n.includes("W.P.")) return "KUALA LUMPUR";
+        if (n.includes("SEMBILAN") || n === "N.SEMBILAN") return "NEGERI SEMBILAN";
+        if (n.includes("JOHOR") || n === "JOHORE") return "JOHOR";
+        return n;
+    }
 
     // =========================================================
     // 2. ENJIN SEDUT DATA (FETCH & FUSION)
@@ -147,7 +163,7 @@
         const sessionData = JSON.parse(savedSessionStr);
         const savedToken = sessionData.userToken;       
         const currentUser = sessionData.currentUserID;  
-        const userState = sessionData.uProf.state || 'ALL'; // Automatik baca akses pengguna
+        const userState = sessionData.uProf.state || 'ALL'; 
 
         if (!savedToken || !currentUser) return;
 
@@ -175,35 +191,52 @@
             
             dataGabunganGlobal = [];
 
-            // Proses Gabungan (Membaca struktur getAnalytics: t, n, d, ls, p, tn)
+            // Enjin Pencantuman Pintar dengan Penapis Rekod Sihat
             senaraiPerosak.forEach(rekod => {
-                let tarikh = rekod.t, negeri = rekod.n, daerah = rekod.d, luasS = rekod.ls, objPest = rekod.p, tanaman = rekod.tn;
+                let tarikh = rekod.t, negeri = rekod.n, daerah = rekod.d, luasS = parseFloat(rekod.ls) || 0, objPest = rekod.p, tanaman = rekod.tn;
+                
+                // 🛑 IMPERATIVE FILTER: Jika tiada serangan (> 0 Ha), abaikan kemasukan data cuaca map!
                 if (!tarikh || !negeri || !daerah || negeri === "-" || daerah === "-") return;
+                if (luasS === 0) return; 
 
                 let tarikhKes = String(tarikh).split('T')[0]; 
-                
-                // Format Bulan (Contoh: "Januari 2026")
                 let tarikhObj = new Date(tarikhKes);
                 let labelBulan = tarikhObj.toLocaleString('ms-MY', { month: 'long', year: 'numeric' });
                 
-                let profilCuaca = senaraiCuaca.find(c => c.timestamp === tarikhKes && String(c.state).toUpperCase().trim() === String(negeri).toUpperCase().trim() && String(c.district).toUpperCase().trim() === String(daerah).toUpperCase().trim());
+                // Jalankan Normalisasi Ejaan
+                let negeriNormal = normalisasiNegeri(negeri);
+                let daerahNormal = String(daerah).toUpperCase().trim();
+
+                let profilCuaca = senaraiCuaca.find(c => 
+                    c.timestamp === tarikhKes && 
+                    normalisasiNegeri(c.state) === negeriNormal && 
+                    String(c.district).toUpperCase().trim() === daerahNormal
+                );
 
                 if (profilCuaca) {
                     let senaraiNamaPest = Object.keys(objPest || {});
+                    
+                    // Tapis buang sebarang "Serangan Umum" kosong dari sub-object
+                    senaraiNamaPest = senaraiNamaPest.filter(name => {
+                        let pName = name.toUpperCase().trim();
+                        return pName !== "SERANGAN UMUM" && parseFloat(objPest[name]) > 0;
+                    });
+
                     if (senaraiNamaPest.length > 0) {
                         senaraiNamaPest.forEach(namaPest => {
                             dataGabunganGlobal.push({
-                                tarikh: tarikhKes, bulan: labelBulan, negeri: String(negeri).toUpperCase(), daerah: String(daerah).toUpperCase(),
-                                tanaman: String(tanaman || "UMUM").toUpperCase(), perosak: String(namaPest).toUpperCase(),
+                                tarikh: tarikhKes, bulan: labelBulan, negeri: negeriNormal, daerah: daerahNormal,
+                                tanaman: String(tanaman || "UMUM").toUpperCase().trim(), perosak: String(namaPest).toUpperCase().trim(),
                                 hektar: parseFloat(objPest[namaPest]) || 0,
                                 suhu: parseFloat(profilCuaca.temp_c) || 0, kelembapan: parseFloat(profilCuaca.humidity) || 0, hujan: parseFloat(profilCuaca.precip_mm) || 0
                             });
                         });
                     } else {
+                        // Jika sub-object kosong tapi total luasS > 0
                         dataGabunganGlobal.push({
-                            tarikh: tarikhKes, bulan: labelBulan, negeri: String(negeri).toUpperCase(), daerah: String(daerah).toUpperCase(),
-                            tanaman: String(tanaman || "UMUM").toUpperCase(), perosak: "TIDAK DINYATAKAN",
-                            hektar: parseFloat(luasS) || 0,
+                            tarikh: tarikhKes, bulan: labelBulan, negeri: negeriNormal, daerah: daerahNormal,
+                            tanaman: String(tanaman || "UMUM").toUpperCase().trim(), perosak: "PEROSAK UMUM",
+                            hektar: luasS,
                             suhu: parseFloat(profilCuaca.temp_c) || 0, kelembapan: parseFloat(profilCuaca.humidity) || 0, hujan: parseFloat(profilCuaca.precip_mm) || 0
                         });
                     }
@@ -212,40 +245,34 @@
 
             Swal.close(); 
             if(dataGabunganGlobal.length === 0) {
-                Swal.fire('Selesai', 'Tiada rekod cuaca yang sepadan dengan tarikh laporan perosak.', 'info');
+                Swal.fire('Selesai', 'Data ditarik, tetapi tiada korelasi cuaca ditemui bagi kes serangan aktif.', 'info');
             } else {
                 inisialisasiSistem();
             }
         } catch (error) {
             console.error(error);
-            Swal.fire('Ralat Sistem', 'Gagal memproses data. Sila lihat Console (F12).', 'error');
+            Swal.fire('Ralat Sistem', 'Gagal memproses data.', 'error');
         }
     }
 
-  // =========================================================
-    // 3. INISIALISASI SISTEM & FILTER (KEMASKINI URUTAN KOD)
+    // =========================================================
+    // 3. INISIALISASI SISTEM & PENAPIS BERSILANG
     // =========================================================
     function inisialisasiSistem() {
-        // LAgkah 1: WAJIB Cipta graf kosong dahulu supaya objek chart wujud di memori!
+        // 🔐 FIXED ORDER: Pastikan graf dibina dahulu sebelum filter berjalan!
         inisialisasiGrafKosong();
 
-        // Langkah 2: Setup Select2 GUI untuk dropdown
-        $('#filterNegeri, #filterTanaman, #filterBulan').select2({ 
-            placeholder: "Pilih / Semua (Kosongkan)", 
-            allowClear: true, 
-            width: '100%' 
+        $('#filterNegeri, #filterTanaman, #filterBulan, #filterPerosak').select2({ 
+            placeholder: "Pilih / Semua (Kosongkan)", allowClear: true, width: '100%' 
         });
         
-        // Langkah 3: Pasang Listener apabila user pilih/buang pilihan filter
-        $('#filterNegeri, #filterTanaman, #filterBulan').on('change', function(e) { 
+        $('#filterNegeri, #filterTanaman, #filterBulan, #filterPerosak').on('change', function(e) { 
             applyDependentFilters(); 
         });
         
-        // Langkah 4: Jalankan penapis untuk setup dropdown & render data pertama kali
         applyDependentFilters(); 
     }
 
-    // Enjin Penapis Dinamik & Bersilang (Cascading Logic)
     function applyDependentFilters() {
         if (isUpdatingFilters) return;
         isUpdatingFilters = true;
@@ -253,30 +280,29 @@
         let valNegeri = $('#filterNegeri').val() || [];
         let valTanaman = $('#filterTanaman').val() || [];
         let valBulan = $('#filterBulan').val() || [];
+        let valPerosak = $('#filterPerosak').val() || [];
 
-        // 1. Tentukan data bebas bagi setiap filter (Untuk update pilihan dropdown lain)
-        let setNegeri = dapatkanPilihanUnik(dataGabunganGlobal.filter(d => (valTanaman.length === 0 || valTanaman.includes(d.tanaman)) && (valBulan.length === 0 || valBulan.includes(d.bulan))), 'negeri');
-        let setTanaman = dapatkanPilihanUnik(dataGabunganGlobal.filter(d => (valNegeri.length === 0 || valNegeri.includes(d.negeri)) && (valBulan.length === 0 || valBulan.includes(d.bulan))), 'tanaman');
-        let setBulan = dapatkanPilihanUnik(dataGabunganGlobal.filter(d => (valNegeri.length === 0 || valNegeri.includes(d.negeri)) && (valTanaman.length === 0 || valTanaman.includes(d.tanaman))), 'bulan');
+        // Logik cross-dependent untuk 4 Jenis Penapis serentak
+        let setNegeri = dapatkanPilihanUnik(dataGabunganGlobal.filter(d => (valTanaman.length === 0 || valTanaman.includes(d.tanaman)) && (valBulan.length === 0 || valBulan.includes(d.bulan)) && (valPerosak.length === 0 || valPerosak.includes(d.perosak))), 'negeri');
+        let setTanaman = dapatkanPilihanUnik(dataGabunganGlobal.filter(d => (valNegeri.length === 0 || valNegeri.includes(d.negeri)) && (valBulan.length === 0 || valBulan.includes(d.bulan)) && (valPerosak.length === 0 || valPerosak.includes(d.perosak))), 'tanaman');
+        let setBulan = dapatkanPilihanUnik(dataGabunganGlobal.filter(d => (valNegeri.length === 0 || valNegeri.includes(d.negeri)) && (valTanaman.length === 0 || valTanaman.includes(d.tanaman)) && (valPerosak.length === 0 || valPerosak.includes(d.perosak))), 'bulan');
+        let setPerosak = dapatkanPilihanUnik(dataGabunganGlobal.filter(d => (valNegeri.length === 0 || valNegeri.includes(d.negeri)) && (valTanaman.length === 0 || valTanaman.includes(d.tanaman)) && (valBulan.length === 0 || valBulan.includes(d.bulan))), 'perosak');
 
-        // 2. Kemaskini dropdown (Kekalkan pilihan user jika masih valid)
         isiDropdown('#filterNegeri', setNegeri, valNegeri);
         isiDropdown('#filterTanaman', setTanaman, valTanaman);
         isiDropdown('#filterBulan', setBulan, valBulan);
+        isiDropdown('#filterPerosak', setPerosak, valPerosak);
 
-        // 3. Reset Drill-Down dan kemaskini graf
         if (currentDrillState !== null) kembaliKeNegeri();
         kemaskiniVisualisasi();
         
         isUpdatingFilters = false;
     }
 
-    // Fungsi Pembantu Extract Array Unik
     function dapatkanPilihanUnik(arrayData, key) {
         return [...new Set(arrayData.map(item => item[key]))].sort();
     }
 
-    // Fungsi Pembantu Render Dropdown HTML
     function isiDropdown(id, senaraiPilihan, pilihanSemasa) {
         let select = $(id);
         select.empty();
@@ -287,22 +313,23 @@
     }
 
     // =========================================================
-    // 4. PENGURUSAN GRAF & KPI
+    // 4. VISUALISASI GRAF & KPI INTERAKTIF
     // =========================================================
     function kemaskiniVisualisasi() {
         let valNegeri = $('#filterNegeri').val() || [];
         let valTanaman = $('#filterTanaman').val() || [];
         let valBulan = $('#filterBulan').val() || [];
+        let valPerosak = $('#filterPerosak').val() || [];
 
-        // 1. Tapis data utama berdasarkan Dropdown
         let dataDitapis = dataGabunganGlobal.filter(d => {
             let pN = valNegeri.length === 0 || valNegeri.includes(d.negeri);
             let pT = valTanaman.length === 0 || valTanaman.includes(d.tanaman);
             let pB = valBulan.length === 0 || valBulan.includes(d.bulan);
-            return pN && pT && pB;
+            let pP = valPerosak.length === 0 || valPerosak.includes(d.perosak);
+            return pN && pT && pB && pP;
         });
 
-        // 2. Pengiraan KPI Cards
+        // Hitung KAD KPI
         let totHektar = 0, totSuhu = 0, totHujan = 0, kiraPest = {};
         dataDitapis.forEach(d => {
             totHektar += d.hektar; totSuhu += d.suhu; totHujan += d.hujan;
@@ -316,9 +343,8 @@
         let senaraiRankingPest = Object.keys(kiraPest).sort((a,b) => kiraPest[b] - kiraPest[a]);
         document.getElementById('kpiPerosak').innerText = senaraiRankingPest.length ? senaraiRankingPest[0] : "TIADA DATA";
 
-        // 3. Kemaskini Bar Chart (Logik Drill-Down)
+        // Agregat Bar Chart (Logik Drill-Down)
         let agregatKawasan = {};
-        // Jika Drill-Down aktif, kita hanya proses data daerah bagi negeri tersebut
         let dataKawasan = currentDrillState ? dataDitapis.filter(d => d.negeri === currentDrillState) : dataDitapis;
 
         dataKawasan.forEach(d => {
@@ -338,7 +364,7 @@
         barLineChartObj.data.datasets[1].data = barHujan;
         barLineChartObj.update();
 
-        // 4. Kemaskini Scatter Plot (Top 3 Perosak Dynamically)
+        // Agregat Scatter Plot (Top 3 Perosak Semasa)
         let top3Pest = senaraiRankingPest.slice(0, 3);
         let scatterDatasets = [];
 
@@ -347,7 +373,6 @@
             scatterDatasets.push({ label: pestName, data: pointPest, backgroundColor: warnaPest[index], pointRadius: 5 });
         });
 
-        // Masukkan yang lain-lain ke kelabu
         let pointLain = dataKawasan.filter(d => !top3Pest.includes(d.perosak)).map(d => ({ x: d.suhu, y: d.kelembapan, raw: d }));
         if(pointLain.length > 0) {
             scatterDatasets.push({ label: 'Lain-lain', data: pointLain, backgroundColor: warnaPest[3], pointRadius: 3 });
@@ -357,7 +382,6 @@
         scatterChartObj.update();
     }
 
-    // Logik Butang Kembali (Drill Up)
     function kembaliKeNegeri() {
         currentDrillState = null;
         $('#btnBack').hide();
@@ -366,8 +390,10 @@
         kemaskiniVisualisasi();
     }
 
-    // Render Canvas Kosong Chart.js
     function inisialisasiGrafKosong() {
+        if(barLineChartObj) barLineChartObj.destroy();
+        if(scatterChartObj) scatterChartObj.destroy();
+
         const ctxBar = document.getElementById('barLineChart').getContext('2d');
         barLineChartObj = new Chart(ctxBar, {
             type: 'bar',
@@ -379,7 +405,6 @@
                 responsive: true, maintainAspectRatio: false, 
                 interaction: { mode: 'index', intersect: false },
                 onClick: (e, activeElements) => {
-                    // PENGESAN KLIK DRILL-DOWN!
                     if (activeElements.length > 0 && currentDrillState === null) {
                         const idx = activeElements[0].index;
                         currentDrillState = barLineChartObj.data.labels[idx];
@@ -407,9 +432,8 @@
         });
     }
 
-    // Auto-Run
     window.onload = function() {
-        // muatTurunData(); // Tuan boleh aktifkan (uncomment) baris ini jika mahu ia load auto bila buka page.
+        muatTurunData(); 
     };
 </script>
 
