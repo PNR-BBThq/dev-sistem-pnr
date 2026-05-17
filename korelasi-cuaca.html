@@ -7,79 +7,115 @@
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
         body { background-color: #f8fafc; font-family: 'Inter', 'Segoe UI', sans-serif; }
-        .card { border-radius: 12px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .card { border-radius: 12px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.3s; }
+        .kpi-icon { font-size: 2.5rem; opacity: 0.2; position: absolute; right: 20px; bottom: 15px; }
+        .select2-container--default .select2-selection--multiple { border-radius: 8px; border: 1px solid #dee2e6; padding: 4px; }
+        .select2-container--default.select2-container--focus .select2-selection--multiple { border-color: #198754; }
+        #btnBack { display: none; position: absolute; top: 15px; right: 20px; z-index: 10; }
+        .chart-container { position: relative; height: 350px; width: 100%; }
     </style>
 </head>
 <body>
 
 <div class="container-fluid py-4 px-4">
-    <div class="row mb-4 align-items-center">
-        <div class="col-md-6">
-            <h3 class="fw-bold text-dark mb-1"><i class="bi bi-cloud-haze2 text-success"></i> Hub Korelasi Saintifik</h3>
-            <p class="text-muted small mb-0">Analisis Mikroklimat & Corak Serangan Perosak (Automatik dari Enjin AI)</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1"><i class="bi bi-cloud-haze2 text-success"></i> Hub Korelasi Iklim & Perosak</h3>
+            <p class="text-muted small mb-0">Analitik berpusat dengan fungsi Drill-Down Daerah</p>
         </div>
-        <div class="col-md-6 d-flex justify-content-end gap-2">
-            <select id="filterPerosak" class="form-select border-0 shadow-sm" style="width: 250px; border-radius: 8px;">
-                <option value="SEMUA">Semua Perosak</option>
-                <option value="FAW">Fall Armyworm (FAW)</option>
-                <option value="BINTIK DAUN">Bintik Daun</option>
-                <option value="KOYA">Koya</option>
-            </select>
-            <button class="btn btn-success shadow-sm" onclick="muatTurunData()"><i class="bi bi-arrow-clockwise"></i> Muat Semula Data</button>
+        <button class="btn btn-outline-success shadow-sm" onclick="muatTurunData()"><i class="bi bi-arrow-clockwise"></i> Muat Semula Data</button>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body bg-white rounded-3 shadow-sm p-3">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="small fw-bold text-muted mb-1">Negeri</label>
+                    <select id="filterNegeri" class="form-control" multiple="multiple"></select>
+                </div>
+                <div class="col-md-4">
+                    <label class="small fw-bold text-muted mb-1">Tanaman</label>
+                    <select id="filterTanaman" class="form-control" multiple="multiple"></select>
+                </div>
+                <div class="col-md-4">
+                    <label class="small fw-bold text-muted mb-1">Bulan Analisis</label>
+                    <select id="filterBulan" class="form-control" multiple="multiple"></select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white h-100 position-relative overflow-hidden">
+                <div class="card-body">
+                    <h6 class="fw-normal opacity-75">Keluasan Serangan (Ha)</h6>
+                    <h2 class="fw-bold mb-0" id="kpiLuas">0.00</h2>
+                    <i class="bi bi-bullseye kpi-icon"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-white h-100 position-relative overflow-hidden border-start border-4 border-warning">
+                <div class="card-body">
+                    <h6 class="fw-normal text-muted">Purata Suhu (°C)</h6>
+                    <h2 class="fw-bold text-dark mb-0" id="kpiSuhu">0.0</h2>
+                    <i class="bi bi-thermometer-sun kpi-icon text-warning opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-white h-100 position-relative overflow-hidden border-start border-4 border-info">
+                <div class="card-body">
+                    <h6 class="fw-normal text-muted">Purata Hujan (mm)</h6>
+                    <h2 class="fw-bold text-dark mb-0" id="kpiHujan">0.0</h2>
+                    <i class="bi bi-cloud-rain kpi-icon text-info opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-white h-100 position-relative overflow-hidden border-start border-4 border-danger">
+                <div class="card-body">
+                    <h6 class="fw-normal text-muted">Perosak Dominan</h6>
+                    <h4 class="fw-bold text-danger mb-0 mt-2 text-truncate" id="kpiPerosak">TIADA DATA</h4>
+                    <i class="bi bi-bug kpi-icon text-danger opacity-50"></i>
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="row g-4">
-        <div class="col-xl-7 col-lg-12">
-            <div class="card h-100">
+        <div class="col-xl-6 col-lg-12">
+            <div class="card h-100 position-relative">
                 <div class="card-body p-4">
-                    <h5 class="fw-bold mb-3">Profil Cuaca Perosak (Microclimate Signature)</h5>
-                    <div style="height: 350px;">
-                        <canvas id="scatterChart"></canvas>
-                    </div>
-                    <hr class="mt-4">
-                    <div class="d-flex align-items-start text-muted small">
-                        <i class="bi bi-info-circle-fill text-success me-2 mt-1"></i>
-                        <p class="mb-0"><b>Fungsi Analisis:</b> Memaparkan taburan titik serangan berdasarkan Purata Suhu (Paksi X) dan Kelembapan (Paksi Y). Titik yang berkelompok menunjukkan 'Zon Selesa' perosak.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-5 col-lg-12">
-            <div class="card h-100">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0">Taburan Hujan vs Serangan</h5>
-                    </div>
-                    <div style="height: 350px;">
+                    <button id="btnBack" class="btn btn-sm btn-dark shadow" onclick="kembaliKeNegeri()">
+                        <i class="bi bi-arrow-left"></i> Kembali ke Senarai Negeri
+                    </button>
+                    <h5 class="fw-bold mb-0" id="tajukCartaBar">Taburan Hujan vs Serangan (Makro)</h5>
+                    <p class="text-muted small mb-3">Klik pada bar untuk lihat perincian Daerah</p>
+                    <div class="chart-container">
                         <canvas id="barLineChart"></canvas>
                     </div>
-                    <hr class="mt-4">
-                    <div class="d-flex align-items-start text-muted small">
-                        <i class="bi bi-info-circle-fill text-success me-2 mt-1"></i>
-                        <p class="mb-0"><b>Fungsi Analisis:</b> Membandingkan purata curahan hujan (Bar Biru) dengan keluasan serangan (Garis Oren) untuk melihat korelasi musim tengkujuh/kemarau mengikut Negeri.</p>
-                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card" style="border-left: 5px solid #10b981 !important;">
-                <div class="card-body p-3 d-flex align-items-center">
-                    <div class="bg-success bg-opacity-10 text-success rounded-circle p-3 me-3">
-                        <i class="bi bi-lightbulb-fill fs-4"></i>
-                    </div>
-                    <div>
-                        <h6 class="fw-bold mb-1">Rumusan AI & Analitik</h6>
-                        <p class="mb-0 text-muted" id="aiInsightText">Sistem sedang memuat turun dan menganalisis data korelasi...</p>
+        <div class="col-xl-6 col-lg-12">
+            <div class="card h-100">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3" id="tajukCartaScatter">Profil Mikroklimat Perosak</h5>
+                    <div class="chart-container">
+                        <canvas id="scatterChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -89,76 +125,37 @@
 
 <script>
     // =========================================================
-    // 1. KONFIGURASI API (SILA KEMASKINI MAKLUMAT INI)
+    // 1. KONFIGURASI DAN PEMBOLEHUBAH GLOBAL
     // =========================================================
-    const API_URL = "https://script.google.com/macros/s/AKfycbx1hlsIWN5MCo7ab_ytT_d_oFqVjy1XMJwM39oBC8yPp9OLukRSbk47Ufate26quu4k/exec"; 
-    const USER_ID = "admin"; // Boleh ambil dari sistem Login Tuan
-    const SECRET_KEY = "PNR-DIGITAL-SECURE-2026-XY"; // Mesti sama dengan di GAS
-
-    // Pembolehubah Global
-    let dataGabunganGlobal = [];
+    const API_URL = "MASUKKAN_URL_WEB_APP_TUAN_DI_SINI"; 
+    
+    let dataGabunganGlobal = []; 
     let scatterChartObj, barLineChartObj;
+    let currentDrillState = null; // Menyimpan rekod klik negeri
+    let isUpdatingFilters = false; // Mencegah infinite loop filter
+
+    // Senarai warna untuk Scatter Plot (Top 3 Perosak)
+    const warnaPest = [ '#dc3545', '#0dcaf0', '#ffc107', '#6c757d' ];
 
     // =========================================================
-    // 2. INISIALISASI GRAF KOSONG (CHART.JS)
-    // =========================================================
-    function inisialisasiGrafKosong() {
-        // Graf Scatter
-        const ctxScatter = document.getElementById('scatterChart').getContext('2d');
-        scatterChartObj = new Chart(ctxScatter, {
-            type: 'scatter',
-            data: { datasets: [
-                { label: 'Perosak Sasaran', data: [], backgroundColor: 'rgba(220, 53, 69, 0.8)', borderColor: '#dc3545', pointRadius: 6 },
-                { label: 'Perosak Lain', data: [], backgroundColor: 'rgba(108, 117, 125, 0.5)', borderColor: '#6c757d', pointRadius: 4 }
-            ]},
-            options: { responsive: true, maintainAspectRatio: false, scales: { x: { title: { display: true, text: 'Suhu Purata (°C)' } }, y: { title: { display: true, text: 'Kelembapan (%)' } } } }
-        });
-
-        // Graf Bar/Line
-        const ctxBar = document.getElementById('barLineChart').getContext('2d');
-        barLineChartObj = new Chart(ctxBar, {
-            type: 'bar',
-            data: { labels: [], datasets: [
-                { type: 'line', label: 'Serangan (Ha)', data: [], borderColor: '#fd7e14', backgroundColor: '#fd7e14', borderWidth: 3, tension: 0.3, yAxisID: 'y1' },
-                { type: 'bar', label: 'Purata Hujan (mm)', data: [], backgroundColor: 'rgba(13, 110, 253, 0.5)', yAxisID: 'y' }
-            ]},
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { type: 'linear', position: 'left', title: {display: true, text: 'Hujan (mm)'} }, y1: { type: 'linear', position: 'right', title: {display: true, text: 'Serangan (Ha)'}, grid: {drawOnChartArea: false} } } }
-        });
-    }
-// =========================================================
-    // 3. ENJIN SEDUT & CANTUM DATA (VERSI TEPAT PNR ANALYTICS)
+    // 2. ENJIN SEDUT DATA (FETCH & FUSION)
     // =========================================================
     async function muatTurunData() {
         const savedSessionStr = localStorage.getItem('pnr_session'); 
+        if (!savedSessionStr) { Swal.fire('Akses Ditolak', 'Sila log masuk ke sistem utama.', 'error'); return; }
 
-        if (!savedSessionStr) {
-            Swal.fire('Akses Ditolak', 'Sila log masuk ke sistem utama terlebih dahulu.', 'error');
-            return;
-        }
-
-       const sessionData = JSON.parse(savedSessionStr);
+        const sessionData = JSON.parse(savedSessionStr);
         const savedToken = sessionData.userToken;       
         const currentUser = sessionData.currentUserID;  
+        const userState = sessionData.uProf.state || 'ALL'; // Automatik baca akses pengguna
 
-        if (!savedToken || !currentUser) {
-            Swal.fire('Sesi Rosak', 'Maklumat log masuk tidak lengkap.', 'error');
-            return;
-        }
+        if (!savedToken || !currentUser) return;
 
-        // KITA JADIKAN IA DINAMIK MENGIKUT PROFIL USER!
-        const userState = sessionData.uProf.state || 'ALL'; 
-
-        const payloadPerosak = { 
-            action: 'getAnalytics', 
-            state: userState,   // <-- Sekarang ia automatik ikut negeri user/admin
-            u: currentUser, 
-            token: savedToken 
-        };
-        
+        const payloadPerosak = { action: 'getAnalytics', state: userState, u: currentUser, token: savedToken };
         const payloadCuaca = { action: 'getWeatherData', u: currentUser, token: savedToken };
 
         try {
-            Swal.fire({ title: 'Menyemak Data...', html: 'AI sedang memuat turun dan memproses data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            Swal.fire({ title: 'Menyemak Data...', html: 'AI memproses profil korelasi...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
 
             const [resPerosak, resCuaca] = await Promise.all([ 
                 fetch(API_URL, { method: 'POST', body: JSON.stringify(payloadPerosak) }), 
@@ -168,144 +165,244 @@
             const jsonPerosak = await resPerosak.json();
             const jsonCuaca = await resCuaca.json();
 
-            // 1. Ekstrak Array Data Menggunakan 'records'
             const senaraiPerosak = jsonPerosak.records || []; 
             const senaraiCuaca = jsonCuaca.data || [];
 
             if (senaraiPerosak.length === 0) {
-                 Swal.fire('Tiada Data', 'Gagal menjumpai rekod perosak (array kosong).', 'warning');
+                 Swal.fire('Tiada Data', 'Tiada rekod laporan perosak dijumpai.', 'warning');
                  return;
             }
             
             dataGabunganGlobal = [];
 
-            // 2. Enjin Pencantuman (Membaca singkatan abjad Tuan: t, n, d, ls, p)
+            // Proses Gabungan (Membaca struktur getAnalytics: t, n, d, ls, p, tn)
             senaraiPerosak.forEach(rekod => {
-                let tarikh = rekod.t;        // t = tarikh
-                let negeri = rekod.n;        // n = negeri
-                let daerah = rekod.d;        // d = daerah
-                let luasSerangan = rekod.ls; // ls = luas serangan
-                let objekPerosak = rekod.p;  // p = pest data (contoh: {"FAW": 0.5})
-
+                let tarikh = rekod.t, negeri = rekod.n, daerah = rekod.d, luasS = rekod.ls, objPest = rekod.p, tanaman = rekod.tn;
                 if (!tarikh || !negeri || !daerah || negeri === "-" || daerah === "-") return;
 
                 let tarikhKes = String(tarikh).split('T')[0]; 
                 
-                let profilCuaca = senaraiCuaca.find(c => 
-                    c.timestamp === tarikhKes && 
-                    String(c.state).toUpperCase().trim() === String(negeri).toUpperCase().trim() && 
-                    String(c.district).toUpperCase().trim() === String(daerah).toUpperCase().trim()
-                );
+                // Format Bulan (Contoh: "Januari 2026")
+                let tarikhObj = new Date(tarikhKes);
+                let labelBulan = tarikhObj.toLocaleString('ms-MY', { month: 'long', year: 'numeric' });
+                
+                let profilCuaca = senaraiCuaca.find(c => c.timestamp === tarikhKes && String(c.state).toUpperCase().trim() === String(negeri).toUpperCase().trim() && String(c.district).toUpperCase().trim() === String(daerah).toUpperCase().trim());
 
                 if (profilCuaca) {
-                    let senaraiNamaPest = Object.keys(objekPerosak || {});
-
+                    let senaraiNamaPest = Object.keys(objPest || {});
                     if (senaraiNamaPest.length > 0) {
-                        // Jika ada data perosak terperinci dalam JSON format
                         senaraiNamaPest.forEach(namaPest => {
                             dataGabunganGlobal.push({
-                                tarikh: tarikhKes, 
-                                negeri: String(negeri).toUpperCase(), 
-                                perosak: String(namaPest).toUpperCase(),
-                                hektar: parseFloat(objekPerosak[namaPest]) || 0,
-                                suhu: parseFloat(profilCuaca.temp_c) || 0, 
-                                kelembapan: parseFloat(profilCuaca.humidity) || 0, 
-                                hujan: parseFloat(profilCuaca.precip_mm) || 0
+                                tarikh: tarikhKes, bulan: labelBulan, negeri: String(negeri).toUpperCase(), daerah: String(daerah).toUpperCase(),
+                                tanaman: String(tanaman || "UMUM").toUpperCase(), perosak: String(namaPest).toUpperCase(),
+                                hektar: parseFloat(objPest[namaPest]) || 0,
+                                suhu: parseFloat(profilCuaca.temp_c) || 0, kelembapan: parseFloat(profilCuaca.humidity) || 0, hujan: parseFloat(profilCuaca.precip_mm) || 0
                             });
                         });
                     } else {
-                        // Jika tiada nama perosak (rekod umum)
                         dataGabunganGlobal.push({
-                            tarikh: tarikhKes, 
-                            negeri: String(negeri).toUpperCase(), 
-                            perosak: "UMUM / TIDAK DINYATAKAN",
-                            hektar: parseFloat(luasSerangan) || 0,
-                            suhu: parseFloat(profilCuaca.temp_c) || 0, 
-                            kelembapan: parseFloat(profilCuaca.humidity) || 0, 
-                            hujan: parseFloat(profilCuaca.precip_mm) || 0
+                            tarikh: tarikhKes, bulan: labelBulan, negeri: String(negeri).toUpperCase(), daerah: String(daerah).toUpperCase(),
+                            tanaman: String(tanaman || "UMUM").toUpperCase(), perosak: "TIDAK DINYATAKAN",
+                            hektar: parseFloat(luasS) || 0,
+                            suhu: parseFloat(profilCuaca.temp_c) || 0, kelembapan: parseFloat(profilCuaca.humidity) || 0, hujan: parseFloat(profilCuaca.precip_mm) || 0
                         });
                     }
                 }
             });
 
             Swal.close(); 
-
             if(dataGabunganGlobal.length === 0) {
-                Swal.fire('Selesai', 'Data ditarik berjaya, tetapi tiada rekod cuaca yang tarikh/daerahnya sepadan dengan data serangan.', 'info');
+                Swal.fire('Selesai', 'Tiada rekod cuaca yang sepadan dengan tarikh laporan perosak.', 'info');
             } else {
-                kemaskiniVisualisasi(); // Paparkan graf!
+                inisialisasiSistem();
             }
-
         } catch (error) {
-            console.error("Ralat penuh:", error);
+            console.error(error);
             Swal.fire('Ralat Sistem', 'Gagal memproses data. Sila lihat Console (F12).', 'error');
         }
     }
+
     // =========================================================
-    // 4. KEMASKINI PAPARAN GRAF
+    // 3. INISIALISASI SISTEM & FILTER
+    // =========================================================
+    function inisialisasiSistem() {
+        // Setup Select2 GUI
+        $('#filterNegeri, #filterTanaman, #filterBulan').select2({ placeholder: "Pilih / Semua (Kosongkan)", allowClear: true, width: '100%' });
+        
+        // Listener apabila user pilih/buang pilihan filter
+        $('#filterNegeri, #filterTanaman, #filterBulan').on('change', function(e) { applyDependentFilters(); });
+        
+        // Panggil filter kali pertama untuk setup dropdown
+        applyDependentFilters(); 
+        inisialisasiGrafKosong();
+        kemaskiniVisualisasi();
+    }
+
+    // Enjin Penapis Dinamik & Bersilang (Cascading Logic)
+    function applyDependentFilters() {
+        if (isUpdatingFilters) return;
+        isUpdatingFilters = true;
+
+        let valNegeri = $('#filterNegeri').val() || [];
+        let valTanaman = $('#filterTanaman').val() || [];
+        let valBulan = $('#filterBulan').val() || [];
+
+        // 1. Tentukan data bebas bagi setiap filter (Untuk update pilihan dropdown lain)
+        let setNegeri = dapatkanPilihanUnik(dataGabunganGlobal.filter(d => (valTanaman.length === 0 || valTanaman.includes(d.tanaman)) && (valBulan.length === 0 || valBulan.includes(d.bulan))), 'negeri');
+        let setTanaman = dapatkanPilihanUnik(dataGabunganGlobal.filter(d => (valNegeri.length === 0 || valNegeri.includes(d.negeri)) && (valBulan.length === 0 || valBulan.includes(d.bulan))), 'tanaman');
+        let setBulan = dapatkanPilihanUnik(dataGabunganGlobal.filter(d => (valNegeri.length === 0 || valNegeri.includes(d.negeri)) && (valTanaman.length === 0 || valTanaman.includes(d.tanaman))), 'bulan');
+
+        // 2. Kemaskini dropdown (Kekalkan pilihan user jika masih valid)
+        isiDropdown('#filterNegeri', setNegeri, valNegeri);
+        isiDropdown('#filterTanaman', setTanaman, valTanaman);
+        isiDropdown('#filterBulan', setBulan, valBulan);
+
+        // 3. Reset Drill-Down dan kemaskini graf
+        if (currentDrillState !== null) kembaliKeNegeri();
+        kemaskiniVisualisasi();
+        
+        isUpdatingFilters = false;
+    }
+
+    // Fungsi Pembantu Extract Array Unik
+    function dapatkanPilihanUnik(arrayData, key) {
+        return [...new Set(arrayData.map(item => item[key]))].sort();
+    }
+
+    // Fungsi Pembantu Render Dropdown HTML
+    function isiDropdown(id, senaraiPilihan, pilihanSemasa) {
+        let select = $(id);
+        select.empty();
+        senaraiPilihan.forEach(p => {
+            let isSelected = pilihanSemasa.includes(p) ? 'selected' : '';
+            select.append(`<option value="${p}" ${isSelected}>${p}</option>`);
+        });
+    }
+
+    // =========================================================
+    // 4. PENGURUSAN GRAF & KPI
     // =========================================================
     function kemaskiniVisualisasi() {
-        let filterPilihan = document.getElementById('filterPerosak').value.toUpperCase();
-        let dataTapis = dataGabunganGlobal;
+        let valNegeri = $('#filterNegeri').val() || [];
+        let valTanaman = $('#filterTanaman').val() || [];
+        let valBulan = $('#filterBulan').val() || [];
 
-        // --- A. KEMASKINI SCATTER PLOT ---
-        let plotTarget = [], plotLain = [];
-        dataTapis.forEach(d => {
-            let point = { x: d.suhu, y: d.kelembapan, tooltip: `Tarikh: ${d.tarikh} | Lokasi: ${d.negeri} | Luas: ${d.hektar}Ha` };
-            
-            if (filterPilihan === "SEMUA" || d.perosak.includes(filterPilihan)) {
-                plotTarget.push(point); // Masuk kategori sasaran
-            } else {
-                plotLain.push(point); // Masuk kategori kelabu
+        // 1. Tapis data utama berdasarkan Dropdown
+        let dataDitapis = dataGabunganGlobal.filter(d => {
+            let pN = valNegeri.length === 0 || valNegeri.includes(d.negeri);
+            let pT = valTanaman.length === 0 || valTanaman.includes(d.tanaman);
+            let pB = valBulan.length === 0 || valBulan.includes(d.bulan);
+            return pN && pT && pB;
+        });
+
+        // 2. Pengiraan KPI Cards
+        let totHektar = 0, totSuhu = 0, totHujan = 0, kiraPest = {};
+        dataDitapis.forEach(d => {
+            totHektar += d.hektar; totSuhu += d.suhu; totHujan += d.hujan;
+            kiraPest[d.perosak] = (kiraPest[d.perosak] || 0) + d.hektar;
+        });
+        
+        document.getElementById('kpiLuas').innerText = totHektar.toFixed(2);
+        document.getElementById('kpiSuhu').innerText = dataDitapis.length ? (totSuhu/dataDitapis.length).toFixed(1) : "0.0";
+        document.getElementById('kpiHujan').innerText = dataDitapis.length ? (totHujan/dataDitapis.length).toFixed(1) : "0.0";
+        
+        let senaraiRankingPest = Object.keys(kiraPest).sort((a,b) => kiraPest[b] - kiraPest[a]);
+        document.getElementById('kpiPerosak').innerText = senaraiRankingPest.length ? senaraiRankingPest[0] : "TIADA DATA";
+
+        // 3. Kemaskini Bar Chart (Logik Drill-Down)
+        let agregatKawasan = {};
+        // Jika Drill-Down aktif, kita hanya proses data daerah bagi negeri tersebut
+        let dataKawasan = currentDrillState ? dataDitapis.filter(d => d.negeri === currentDrillState) : dataDitapis;
+
+        dataKawasan.forEach(d => {
+            let kunciBar = currentDrillState ? d.daerah : d.negeri;
+            if(!agregatKawasan[kunciBar]) agregatKawasan[kunciBar] = { serangan: 0, hujan: 0, rekod: 0 };
+            agregatKawasan[kunciBar].serangan += d.hektar;
+            agregatKawasan[kunciBar].hujan += d.hujan;
+            agregatKawasan[kunciBar].rekod += 1;
+        });
+
+        let labelBar = Object.keys(agregatKawasan);
+        let barSerangan = labelBar.map(k => agregatKawasan[k].serangan.toFixed(2));
+        let barHujan = labelBar.map(k => (agregatKawasan[k].hujan / agregatKawasan[k].rekod).toFixed(1));
+
+        barLineChartObj.data.labels = labelBar;
+        barLineChartObj.data.datasets[0].data = barSerangan;
+        barLineChartObj.data.datasets[1].data = barHujan;
+        barLineChartObj.update();
+
+        // 4. Kemaskini Scatter Plot (Top 3 Perosak Dynamically)
+        let top3Pest = senaraiRankingPest.slice(0, 3);
+        let scatterDatasets = [];
+
+        top3Pest.forEach((pestName, index) => {
+            let pointPest = dataKawasan.filter(d => d.perosak === pestName).map(d => ({ x: d.suhu, y: d.kelembapan, raw: d }));
+            scatterDatasets.push({ label: pestName, data: pointPest, backgroundColor: warnaPest[index], pointRadius: 5 });
+        });
+
+        // Masukkan yang lain-lain ke kelabu
+        let pointLain = dataKawasan.filter(d => !top3Pest.includes(d.perosak)).map(d => ({ x: d.suhu, y: d.kelembapan, raw: d }));
+        if(pointLain.length > 0) {
+            scatterDatasets.push({ label: 'Lain-lain', data: pointLain, backgroundColor: warnaPest[3], pointRadius: 3 });
+        }
+
+        scatterChartObj.data.datasets = scatterDatasets;
+        scatterChartObj.update();
+    }
+
+    // Logik Butang Kembali (Drill Up)
+    function kembaliKeNegeri() {
+        currentDrillState = null;
+        $('#btnBack').hide();
+        document.getElementById('tajukCartaBar').innerText = "Taburan Hujan vs Serangan (Makro)";
+        document.getElementById('tajukCartaScatter').innerText = "Profil Mikroklimat Perosak";
+        kemaskiniVisualisasi();
+    }
+
+    // Render Canvas Kosong Chart.js
+    function inisialisasiGrafKosong() {
+        const ctxBar = document.getElementById('barLineChart').getContext('2d');
+        barLineChartObj = new Chart(ctxBar, {
+            type: 'bar',
+            data: { labels: [], datasets: [
+                { type: 'line', label: 'Serangan (Ha)', data: [], borderColor: '#fd7e14', backgroundColor: '#fd7e14', borderWidth: 3, tension: 0.3, yAxisID: 'y1' },
+                { type: 'bar', label: 'Purata Hujan (mm)', data: [], backgroundColor: 'rgba(25, 135, 84, 0.6)', borderRadius: 4, yAxisID: 'y' }
+            ]},
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                interaction: { mode: 'index', intersect: false },
+                onClick: (e, activeElements) => {
+                    // PENGESAN KLIK DRILL-DOWN!
+                    if (activeElements.length > 0 && currentDrillState === null) {
+                        const idx = activeElements[0].index;
+                        currentDrillState = barLineChartObj.data.labels[idx];
+                        $('#btnBack').fadeIn();
+                        document.getElementById('tajukCartaBar').innerText = "Analisis Perincian Daerah: " + currentDrillState;
+                        document.getElementById('tajukCartaScatter').innerText = "Mikroklimat Spesifik: " + currentDrillState;
+                        kemaskiniVisualisasi();
+                    }
+                },
+                scales: { 
+                    y: { type: 'linear', position: 'left', title: {display: true, text: 'Hujan (mm)'} }, 
+                    y1: { type: 'linear', position: 'right', title: {display: true, text: 'Serangan (Ha)'}, grid: {drawOnChartArea: false} } 
+                } 
             }
         });
 
-        scatterChartObj.data.datasets[0].label = filterPilihan === "SEMUA" ? "Semua Perosak" : filterPilihan;
-        scatterChartObj.data.datasets[0].data = plotTarget;
-        scatterChartObj.data.datasets[1].data = filterPilihan === "SEMUA" ? [] : plotLain;
-        scatterChartObj.update();
-
-        // --- B. KEMASKINI BAR CHART (Negeri) ---
-        let agregatNegeri = {};
-        dataTapis.forEach(d => {
-            // Jika user filter spesifik perosak, kita hanya jumlahkan hujan & serangan untuk kes perosak itu shj
-            if (filterPilihan !== "SEMUA" && !d.perosak.includes(filterPilihan)) return;
-
-            if(!agregatNegeri[d.negeri]) agregatNegeri[d.negeri] = { serangan: 0, hujan: 0, count: 0 };
-            agregatNegeri[d.negeri].serangan += d.hektar;
-            agregatNegeri[d.negeri].hujan += d.hujan;
-            agregatNegeri[d.negeri].count += 1;
+        const ctxScatter = document.getElementById('scatterChart').getContext('2d');
+        scatterChartObj = new Chart(ctxScatter, {
+            type: 'scatter', data: { datasets: [] },
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { tooltip: { callbacks: { label: function(ctx) { let d = ctx.raw.raw; return `${d.perosak} | ${d.negeri} | ${d.daerah} | ${d.hektar}Ha`; } } } },
+                scales: { x: { title: { display: true, text: 'Suhu (°C)' } }, y: { title: { display: true, text: 'Kelembapan (%)' } } } 
+            }
         });
-
-        let labelNegeri = [], dataSerangan = [], dataHujan = [];
-        for (let ng in agregatNegeri) {
-            labelNegeri.push(ng);
-            dataSerangan.push(agregatNegeri[ng].serangan.toFixed(2));
-            dataHujan.push((agregatNegeri[ng].hujan / agregatNegeri[ng].count).toFixed(2));
-        }
-
-        barLineChartObj.data.labels = labelNegeri;
-        barLineChartObj.data.datasets[0].data = dataSerangan;
-        barLineChartObj.data.datasets[1].data = dataHujan;
-        barLineChartObj.update();
-
-        // --- C. AI INSIGHTS ---
-        if(plotTarget.length > 0) {
-            let avgSuhu = (plotTarget.reduce((sum, p) => sum + p.x, 0) / plotTarget.length).toFixed(1);
-            let avgHum = (plotTarget.reduce((sum, p) => sum + p.y, 0) / plotTarget.length).toFixed(1);
-            document.getElementById('aiInsightText').innerHTML = `Analisis algoritma mendapati kes <b>${filterPilihan}</b> bertumpu pada profil mikroklimat dengan purata suhu <b>${avgSuhu}°C</b> dan kelembapan <b>${avgHum}%</b>.`;
-        } else {
-            document.getElementById('aiInsightText').innerHTML = "Tiada data yang mencukupi untuk menjana analisis mikroklimat.";
-        }
     }
 
-    // Listeners
-    document.getElementById('filterPerosak').addEventListener('change', kemaskiniVisualisasi);
-
-    // Mula bila halaman dibuka
+    // Auto-Run
     window.onload = function() {
-        inisialisasiGrafKosong();
-        // muatTurunData(); // Tuan boleh 'uncomment' baris ini supaya ia auto-run bila masuk page
+        // muatTurunData(); // Tuan boleh aktifkan (uncomment) baris ini jika mahu ia load auto bila buka page.
     };
 </script>
 
