@@ -126,13 +126,10 @@
         });
     }
 
- async function muatTurunData() {
-        // --- BYPASS SEMENTARA UNTUK TESTING ---
-        const currentUser = "admin"; // Gantikan dengan ID Tuan (contoh: "syed")
-        const SECRET_KEY = "PNR-DIGITAL-SECURE-2026-XY"; // Masukkan Secret Key GAS Tuan
-        const savedToken = currentUser + "_" + SECRET_KEY; 
-
-        /* KOD ASAL YANG KITA TUTUP SEMENTARA
+ // =========================================================
+    // 3. ENJIN SEDUT & CANTUM DATA (KEMASKINI: GUNA POST JSON)
+    // =========================================================
+    async function muatTurunData() {
         const savedToken = localStorage.getItem('pnr_session_token'); 
         const currentUser = localStorage.getItem('pnr_user_id') || USER_ID;
 
@@ -140,44 +137,74 @@
             Swal.fire('Akses Ditolak', 'Sila log masuk ke sistem utama terlebih dahulu.', 'error');
             return;
         }
-        */
-        // --------------------------------------
 
-        const urlPerosak = `${API_URL}?action=getPerosakGeoJSON&u=${currentUser}&token=${savedToken}`;
-        const urlCuaca = `${API_URL}?action=getWeatherData&u=${currentUser}&token=${savedToken}`;
-        
-        // ... (kod seterusnya kekal sama) ...
+        // KITA GUNA METHOD POST MACAM SISTEM ASAL TUAN
+        // PENTING: Sila tukar 'getAnalytics' jika Tuan guna action lain untuk tarik data dashboard perosak
+        const payloadPerosak = { 
+            action: 'getAnalytics', // <-- Guna action Tuan yang sedia ada
+            state: 'SEMUA',         // Parameter jika perlu
+            u: currentUser, 
+            token: savedToken 
+        };
+
+        const payloadCuaca = { 
+            action: 'getWeatherData', 
+            u: currentUser, 
+            token: savedToken 
+        };
+
         try {
             Swal.fire({ title: 'Menyemak Data...', html: 'AI sedang mencantumkan data <b>Perosak</b> dan <b>Cuaca</b>.', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
 
-            const [resPerosak, resCuaca] = await Promise.all([ fetch(urlPerosak), fetch(urlCuaca) ]);
+            // Tarik data menggunakan method POST (Kalis CORS)
+            const [resPerosak, resCuaca] = await Promise.all([ 
+                fetch(API_URL, { method: 'POST', body: JSON.stringify(payloadPerosak) }), 
+                fetch(API_URL, { method: 'POST', body: JSON.stringify(payloadCuaca) }) 
+            ]);
             
-            // ... (KOD PENCANTUMAN DATA DI BAWAH KEKAL SAMA SEPERTI SEBELUM INI) ...
-            const dataGeoJSON = await resPerosak.json();
+            const jsonPerosak = await resPerosak.json();
             const jsonCuaca = await resCuaca.json();
 
-            // (Semak jika token ditolak oleh backend)
-            if (dataGeoJSON.success === false || jsonCuaca.success === false) {
-                 Swal.fire('Sesi Tamat', 'Token keselamatan tidak sah atau telah tamat tempoh.', 'error');
+            if (jsonPerosak.success === false || jsonCuaca.success === false) {
+                 Swal.fire('Sesi Tamat/Ralat', 'Token tidak sah atau ralat dari server.', 'error');
                  return;
             }
 
-            const senaraiPerosak = dataGeoJSON.features || [];
+            // Akses array data JSON Tuan (Bergantung pada struktur output getAnalytics Tuan)
+            // Contoh jika output Tuan: { success: true, data: [...] }
+            const senaraiPerosak = jsonPerosak.data || jsonPerosak || [];
             const senaraiCuaca = jsonCuaca.data || [];
+            
             dataGabunganGlobal = [];
 
-            senaraiPerosak.forEach(feature => {
-                let prop = feature.properties;
-                if (!prop.Tarikh || !prop.Negeri || !prop.Daerah) return;
+            // LOGIK PENCANTUMAN (FUSION) MENGGUNAKAN KEY JSON ASAL TUAN
+            senaraiPerosak.forEach(rekod => {
+                // Sila pastikan nama key ini tepat dengan output JSON getAnalytics Tuan
+                let tarikh = rekod.Tarikh || rekod.tarikh;
+                let negeri = rekod.Negeri || rekod.negeri;
+                let daerah = rekod.Daerah || rekod.daerah;
+                let perosak = rekod.Perosak || rekod.perosak;
+                let hektar = rekod.Luas_Serangan_Ha || rekod.luas_serangan || 0;
 
-                let tarikhKes = prop.Tarikh.split('T')[0]; 
-                let profilCuaca = senaraiCuaca.find(c => c.timestamp === tarikhKes && String(c.state).toUpperCase().trim() === prop.Negeri.toUpperCase().trim() && String(c.district).toUpperCase().trim() === prop.Daerah.toUpperCase().trim());
+                if (!tarikh || !negeri || !daerah) return;
+
+                let tarikhKes = tarikh.split('T')[0]; // Format ke YYYY-MM-DD
+                
+                let profilCuaca = senaraiCuaca.find(c => 
+                    c.timestamp === tarikhKes && 
+                    String(c.state).toUpperCase().trim() === String(negeri).toUpperCase().trim() && 
+                    String(c.district).toUpperCase().trim() === String(daerah).toUpperCase().trim()
+                );
 
                 if (profilCuaca) {
                     dataGabunganGlobal.push({
-                        tarikh: tarikhKes, negeri: prop.Negeri, perosak: String(prop.Perosak).toUpperCase(),
-                        hektar: parseFloat(prop.Luas_Serangan_Ha) || 0,
-                        suhu: parseFloat(profilCuaca.temp_c) || 0, kelembapan: parseFloat(profilCuaca.humidity) || 0, hujan: parseFloat(profilCuaca.precip_mm) || 0
+                        tarikh: tarikhKes, 
+                        negeri: String(negeri).toUpperCase(), 
+                        perosak: String(perosak).toUpperCase(),
+                        hektar: parseFloat(hektar) || 0,
+                        suhu: parseFloat(profilCuaca.temp_c) || 0, 
+                        kelembapan: parseFloat(profilCuaca.humidity) || 0, 
+                        hujan: parseFloat(profilCuaca.precip_mm) || 0
                     });
                 }
             });
@@ -191,7 +218,7 @@
 
         } catch (error) {
             console.error("Ralat:", error);
-            Swal.fire('Ralat Sistem', 'Gagal memuat turun data dari pelayan.', 'error');
+            Swal.fire('Ralat Sistem', 'Gagal memuat turun data dari pelayan. (Sila semak Console)', 'error');
         }
     }
 
