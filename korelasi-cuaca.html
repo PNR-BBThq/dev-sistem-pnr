@@ -98,6 +98,17 @@
     .card-header-title .dot { width: 8px; height: 8px; border-radius: 50%; }
     .card-body-dark { padding: 16px; }
 
+    /* IKON INFO INTERAKTIF (NEW UX ELEMENT) */
+    .info-btn {
+      cursor: pointer; color: var(--clr-text-dim); transition: color var(--transition), transform var(--transition);
+      font-size: 13px; display: inline-flex; align-items: center;
+    }
+    .info-btn:hover { color: var(--clr-accent3); transform: scale(1.15); }
+
+    /* Teks dalam popup SweetAlert agar serasi dengan sistem Dark Mode */
+    .swal2-dark-popup { background: #161b22 !important; color: #e6edf3 !important; border: 1px solid #2a3444 !important; font-family: 'DM Sans', sans-serif; text-align: left !important; }
+    .swal2-dark-popup .section-title { font-size: 13px; font-weight: 700; color: #56d364; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+
     /* ── METRIC CARDS ────────────────────────────────────── */
     .metric-card {
       background: var(--clr-surface); border: 1px solid var(--clr-border); border-radius: var(--radius-md);
@@ -131,7 +142,6 @@
       font-size: 11px; font-weight: 600; color: var(--clr-text-muted);
       text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px;
     }
-    /* Select2 overrides */
     .select2-container--bootstrap-5 .select2-selection {
       background: var(--clr-surface2) !important; border-color: var(--clr-border) !important;
       color: var(--clr-text) !important; border-radius: var(--radius-sm) !important;
@@ -163,62 +173,7 @@
     #backBtn:hover { border-color: var(--clr-accent); color: var(--clr-accent2); }
     #drillLabel { font-size: 11px; color: var(--clr-accent2); font-family: var(--font-mono); display: none; }
 
-    /* ── AI INSIGHTS ─────────────────────────────────────── */
-    .insights-panel {
-      background: linear-gradient(135deg, rgba(46,160,67,0.04) 0%, rgba(56,139,253,0.04) 100%);
-      border: 1px solid rgba(46,160,67,0.2); border-radius: var(--radius-lg); padding: 20px; position: relative; overflow: hidden;
-    }
-    .insights-panel::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, var(--clr-accent), var(--clr-blue), var(--clr-accent)); background-size: 200% 100%;
-      animation: shimmer 3s infinite linear;
-    }
-    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-    .insights-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-    .ai-badge {
-      font-size: 10px; font-weight: 700; background: linear-gradient(135deg, var(--clr-accent), var(--clr-blue));
-      color: #fff; padding: 3px 9px; border-radius: 50px; font-family: var(--font-mono); letter-spacing: 0.5px;
-    }
-    .insights-title { font-size: 14px; font-weight: 700; }
-    .insight-item {
-      display: flex; gap: 12px; padding: 10px 14px; background: rgba(22,27,34,0.7); border: 1px solid var(--clr-border);
-      border-radius: var(--radius-sm); margin-bottom: 8px; transition: border-color var(--transition); animation: fadeSlide 0.4s ease both;
-    }
-    @keyframes fadeSlide { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
-    .insight-item:hover { border-color: var(--clr-border2); }
-    .insight-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
-    .insight-text { font-size: 13px; line-height: 1.5; color: var(--clr-text); }
-    .insight-text strong { color: var(--clr-accent3); font-weight: 600; }
-    .insight-text .val { font-family: var(--font-mono); color: var(--clr-blue); }
-    .insight-meta { font-size: 11px; color: var(--clr-text-dim); margin-top: 2px; }
-    #insightsPlaceholder { color: var(--clr-text-muted); font-size: 13px; text-align: center; padding: 20px; }
-
-    /* ── LOADING OVERLAY & ALERTS ────────────────────────── */
-    #loadingOverlay {
-      position: fixed; inset: 0; z-index: 9999; background: var(--clr-bg);
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; transition: opacity 0.4s ease;
-    }
-    #loadingOverlay.hidden { opacity: 0; pointer-events: none; }
-    .spinner-ring {
-      width: 48px; height: 48px; border: 3px solid var(--clr-border2); border-top-color: var(--clr-accent); border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to{transform:rotate(360deg)} }
-    .loading-text { font-size: 13px; color: var(--clr-text-muted); font-family: var(--font-mono); }
-    #errorToast {
-      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9990; background: rgba(248,81,73,0.12);
-      border: 1px solid rgba(248,81,73,0.4); border-radius: var(--radius-md); padding: 12px 16px;
-      color: var(--clr-red); font-size: 13px; display: none; max-width: 340px;
-    }
-
-    /* ── RESPONSIVE & UTILS ──────────────────────────────── */
-    @media (max-width: 768px) { .topbar { padding: 0 1rem; } .main-content { padding: 1rem; } }
-    .scatter-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--clr-text-muted); }
-    .scatter-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    .no-data-msg { text-align: center; padding: 40px 20px; color: var(--clr-text-muted); font-size: 13px; }
-    .no-data-msg i { font-size: 32px; display: block; margin-bottom: 8px; opacity: 0.4; }
-
-    /* ── NEW BANCIAN SECTION (BLOCK 1) ─────────────────────── */
+    /* ── BANCIAN SECTION (BLOCK 1) ─────────────────────── */
     .bancian-divider { display: flex; align-items: center; gap: 14px; margin: 1.5rem 0 1rem; }
     .bancian-divider-line { flex: 1; height: 1px; background: var(--clr-border); }
     .bancian-divider-label {
@@ -409,8 +364,7 @@
       </div>
     </div>
     <div class="mt-2" style="font-size:11px;color:var(--clr-text-dim);">
-      <i class="bi bi-info-circle me-1"></i>
-      Rekod dipapar: <span id="recordCountEl" class="text-accent" style="color:var(--clr-accent2);font-family:var(--font-mono);font-weight:600;">—</span>
+      <i class="bi bi-info-circle me-1"></i> Rekod dipapar: <span id="recordCountEl" class="text-accent" style="color:var(--clr-accent2);font-family:var(--font-mono);font-weight:600;">—</span>
     </div>
   </div>
 
@@ -421,6 +375,7 @@
           <div class="card-header-title">
             <div class="dot" style="background:var(--clr-accent2);"></div>
             <span id="chart1Title">Serangan vs Hujan — Makro (Negeri)</span>
+            <i class="bi bi-info-circle info-btn ms-1" onclick="showHelp('chart1')"></i>
           </div>
           <div class="d-flex align-items-center gap-2">
             <span id="drillLabel">⬛ <span id="drillStateName"></span></span>
@@ -445,7 +400,8 @@
         <div class="card-header-dark">
           <div class="card-header-title">
             <div class="dot" style="background:var(--clr-blue);"></div>
-            Profil Mikroiklim — Suhu vs Kelembapan
+            Profil Mikroklimat — Suhu vs Kelembapan
+            <i class="bi bi-info-circle info-btn ms-1" onclick="showHelp('chart2')"></i>
           </div>
         </div>
         <div class="card-body-dark">
@@ -465,8 +421,7 @@
     </div>
     <div id="insightsList">
       <div id="insightsPlaceholder">
-        <i class="bi bi-cpu" style="font-size:28px;display:block;margin-bottom:8px;opacity:0.3;"></i>
-        Memuatkan analisis korelasi...
+        <i class="bi bi-cpu" style="font-size:28px;display:block;margin-bottom:8px;opacity:0.3;"></i> Memuatkan analisis korelasi...
       </div>
     </div>
   </div>
@@ -487,6 +442,7 @@
           <div class="card-header-title">
             <div class="dot" style="background:var(--clr-blue);"></div>
             Climate Envelope Perosak — Julat Cuaca Semasa Perosak Aktif
+            <i class="bi bi-info-circle info-btn ms-1" onclick="showHelp('envelope')"></i>
           </div>
           <div class="env-tab-group">
             <button class="env-tab-btn active-temp" id="envBtnTemp" onclick="setEnvVar('temp')">🌡️ Suhu</button>
@@ -541,6 +497,7 @@
         <div class="card-header-dark">
           <div class="card-header-title">
             <div class="dot" style="background:var(--clr-accent2);"></div> Kadar Prevalens Perosak (%)
+            <i class="bi bi-info-circle info-btn ms-1" onclick="showHelp('prevalence')"></i>
           </div>
           <span id="totalSurveysEl" style="font-size:11px;color:var(--clr-text-dim);font-family:var(--font-mono);">—</span>
         </div>
@@ -564,6 +521,7 @@
         <div class="card-header-dark">
           <div class="card-header-title">
             <div class="dot" style="background:var(--clr-amber);"></div> Taburan Intensiti Serangan (% Rekod)
+            <i class="bi bi-info-circle info-btn ms-1" onclick="showHelp('intensity')"></i>
           </div>
           <div style="display:flex;gap:6px;align-items:center;">
             <span style="font-size:10px;color:var(--clr-text-dim);">Ambang:</span>
@@ -599,6 +557,7 @@
         <div class="card-header-dark">
           <div class="card-header-title">
             <div class="dot" style="background:var(--clr-red);"></div> Matriks Kerentanan — Tanaman × Perosak (Purata Ha/Bancian)
+            <i class="bi bi-info-circle info-btn ms-1" onclick="showHelp('matrix')"></i>
           </div>
           <div style="font-size:11px;color:var(--clr-text-dim);">Top 8 tanaman × Top 8 perosak (mengikut keluasan tertinggi)</div>
         </div>
@@ -617,7 +576,7 @@
 <script>
 /* ============================================================
    PNR DIGITAL — KORELASI CUACA & PEROSAK
-   Version 3.0 | Full implementation with Bancian Analysis
+   Version 3.1 | Edu-Interactive Dashboard Edition
 ============================================================ */
 
 const API_URL = 'https://script.google.com/macros/s/AKfycbx1hlsIWN5MCo7ab_ytT_d_oFqVjy1XMJwM39oBC8yPp9OLukRSbk47Ufate26quu4k/exec'; 
@@ -658,7 +617,6 @@ let userToken = '', currentUser = '', userState = 'ALL';
 let rawPest = [], rawWeather = [], blended = [], filteredData = [];
 let chart1Instance = null, chart2Instance = null, drillState = null;
 
-// New globals for Bancian Section
 let activeEnvVar = 'temp';
 let ceChart = null, prevChart = null, intensityChart = null;
 const ENV_CONFIG = {
@@ -667,6 +625,60 @@ const ENV_CONFIG = {
   precip:   { label:'Hujan (mm)',      key:'precips',    color:'#2ea043', unit:' mm', icon:'🌧️' }
 };
 
+// ─── ENJIN POPUP PENJELASAN KONTEKSTUAL (NEW FEATURE) ─────────
+const HELP_TEXTS = {
+  chart1: {
+    title: "📊 Serangan vs Hujan (Drill-Down)",
+    html: `<div class="section-title">📋 Definisi Kes</div>Kegunaan graf ini adalah untuk melihat sama ada kuantiti curahan air hujan mempengaruhi saiz gempak serangan serangga/penyakit di lapangan.
+           <div class="section-title">🔍 Cara Baca Graf</div><b>Bar Hijau:</b> Memaparkan kuantiti purata hujan (mm) di paksi sebelah kiri.<br><b>Garis Oren:</b> Memaparkan jumlah luas serangan (Hektar) di paksi sebelah kanan.<br>💡 <i>Sistem ini menyokong interaksi ketukan!</i> Klik pada bar mana-mana negeri untuk menceroboh (Drill-Down) analisis ke peringkat Daerah negeri tersebut.
+           <div class="section-title">💡 Tindakan Strategik</div>Sekiranya Tuan mengesan garis oren melonjak naik secara drastik dalam tempoh beberapa minggu selepas bar hujan meninggi, ia adalah isyarat awal berlakunya wabak kesan kelembapan mendadak. Ambil tindakan pencegahan semprotan racun biologi awal.`
+  },
+  chart2: {
+    title: "🔵 Profil Mikroklimat (Taburan Titik)",
+    html: `<div class="section-title">📋 Definisi Kes</div>Menjejaki kedudukan parameter cuaca (Suhu vs Kelembapan) secara serentak pada waktu tinjauan kes serangan direkodkan aktif.
+           <div class="section-title">🔍 Cara Baca Graf</div>Setiap satu titik bulat mewakili satu laporan kes aktif. <b>Paksi X (Melintang):</b> Nilai Suhu (°C). <b>Paksi Y (Menegak):</b> Peratus Kelembapan (%). Saiz titik bulat akan membesar secara automatik mengikut saiz keluasan Hektar serangan. Tiga perosak paling utama akan diwarnakan secara tersendiri.
+           <div class="section-title">💡 Tindakan Strategik</div>Kelompok titik yang berkumpul padat menandakan "Zon Pembiakan Optimum" bagi spesies tersebut. Jika titik perosak A mengelompok pada kawasan suhu kering (32°C), ia adalah zon kritikal serangan perosak mengunyah.`
+  },
+  envelope: {
+    title: "🌡️ Climate Envelope Perosak",
+    html: `<div class="section-title">📋 Definisi Kes</div>Satu model statistik deskriptif yang memetakan garisan batas toleransi cuaca (Suhu, Kelembapan, atau Hujan) khusus bagi setiap spesies perosak dominan.
+           <div class="section-title">🔍 Cara Baca Graf</div><b>Bar Biru Gelap (IQR):</b> Julat 50% data tengah. Ini mewakili 'Zon Selesa' optimum di mana perosak paling gemar menyerang.<br><b>Bar Biru Cerah (Min-Maks):</b> Batas sempadan ekstrem (Toleransi paling sejuk dan paling panas yang mampu dihadapi perosak).<br><b>Tanda Silang ✕:</b> Purata (Mean) kedudukan cuaca kes.<br>Perosak dengan bar panjang bermaksud ia berdaya tahan lasak (Toleransi Luas), manakala bar pendek bermaksud ia sensitif cuaca (Niche Sempit).
+           <div class="section-title">💡 Tindakan Strategik</div>Sekiranya ramalan cuaca jabatan bagi bulan hadapan dilaporkan menyamai zon bar gelap (IQR) perosak sensitif, kebarangkalian berlakunya serangan meningkat sebanyak 70%. Rancang agihan aset operasi segera.`
+  },
+  prevalence: {
+    title: "📈 Kadar Prevalens & Indeks Shannon",
+    html: `<div class="section-title">📋 Definisi Kes</div><b>Prevalens:</b> Mengira tahap perluasan/kekerapan perosak dijumpai berdasarkan jumlah unit bancian (bukan saiz Hektar).<br><b>Indeks Shannon (H'):</b> Mengukur tahap komparatif kepelbagaian bio-spesies perosak yang menyerang negara pada satu masa.
+           <div class="section-title">🔍 Cara Baca Graf</div>Graf bar melintang menunjukkan peratus (%). Contohnya, Prevalens 60% bermaksud daripada 100 siri bancian turun padang, 60 kali kelibat perosak ini ditemui. Jika Indeks Shannon (H') berwarna hijau (Tinggi), kebun sedang berhadapan dengan pelbagai spesies serangga serentak. Jika merah (Rendah), kebun diserang oleh satu spesies dominan tunggal (Wabak Monokultur).
+           <div class="section-title">💡 Tindakan Strategik</div>Perosak dengan Prevalens tinggi tetapi Hektar rendah menandakan serangan berlaku secara merata tetapi berskala kecil (Perlu kempen kawalan umum). Sebaliknya, Prevalens rendah tetapi Hektar tinggi bermaksud wabak setempat yang kronik (Perlu gempak zon kuarantin spesifik).`
+  },
+  intensity: {
+    title: "🔶 Taburan Intensiti Serangan",
+    html: `<div class="section-title">📋 Definisi Kes</div>Memecahkan keseluruhan rekod pangkalan data serangan kepada profil keseriusan serangan di lapangan berasaskan ambang standard: Ringan (&lt;2 Ha), Sederhana (2-5 Ha), dan Teruk (&gt;5 Ha).
+           <div class="section-title">🔍 Cara Baca Graf</div>Graf bar bertindan 100% ini mempamerkan pecahan peratusan watak serangan. Warna hijau menandakan peratusan kes ringan, kuning sederhana, dan merah mewakili kes kerosakan teruk (ekstrem).
+           <div class="section-title">💡 Tindakan Strategik</div>Gunakan carta ini untuk memahami 'daya pemusnah' biologi sesuatu spesies. Jika sejenis ulat mempunyai kadar peratusan bar merah (Teruk) melebihi 30%, ia dikategorikan sebagai perosak berimpak tinggi. Setiap kali ia dikesan di kebun, keutamaan kawalan mestilah diberikan serta-merta sebelum ia merosakkan seluruh ladang.`
+  },
+  matrix: {
+    title: "🟥 Matriks Kerentanan (Tanaman × Perosak)",
+    html: `<div class="section-title">📋 Definisi Kes</div>Peta haba silang (*cross-tabulation heatmap*) yang mempertemukan jenis Tanaman utama dengan jenis Perosak untuk mengira purata luas kerosakan (Ha) bagi setiap satu insiden laporan.
+           <div class="section-title">🔍 Cara Baca Graf</div><b>Warna Kotak (Peta Haba):</b> Semakin pekat warna merah kotak tersebut, semakin tinggi purata impak kemusnahan Ha yang dicatatkan bagi gandingan tanaman dan perosak tersebut. Angka di dalam kotak memaparkan purata Hektar musnah, dan nilai <code>n</code> menunjukkan jumlah kes laporan yang wujud.
+           <div class="section-title">💡 Tindakan Strategik</div>Analisis ini mengesan gandingan paling rapuh. Jika ulat pengorek buah mencatatkan warna biru (Rendah) pada tanaman mangga tetapi mencatatkan warna merah pekat (Tinggi) pada durian, ini fakta sahih bahawa pokok durian mempunyai kerentanan biologi yang sangat tinggi terhadap perosak tersebut. Fokus pelan mitigasi insurans pertanian Tuan pada zon kotak merah.`
+  }
+};
+
+function showHelp(topic) {
+  const info = HELP_TEXTS[topic];
+  if (!info) return;
+  Swal.fire({
+    title: info.title,
+    html: `<div style="font-size:12.5px; line-height:1.5;">${info.html}</div>`,
+    icon: "info",
+    customClass: { popup: "swal2-dark-popup" },
+    confirmButtonText: "Faham & Tutup",
+    confirmButtonColor: "#2ea043"
+  });
+}
+
+// ─── AUTH SESSIONS & LOADING INIT ─────────────────────────────
 function loadSession() {
   try {
     const raw = localStorage.getItem('pnr_session') || sessionStorage.getItem('pnr_session');
@@ -968,7 +980,7 @@ function generateInsights() {
   el.innerHTML = insights.length ? insights.map((item, i) => `<div class="insight-item" style="animation-delay:${i*0.05}s"><div class="insight-icon">${item.icon}</div><div><div class="insight-text">${item.text}</div><div class="insight-meta"><i class="bi bi-cpu me-1"></i>${item.meta}</div></div></div>`).join('') : `<div class="insight-item"><div class="insight-icon">ℹ️</div><div class="insight-text">Sistem memerlukan lebih kepelbagaian data.</div></div>`;
 }
 
-// ─── BANCIAN HELPER FUNCTIONS (BLOCK 3) ───────────────────────
+// ─── BANCIAN CALCULATOR ENGINE (BLOCK 3) ───────────────────────
 function calcStats(arr) {
   if (!arr || !arr.length) return null;
   const clean = arr.filter(v => v !== null && !isNaN(v));
@@ -1145,7 +1157,7 @@ function renderVulnerabilityMatrix() {
       const cell = matrix[c][p];
       if (cell.count === 0) { html += `<td class="matrix-cell empty">—</td>`; } else {
         const avg = cell.sum / cell.count;
-        html += `<td class="matrix-cell" style="background:${getHeatColor(avg, maxVal)};" title="${c} × ${p}&#10;Purata: ${avg.toFixed(2)} Ha&#10;n = ${cell.count} bancian"><div class="cell-val">${avg.toFixed(1)}</div><div class="cell-count">n=${cell.count}</div></td>`;
+        html += `<td class="matrix-cell" style="background:${getHeatColor(avg, maxVal)};" title="${c} × ${p}&&#10;Purata: ${avg.toFixed(2)} Ha&#10;n = ${cell.count} bancian"><div class="cell-val">${avg.toFixed(1)}</div><div class="cell-count">n=${cell.count}</div></td>`;
       }
     });
     html += `</tr>`;
@@ -1154,7 +1166,7 @@ function renderVulnerabilityMatrix() {
   container.innerHTML = html;
 }
 
-// ─── INITIALIZATION ───────────────────────────────────────────
+// ─── UTILITIES & ENTRY POINT ──────────────────────────────────
 function initSelect2() {
   const config = (placeholder) => ({ theme: 'bootstrap-5', placeholder, allowClear: true, width: '100%', closeOnSelect: false });
   $('#filterNegeri').select2(config('Semua Negeri')); $('#filterTanaman').select2(config('Semua Tanaman')); $('#filterPerosak').select2(config('Semua Perosak')); $('#filterBulan').select2(config('Semua Bulan'));
@@ -1165,7 +1177,7 @@ function debounce(fn, ms) { let t; return (...args) => { clearTimeout(t); t = se
 function showLoading(state) { document.getElementById('loadingOverlay').classList[state ? 'remove' : 'add']('hidden'); }
 function showError(msg) { const toast = document.getElementById('errorToast'); document.getElementById('errorMsg').textContent = msg; toast.style.display = 'block'; setTimeout(()=>{ toast.style.display='none'; }, 5500); }
 function updateLastUpdated() { const now = new Date(); document.getElementById('lastUpdatedEl').textContent = 'Kemaskini: ' + now.toLocaleDateString('ms-MY') + ' ' + now.toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'}); }
-function getMockPestData() { /* Demo Fallback */ return { records: [] }; }
+function getMockPestData() { return { records: [] }; }
 function getMockWeatherData() { return { data: [] }; }
 
 document.addEventListener('DOMContentLoaded', () => { loadSession(); initSelect2(); fetchAll(); });
