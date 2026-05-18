@@ -52,125 +52,67 @@
 
     /* ── TOPBAR ───────────────────────────────────────────── */
     .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 1030;
-      background: var(--clr-surface);
-      border-bottom: 1px solid var(--clr-border);
-      padding: 0 1.5rem;
-      height: 58px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 1030;
+      background: var(--clr-surface); border-bottom: 1px solid var(--clr-border);
+      padding: 0 1.5rem; height: 58px; display: flex; align-items: center;
+      justify-content: space-between; backdrop-filter: blur(12px);
     }
-    .topbar-brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    .topbar-brand { display: flex; align-items: center; gap: 10px; }
     .brand-icon {
-      width: 34px; height: 34px;
-      background: linear-gradient(135deg, var(--clr-accent), #1a7f37);
-      border-radius: var(--radius-sm);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
+      width: 34px; height: 34px; background: linear-gradient(135deg, var(--clr-accent), #1a7f37);
+      border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 16px;
     }
     .brand-title { font-weight: 700; font-size: 15px; letter-spacing: -0.3px; }
     .brand-sub { font-size: 11px; color: var(--clr-text-muted); font-weight: 400; }
     .topbar-right { display: flex; align-items: center; gap: 12px; }
     .user-pill {
-      display: flex; align-items: center; gap: 8px;
-      background: var(--clr-surface2);
-      border: 1px solid var(--clr-border);
-      border-radius: 50px;
-      padding: 5px 12px 5px 6px;
-      font-size: 13px;
+      display: flex; align-items: center; gap: 8px; background: var(--clr-surface2);
+      border: 1px solid var(--clr-border); border-radius: 50px; padding: 5px 12px 5px 6px; font-size: 13px;
     }
     .user-avatar {
-      width: 26px; height: 26px;
-      background: var(--clr-accent);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 700;
-      color: #fff;
+      width: 26px; height: 26px; background: var(--clr-accent); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff;
     }
-    .status-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: var(--clr-accent2);
-      box-shadow: 0 0 6px var(--clr-accent2);
-    }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--clr-accent2); box-shadow: 0 0 6px var(--clr-accent2); }
+    
+    /* ── PAGE TITLE BAR ───────────────────────────────────── */
     .page-title-bar {
-      background: var(--clr-surface);
-      border-bottom: 1px solid var(--clr-border);
-      padding: 14px 1.5rem;
-      display: flex; align-items: center; justify-content: space-between;
+      background: var(--clr-surface); border-bottom: 1px solid var(--clr-border);
+      padding: 14px 1.5rem; display: flex; align-items: center; justify-content: space-between;
     }
     .page-title { font-size: 18px; font-weight: 700; letter-spacing: -0.4px; }
     .page-subtitle { font-size: 12px; color: var(--clr-text-muted); }
     .badge-env {
-      font-size: 10px; font-weight: 600;
-      background: rgba(46,160,67,0.15);
-      border: 1px solid rgba(46,160,67,0.35);
-      color: var(--clr-accent2);
-      padding: 3px 9px;
-      border-radius: 50px;
-      font-family: var(--font-mono);
+      font-size: 10px; font-weight: 600; background: rgba(46,160,67,0.15); border: 1px solid rgba(46,160,67,0.35);
+      color: var(--clr-accent2); padding: 3px 9px; border-radius: 50px; font-family: var(--font-mono);
     }
 
-    /* ── MAIN LAYOUT ─────────────────────────────────────── */
+    /* ── MAIN LAYOUT & CARDS ──────────────────────────────── */
     .main-content { padding: 1.25rem 1.5rem; }
-
-    /* ── CARDS ───────────────────────────────────────────── */
-    .card-dark {
-      background: var(--clr-surface);
-      border: 1px solid var(--clr-border);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-    }
+    .card-dark { background: var(--clr-surface); border: 1px solid var(--clr-border); border-radius: var(--radius-lg); overflow: hidden; }
     .card-header-dark {
-      background: var(--clr-surface2);
-      border-bottom: 1px solid var(--clr-border);
-      padding: 12px 16px;
-      display: flex; align-items: center; justify-content: space-between;
+      background: var(--clr-surface2); border-bottom: 1px solid var(--clr-border);
+      padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
     }
-    .card-header-title {
-      font-size: 13px; font-weight: 600;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .card-header-title .dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-    }
+    .card-header-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .card-header-title .dot { width: 8px; height: 8px; border-radius: 50%; }
     .card-body-dark { padding: 16px; }
 
     /* ── METRIC CARDS ────────────────────────────────────── */
     .metric-card {
-      background: var(--clr-surface);
-      border: 1px solid var(--clr-border);
-      border-radius: var(--radius-md);
-      padding: 14px 16px;
-      display: flex; align-items: center; gap: 14px;
-      transition: border-color var(--transition), transform var(--transition);
-      position: relative;
-      overflow: hidden;
+      background: var(--clr-surface); border: 1px solid var(--clr-border); border-radius: var(--radius-md);
+      padding: 14px 16px; display: flex; align-items: center; gap: 14px;
+      transition: border-color var(--transition), transform var(--transition); position: relative; overflow: hidden;
     }
-    .metric-card::before {
-      content: '';
-      position: absolute; top: 0; left: 0;
-      width: 3px; height: 100%;
-    }
+    .metric-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; }
     .metric-card.mc-green::before  { background: var(--clr-accent2); }
     .metric-card.mc-blue::before   { background: var(--clr-blue); }
     .metric-card.mc-amber::before  { background: var(--clr-amber); }
     .metric-card.mc-red::before    { background: var(--clr-red); }
     .metric-card:hover { border-color: var(--clr-border2); transform: translateY(-1px); }
     .metric-icon {
-      width: 40px; height: 40px;
-      border-radius: var(--radius-sm);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; flex-shrink: 0;
+      width: 40px; height: 40px; border-radius: var(--radius-sm); display: flex; align-items: center;
+      justify-content: center; font-size: 18px; flex-shrink: 0;
     }
     .mc-green .metric-icon  { background: rgba(46,160,67,0.12); color: var(--clr-accent2); }
     .mc-blue .metric-icon   { background: rgba(56,139,253,0.12); color: var(--clr-blue); }
@@ -182,116 +124,65 @@
 
     /* ── FILTER SECTION ──────────────────────────────────── */
     .filter-section {
-      background: var(--clr-surface);
-      border: 1px solid var(--clr-border);
-      border-radius: var(--radius-lg);
-      padding: 14px 16px;
+      background: var(--clr-surface); border: 1px solid var(--clr-border);
+      border-radius: var(--radius-lg); padding: 14px 16px;
     }
     .filter-label {
-      font-size: 11px; font-weight: 600;
-      color: var(--clr-text-muted);
-      text-transform: uppercase; letter-spacing: 0.6px;
-      margin-bottom: 6px;
+      font-size: 11px; font-weight: 600; color: var(--clr-text-muted);
+      text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px;
     }
-
     /* Select2 overrides */
     .select2-container--bootstrap-5 .select2-selection {
-      background: var(--clr-surface2) !important;
-      border-color: var(--clr-border) !important;
-      color: var(--clr-text) !important;
-      border-radius: var(--radius-sm) !important;
-      font-size: 13px !important;
-      min-height: 36px !important;
+      background: var(--clr-surface2) !important; border-color: var(--clr-border) !important;
+      color: var(--clr-text) !important; border-radius: var(--radius-sm) !important;
+      font-size: 13px !important; min-height: 36px !important;
     }
     .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
-      background: rgba(46,160,67,0.15) !important;
-      border-color: rgba(46,160,67,0.4) !important;
-      color: var(--clr-accent3) !important;
-      border-radius: 4px !important;
-      font-size: 12px !important;
+      background: rgba(46,160,67,0.15) !important; border-color: rgba(46,160,67,0.4) !important;
+      color: var(--clr-accent3) !important; border-radius: 4px !important; font-size: 12px !important;
     }
-    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove {
-      color: var(--clr-accent2) !important;
-    }
+    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove { color: var(--clr-accent2) !important; }
     .select2-dropdown {
-      background: var(--clr-surface2) !important;
-      border-color: var(--clr-border2) !important;
-      border-radius: var(--radius-md) !important;
+      background: var(--clr-surface2) !important; border-color: var(--clr-border2) !important; border-radius: var(--radius-md) !important;
     }
     .select2-results__option { color: var(--clr-text) !important; font-size: 13px !important; }
     .select2-results__option--highlighted { background: rgba(46,160,67,0.2) !important; }
     .select2-search__field {
-      background: var(--clr-surface) !important;
-      border-color: var(--clr-border2) !important;
-      color: var(--clr-text) !important;
-      border-radius: var(--radius-sm) !important;
+      background: var(--clr-surface) !important; border-color: var(--clr-border2) !important;
+      color: var(--clr-text) !important; border-radius: var(--radius-sm) !important;
     }
     .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered { padding: 2px 8px !important; }
 
-    /* ── CHARTS ──────────────────────────────────────────── */
+    /* ── CHARTS & DRILL-DOWN ─────────────────────────────── */
     .chart-wrap { position: relative; width: 100%; }
     canvas { border-radius: var(--radius-sm); }
-
-    /* ── DRILL-DOWN BTN ──────────────────────────────────── */
     #backBtn {
-      display: none;
-      font-size: 12px;
-      padding: 5px 12px;
-      border-radius: 50px;
-      border: 1px solid var(--clr-border2);
-      background: transparent;
-      color: var(--clr-text-muted);
-      cursor: pointer;
-      transition: all var(--transition);
+      display: none; font-size: 12px; padding: 5px 12px; border-radius: 50px; border: 1px solid var(--clr-border2);
+      background: transparent; color: var(--clr-text-muted); cursor: pointer; transition: all var(--transition);
     }
     #backBtn:hover { border-color: var(--clr-accent); color: var(--clr-accent2); }
-    #drillLabel {
-      font-size: 11px; color: var(--clr-accent2);
-      font-family: var(--font-mono);
-      display: none;
-    }
+    #drillLabel { font-size: 11px; color: var(--clr-accent2); font-family: var(--font-mono); display: none; }
 
     /* ── AI INSIGHTS ─────────────────────────────────────── */
     .insights-panel {
       background: linear-gradient(135deg, rgba(46,160,67,0.04) 0%, rgba(56,139,253,0.04) 100%);
-      border: 1px solid rgba(46,160,67,0.2);
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      position: relative;
-      overflow: hidden;
+      border: 1px solid rgba(46,160,67,0.2); border-radius: var(--radius-lg); padding: 20px; position: relative; overflow: hidden;
     }
     .insights-panel::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--clr-accent), var(--clr-blue), var(--clr-accent));
-      background-size: 200% 100%;
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--clr-accent), var(--clr-blue), var(--clr-accent)); background-size: 200% 100%;
       animation: shimmer 3s infinite linear;
     }
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-    .insights-header {
-      display: flex; align-items: center; gap: 10px;
-      margin-bottom: 16px;
-    }
+    .insights-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
     .ai-badge {
-      font-size: 10px; font-weight: 700;
-      background: linear-gradient(135deg, var(--clr-accent), var(--clr-blue));
-      color: #fff;
-      padding: 3px 9px;
-      border-radius: 50px;
-      font-family: var(--font-mono);
-      letter-spacing: 0.5px;
+      font-size: 10px; font-weight: 700; background: linear-gradient(135deg, var(--clr-accent), var(--clr-blue));
+      color: #fff; padding: 3px 9px; border-radius: 50px; font-family: var(--font-mono); letter-spacing: 0.5px;
     }
     .insights-title { font-size: 14px; font-weight: 700; }
     .insight-item {
-      display: flex; gap: 12px;
-      padding: 10px 14px;
-      background: rgba(22,27,34,0.7);
-      border: 1px solid var(--clr-border);
-      border-radius: var(--radius-sm);
-      margin-bottom: 8px;
-      transition: border-color var(--transition);
-      animation: fadeSlide 0.4s ease both;
+      display: flex; gap: 12px; padding: 10px 14px; background: rgba(22,27,34,0.7); border: 1px solid var(--clr-border);
+      border-radius: var(--radius-sm); margin-bottom: 8px; transition: border-color var(--transition); animation: fadeSlide 0.4s ease both;
     }
     @keyframes fadeSlide { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
     .insight-item:hover { border-color: var(--clr-border2); }
@@ -302,60 +193,105 @@
     .insight-meta { font-size: 11px; color: var(--clr-text-dim); margin-top: 2px; }
     #insightsPlaceholder { color: var(--clr-text-muted); font-size: 13px; text-align: center; padding: 20px; }
 
-    /* ── LOADING OVERLAY ─────────────────────────────────── */
+    /* ── LOADING OVERLAY & ALERTS ────────────────────────── */
     #loadingOverlay {
-      position: fixed; inset: 0; z-index: 9999;
-      background: var(--clr-bg);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 16px;
-      transition: opacity 0.4s ease;
+      position: fixed; inset: 0; z-index: 9999; background: var(--clr-bg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; transition: opacity 0.4s ease;
     }
     #loadingOverlay.hidden { opacity: 0; pointer-events: none; }
     .spinner-ring {
-      width: 48px; height: 48px;
-      border: 3px solid var(--clr-border2);
-      border-top-color: var(--clr-accent);
-      border-radius: 50%;
+      width: 48px; height: 48px; border: 3px solid var(--clr-border2); border-top-color: var(--clr-accent); border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to{transform:rotate(360deg)} }
     .loading-text { font-size: 13px; color: var(--clr-text-muted); font-family: var(--font-mono); }
-
-    /* ── ERROR TOAST ─────────────────────────────────────── */
     #errorToast {
-      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9990;
-      background: rgba(248,81,73,0.12);
-      border: 1px solid rgba(248,81,73,0.4);
-      border-radius: var(--radius-md);
-      padding: 12px 16px;
-      color: var(--clr-red);
-      font-size: 13px;
-      display: none;
-      max-width: 340px;
+      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9990; background: rgba(248,81,73,0.12);
+      border: 1px solid rgba(248,81,73,0.4); border-radius: var(--radius-md); padding: 12px 16px;
+      color: var(--clr-red); font-size: 13px; display: none; max-width: 340px;
     }
 
-    /* ── RESPONSIVE ──────────────────────────────────────── */
-    @media (max-width: 768px) {
-      .topbar { padding: 0 1rem; }
-      .main-content { padding: 1rem; }
-    }
-    .section-divider {
-      height: 1px; background: var(--clr-border);
-      margin: 0.5rem 0;
-    }
-    .scatter-legend-item {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 12px; color: var(--clr-text-muted);
-    }
-    .scatter-legend-dot {
-      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
-    }
-    .no-data-msg {
-      text-align: center; padding: 40px 20px;
-      color: var(--clr-text-muted); font-size: 13px;
-    }
+    /* ── RESPONSIVE & UTILS ──────────────────────────────── */
+    @media (max-width: 768px) { .topbar { padding: 0 1rem; } .main-content { padding: 1rem; } }
+    .scatter-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--clr-text-muted); }
+    .scatter-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .no-data-msg { text-align: center; padding: 40px 20px; color: var(--clr-text-muted); font-size: 13px; }
     .no-data-msg i { font-size: 32px; display: block; margin-bottom: 8px; opacity: 0.4; }
+
+    /* ── NEW BANCIAN SECTION (BLOCK 1) ─────────────────────── */
+    .bancian-divider { display: flex; align-items: center; gap: 14px; margin: 1.5rem 0 1rem; }
+    .bancian-divider-line { flex: 1; height: 1px; background: var(--clr-border); }
+    .bancian-divider-label {
+      display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700;
+      color: var(--clr-text-dim); text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+    }
+    .bancian-divider-badge {
+      font-size: 10px; padding: 2px 8px; background: rgba(56,139,253,0.12);
+      border: 1px solid rgba(56,139,253,0.3); color: var(--clr-blue); border-radius: 50px; font-family: var(--font-mono);
+    }
+    .env-tab-group { display: flex; gap: 4px; }
+    .env-tab-btn {
+      font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 50px;
+      border: 1px solid var(--clr-border2); background: transparent; color: var(--clr-text-muted);
+      cursor: pointer; transition: all var(--transition); font-family: var(--font-main);
+    }
+    .env-tab-btn:hover { border-color: var(--clr-blue); color: var(--clr-blue); }
+    .env-tab-btn.active-temp     { background: rgba(56,139,253,0.15); border-color: rgba(56,139,253,0.5); color: var(--clr-blue); }
+    .env-tab-btn.active-humidity { background: rgba(210,153,34,0.15); border-color: rgba(210,153,34,0.5); color: var(--clr-amber); }
+    .env-tab-btn.active-precip   { background: rgba(46,160,67,0.15);  border-color: rgba(46,160,67,0.5);  color: var(--clr-accent2); }
+
+    .stats-scroll { overflow-x: auto; margin-top: 14px; }
+    .stats-table { width: 100%; border-collapse: collapse; font-size: 11.5px; font-family: var(--font-mono); }
+    .stats-table th {
+      padding: 6px 10px; text-align: center; background: var(--clr-surface2); color: var(--clr-text-dim);
+      font-weight: 600; border-bottom: 1px solid var(--clr-border); white-space: nowrap; font-size: 10px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .stats-table th:first-child { text-align: left; }
+    .stats-table td {
+      padding: 6px 10px; text-align: center; border-bottom: 1px solid rgba(42,52,68,0.5);
+      color: var(--clr-text-muted); white-space: nowrap;
+    }
+    .stats-table td:first-child { text-align: left; color: var(--clr-text); font-family: var(--font-main); font-size: 11px; }
+    .stats-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .stats-table .td-mean  { color: var(--clr-blue) !important; font-weight: 600; }
+    .stats-table .td-sd    { color: var(--clr-text-dim); }
+    .stats-table .td-n     { color: var(--clr-accent2); font-weight: 600; }
+
+    .shannon-badge {
+      display: inline-flex; align-items: center; gap: 6px; background: rgba(56,139,253,0.08);
+      border: 1px solid rgba(56,139,253,0.2); border-radius: var(--radius-sm); padding: 5px 12px; font-size: 12px;
+    }
+    .shannon-badge .sh-val { font-family: var(--font-mono); font-weight: 700; color: var(--clr-blue); font-size: 15px; }
+    .shannon-badge .sh-label { color: var(--clr-text-muted); }
+    .shannon-interp { font-size: 11px; padding: 2px 8px; border-radius: 50px; }
+
+    .matrix-scroll { overflow-x: auto; overflow-y: auto; max-height: 380px; }
+    .matrix-table { border-collapse: collapse; width: 100%; font-size: 11.5px; }
+    .matrix-corner {
+      background: var(--clr-surface2); color: var(--clr-text-dim); font-size: 10px; font-weight: 600;
+      padding: 8px 12px; border: 1px solid var(--clr-border); white-space: nowrap; position: sticky; top: 0; left: 0; z-index: 3;
+    }
+    .matrix-pest-header {
+      background: var(--clr-surface2); color: var(--clr-text-muted); font-size: 10px; font-weight: 600;
+      padding: 8px 10px; text-align: center; border: 1px solid var(--clr-border); white-space: nowrap;
+      position: sticky; top: 0; z-index: 2; max-width: 110px; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.3px;
+    }
+    .matrix-crop-label {
+      background: var(--clr-surface2); color: var(--clr-text); font-size: 11px; font-weight: 600;
+      padding: 8px 12px; border: 1px solid var(--clr-border); white-space: nowrap; position: sticky; left: 0; z-index: 1;
+    }
+    .matrix-cell { padding: 7px 10px; text-align: center; border: 1px solid rgba(42,52,68,0.4); transition: filter 0.15s ease; min-width: 70px; }
+    .matrix-cell:hover { filter: brightness(1.3); cursor: default; }
+    .matrix-cell.empty { color: var(--clr-text-dim); font-size: 12px; }
+    .cell-val  { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--clr-text); }
+    .cell-count{ font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 1px; }
+    .matrix-legend { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; font-size: 11px; }
+    .legend-chip { padding: 2px 10px; border-radius: 50px; font-size: 10px; font-weight: 600; color: var(--clr-text); font-family: var(--font-mono); }
+    .mini-metric-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+    .mini-metric { flex: 1; min-width: 120px; background: var(--clr-surface2); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); padding: 8px 12px; }
+    .mini-metric-label { font-size: 10px; color: var(--clr-text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+    .mini-metric-value { font-size: 16px; font-weight: 700; font-family: var(--font-mono); margin-top: 2px; }
   </style>
 </head>
 <body>
@@ -457,23 +393,19 @@
     <div class="row g-3">
       <div class="col-12 col-md-6 col-xl-3">
         <div class="filter-label"><i class="bi bi-geo-alt me-1"></i>Negeri</div>
-        <select id="filterNegeri" multiple class="form-select" style="display:none;">
-        </select>
+        <select id="filterNegeri" multiple class="form-select" style="display:none;"></select>
       </div>
       <div class="col-12 col-md-6 col-xl-3">
         <div class="filter-label"><i class="bi bi-flower2 me-1"></i>Tanaman</div>
-        <select id="filterTanaman" multiple class="form-select" style="display:none;">
-        </select>
+        <select id="filterTanaman" multiple class="form-select" style="display:none;"></select>
       </div>
       <div class="col-12 col-md-6 col-xl-3">
         <div class="filter-label"><i class="bi bi-bug me-1"></i>Perosak</div>
-        <select id="filterPerosak" multiple class="form-select" style="display:none;">
-        </select>
+        <select id="filterPerosak" multiple class="form-select" style="display:none;"></select>
       </div>
       <div class="col-12 col-md-6 col-xl-3">
         <div class="filter-label"><i class="bi bi-calendar3 me-1"></i>Bulan Analisis</div>
-        <select id="filterBulan" multiple class="form-select" style="display:none;">
-        </select>
+        <select id="filterBulan" multiple class="form-select" style="display:none;"></select>
       </div>
     </div>
     <div class="mt-2" style="font-size:11px;color:var(--clr-text-dim);">
@@ -483,7 +415,6 @@
   </div>
 
   <div class="row g-3 mb-3">
-
     <div class="col-12 col-xl-7">
       <div class="card-dark h-100">
         <div class="card-header-dark">
@@ -514,7 +445,7 @@
         <div class="card-header-dark">
           <div class="card-header-title">
             <div class="dot" style="background:var(--clr-blue);"></div>
-            Profil Mikroklimat — Suhu vs Kelembapan
+            Profil Mikroiklim — Suhu vs Kelembapan
           </div>
         </div>
         <div class="card-body-dark">
@@ -540,269 +471,333 @@
     </div>
   </div>
 
+  <div class="bancian-divider">
+    <div class="bancian-divider-line"></div>
+    <div class="bancian-divider-label">
+      <i class="bi bi-clipboard2-data"></i> Analisis Statistik Bancian
+      <span class="bancian-divider-badge">CROSS-SECTIONAL</span>
+    </div>
+    <div class="bancian-divider-line"></div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-12">
+      <div class="card-dark">
+        <div class="card-header-dark">
+          <div class="card-header-title">
+            <div class="dot" style="background:var(--clr-blue);"></div>
+            Climate Envelope Perosak — Julat Cuaca Semasa Perosak Aktif
+          </div>
+          <div class="env-tab-group">
+            <button class="env-tab-btn active-temp" id="envBtnTemp" onclick="setEnvVar('temp')">🌡️ Suhu</button>
+            <button class="env-tab-btn" id="envBtnHumidity" onclick="setEnvVar('humidity')">💧 Kelembapan</button>
+            <button class="env-tab-btn" id="envBtnPrecip" onclick="setEnvVar('precip')">🌧️ Hujan</button>
+          </div>
+        </div>
+        <div class="card-body-dark">
+          <div class="mini-metric-row" id="envMiniMetrics">
+            <div class="mini-metric">
+              <div class="mini-metric-label">Perosak Dianalisis</div>
+              <div class="mini-metric-value" id="envPestCount" style="color:var(--clr-blue);">—</div>
+            </div>
+            <div class="mini-metric">
+              <div class="mini-metric-label">Julat Aktif (Purata)</div>
+              <div class="mini-metric-value" id="envActiveRange" style="color:var(--clr-accent2);">—</div>
+            </div>
+            <div class="mini-metric">
+              <div class="mini-metric-label">Perosak Toleransi Luas</div>
+              <div class="mini-metric-value" id="envWideRange" style="color:var(--clr-amber);font-size:13px;">—</div>
+            </div>
+            <div class="mini-metric">
+              <div class="mini-metric-label">Perosak Niche Sempit</div>
+              <div class="mini-metric-value" id="envNarrowRange" style="color:var(--clr-red);font-size:13px;">—</div>
+            </div>
+          </div>
+          <div class="chart-wrap" style="height:270px;"><canvas id="chartEnvelope"></canvas></div>
+          <div class="stats-scroll">
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>Perosak</th><th>n</th><th>Min</th><th>Q1</th><th>Median</th>
+                  <th>Mean ★</th><th>Q3</th><th>Maks</th><th>SD</th><th>Julat (Maks–Min)</th>
+                </tr>
+              </thead>
+              <tbody id="envelopeStatsBody">
+                <tr><td colspan="10" style="text-align:center;color:var(--clr-text-dim);padding:16px;">Memuat data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="font-size:11px;color:var(--clr-text-dim);margin-top:6px;">
+            <i class="bi bi-info-circle me-1"></i> Bar gelap = IQR (Q1–Q3) ialah julat 50% data tengah. Bar cerah = julat penuh (Min–Maks). ✕ = Purata (Mean).
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-xl-5">
+      <div class="card-dark h-100">
+        <div class="card-header-dark">
+          <div class="card-header-title">
+            <div class="dot" style="background:var(--clr-accent2);"></div> Kadar Prevalens Perosak (%)
+          </div>
+          <span id="totalSurveysEl" style="font-size:11px;color:var(--clr-text-dim);font-family:var(--font-mono);">—</span>
+        </div>
+        <div class="card-body-dark">
+          <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+            <div class="shannon-badge">
+              <span class="sh-label">Indeks Kepelbagaian Shannon (H'):</span>
+              <span class="sh-val" id="shannonValEl">—</span>
+              <span class="shannon-interp" id="shannonInterpEl">—</span>
+            </div>
+          </div>
+          <div class="chart-wrap" style="height:280px;"><canvas id="chartPrevalence"></canvas></div>
+          <div style="font-size:11px;color:var(--clr-text-dim);margin-top:8px;">
+            <i class="bi bi-info-circle me-1"></i> Prevalens = % unit bancian (Tarikh+Negeri) yang mengesan perosak ini
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-xl-7">
+      <div class="card-dark h-100">
+        <div class="card-header-dark">
+          <div class="card-header-title">
+            <div class="dot" style="background:var(--clr-amber);"></div> Taburan Intensiti Serangan (% Rekod)
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <span style="font-size:10px;color:var(--clr-text-dim);">Ambang:</span>
+            <span style="font-size:10px;padding:2px 7px;background:rgba(46,160,67,0.15);border-radius:4px;color:var(--clr-accent2);">Ringan &lt;2Ha</span>
+            <span style="font-size:10px;padding:2px 7px;background:rgba(210,153,34,0.15);border-radius:4px;color:var(--clr-amber);">Sederhana 2–5Ha</span>
+            <span style="font-size:10px;padding:2px 7px;background:rgba(248,81,73,0.15);border-radius:4px;color:var(--clr-red);">Teruk &gt;5Ha</span>
+          </div>
+        </div>
+        <div class="card-body-dark">
+          <div id="intensityMiniStats" class="mini-metric-row">
+            <div class="mini-metric">
+              <div class="mini-metric-label">Median Keluasan (Semua)</div>
+              <div class="mini-metric-value" id="intMedianEl" style="color:var(--clr-amber);">—</div>
+            </div>
+            <div class="mini-metric">
+              <div class="mini-metric-label">% Rekod Teruk (&gt;5Ha)</div>
+              <div class="mini-metric-value" id="intTerukPctEl" style="color:var(--clr-red);">—</div>
+            </div>
+            <div class="mini-metric">
+              <div class="mini-metric-label">IQR Keluasan</div>
+              <div class="mini-metric-value" id="intIQREl" style="color:var(--clr-blue);">—</div>
+            </div>
+          </div>
+          <div class="chart-wrap" style="height:260px;"><canvas id="chartIntensity"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12">
+      <div class="card-dark">
+        <div class="card-header-dark">
+          <div class="card-header-title">
+            <div class="dot" style="background:var(--clr-red);"></div> Matriks Kerentanan — Tanaman × Perosak (Purata Ha/Bancian)
+          </div>
+          <div style="font-size:11px;color:var(--clr-text-dim);">Top 8 tanaman × Top 8 perosak (mengikut keluasan tertinggi)</div>
+        </div>
+        <div class="card-body-dark">
+          <div id="matrixContainer"><div class="no-data-msg"><i class="bi bi-table"></i> Memuat matriks...</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 
 <script>
 /* ============================================================
    PNR DIGITAL — KORELASI CUACA & PEROSAK
-   Version 2.0 | Full implementation
+   Version 3.0 | Full implementation with Bancian Analysis
 ============================================================ */
 
-// ─── CONFIG ──────────────────────────────────────────────────
 const API_URL = 'https://script.google.com/macros/s/AKfycbx1hlsIWN5MCo7ab_ytT_d_oFqVjy1XMJwM39oBC8yPp9OLukRSbk47Ufate26quu4k/exec'; 
 
 const MONTHS_MS = ['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogs','Sep','Okt','Nov','Dis'];
+const PALETTE_PEST = ['#2ea043','#388bfd','#d29922','#f85149','#56d364','#79c0ff','#ffa657','#ff7b72','#a5d6ff','#ffdcd7'];
 
-const PALETTE_PEST = [
-  '#2ea043','#388bfd','#d29922','#f85149','#56d364',
-  '#79c0ff','#ffa657','#ff7b72','#a5d6ff','#ffdcd7'
-];
-
-// ─── STATE NORMALIZER ─────────────────────────────────────────
 const STATE_MAP = {
-  'P.PINANG':'PULAU PINANG','PENANG':'PULAU PINANG','P. PINANG':'PULAU PINANG',
-  'PULAU PINANG':'PULAU PINANG',
+  'P.PINANG':'PULAU PINANG','PENANG':'PULAU PINANG','P. PINANG':'PULAU PINANG','PULAU PINANG':'PULAU PINANG',
   'MELAKA ':'MELAKA','MALACCA':'MELAKA','MALAKA':'MELAKA','MELAKA':'MELAKA',
-  'SELANGOR':'SELANGOR','SELANGOR ':'SELANGOR',
-  'JOHOR':'JOHOR','JOHOR ':'JOHOR',
-  'KEDAH':'KEDAH','KEDAH ':'KEDAH',
-  'KELANTAN':'KELANTAN',
-  'PERAK':'PERAK',
-  'PAHANG':'PAHANG',
-  'SABAH':'SABAH',
-  'SARAWAK':'SARAWAK',
-  'TERENGGANU':'TERENGGANU','TRENGGANU':'TERENGGANU',
+  'SELANGOR':'SELANGOR','SELANGOR ':'SELANGOR','JOHOR':'JOHOR','JOHOR ':'JOHOR',
+  'KEDAH':'KEDAH','KEDAH ':'KEDAH','KELANTAN':'KELANTAN','PERAK':'PERAK','PAHANG':'PAHANG',
+  'SABAH':'SABAH','SARAWAK':'SARAWAK','TERENGGANU':'TERENGGANU','TRENGGANU':'TERENGGANU',
   'NEGERI SEMBILAN':'NEGERI SEMBILAN','N.SEMBILAN':'NEGERI SEMBILAN','N. SEMBILAN':'NEGERI SEMBILAN',
-  'PERLIS':'PERLIS',
-  'W.P. KUALA LUMPUR':'W.P. KUALA LUMPUR','KUALA LUMPUR':'W.P. KUALA LUMPUR','KL':'W.P. KUALA LUMPUR',
-  'W.P. LABUAN':'W.P. LABUAN','LABUAN':'W.P. LABUAN',
-  'W.P. PUTRAJAYA':'W.P. PUTRAJAYA','PUTRAJAYA':'W.P. PUTRAJAYA',
-  'ALL':'ALL'
+  'PERLIS':'PERLIS','W.P. KUALA LUMPUR':'W.P. KUALA LUMPUR','KUALA LUMPUR':'W.P. KUALA LUMPUR','KL':'W.P. KUALA LUMPUR',
+  'W.P. LABUAN':'W.P. LABUAN','LABUAN':'W.P. LABUAN','W.P. PUTRAJAYA':'W.P. PUTRAJAYA','PUTRAJAYA':'W.P. PUTRAJAYA', 'ALL':'ALL'
 };
 
 function normalizeState(s) {
   if (!s) return '';
-  const key = s.toString().trim().toUpperCase();
-  return STATE_MAP[key] || key;
+  return STATE_MAP[s.toString().trim().toUpperCase()] || s.toString().trim().toUpperCase();
 }
 
-// ─── MONTH KEY ────────────────────────────────────────────────
 function getMonthKey(dateStr) {
   const d = new Date(dateStr);
-  if (isNaN(d)) return null;
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  return isNaN(d) ? null : `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
 }
 function getMonthLabel(mk) {
   const [y, m] = mk.split('-');
   return `${MONTHS_MS[parseInt(m)-1]} ${y}`;
 }
-function getDateKey(dateStr) {
-  return new Date(dateStr).toISOString().slice(0,10);
-}
+function getDateKey(dateStr) { return new Date(dateStr).toISOString().slice(0,10); }
 
-// ─── SESSION & AUTH ───────────────────────────────────────────
+// ─── SESSION & GLOBAL DATA ───────────────────────────────────
 let SESSION = {};
 let userToken = '', currentUser = '', userState = 'ALL';
+
+let rawPest = [], rawWeather = [], blended = [], filteredData = [];
+let chart1Instance = null, chart2Instance = null, drillState = null;
+
+// New globals for Bancian Section
+let activeEnvVar = 'temp';
+let ceChart = null, prevChart = null, intensityChart = null;
+const ENV_CONFIG = {
+  temp:     { label:'Suhu (°C)',       key:'temps',      color:'#388bfd', unit:'°C',  icon:'🌡️' },
+  humidity: { label:'Kelembapan (%)',  key:'humidities', color:'#d29922', unit:'%',   icon:'💧' },
+  precip:   { label:'Hujan (mm)',      key:'precips',    color:'#2ea043', unit:' mm', icon:'🌧️' }
+};
 
 function loadSession() {
   try {
     const raw = localStorage.getItem('pnr_session') || sessionStorage.getItem('pnr_session');
     if (raw) {
       SESSION = JSON.parse(raw);
-      userToken   = SESSION.userToken       || '';
-      currentUser = SESSION.currentUserID   || '';
-      userState   = normalizeState(SESSION.uProf?.state || 'ALL');
-      const name  = SESSION.uProf?.name || currentUser || 'Pengguna';
-      document.getElementById('userNameEl').textContent  = name;
+      userToken = SESSION.userToken || ''; currentUser = SESSION.currentUserID || '';
+      userState = normalizeState(SESSION.uProf?.state || 'ALL');
+      const name = SESSION.uProf?.name || currentUser || 'Pengguna';
+      document.getElementById('userNameEl').textContent = name;
       document.getElementById('userStateEl').textContent = userState === 'ALL' ? 'ADMIN (Semua)' : userState;
-      document.getElementById('avatarEl').textContent    = name.charAt(0).toUpperCase();
+      document.getElementById('avatarEl').textContent = name.charAt(0).toUpperCase();
     } else {
-      document.getElementById('userNameEl').textContent  = 'Demo Admin';
-      document.getElementById('userStateEl').textContent = 'ADMIN (Semua)';
-      userState = 'ALL';
+      document.getElementById('userNameEl').textContent = 'Demo Admin';
+      document.getElementById('userStateEl').textContent = 'ADMIN (Semua)'; userState = 'ALL';
     }
-  } catch(e) { console.warn('Session parse error:', e); }
+  } catch(e) { console.warn(e); }
 }
 
-// ─── GLOBAL DATA ──────────────────────────────────────────────
-let rawPest    = [];   
-let rawWeather = [];   
-let blended    = [];   
-let filteredData = [];
-
-// ─── CHART INSTANCES ─────────────────────────────────────────
-let chart1Instance = null;
-let chart2Instance = null;
-let drillState     = null; 
-
-// ─── FETCH DATA (OPTIMIZED FOR GAS CORRECTION) ────────────────
 async function fetchAll() {
   showLoading(true);
   try {
     let pestResp, weatherResp;
-
     if (API_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE' || !API_URL) {
-      pestResp    = getMockPestData();
-      weatherResp = getMockWeatherData();
+      pestResp = getMockPestData(); weatherResp = getMockWeatherData();
     } else {
-      // PENTING: Jangan hantar Header JSON tersuai untuk mengelakkan ralat CORS preflight di Apps Script Tuan
       const payloadPest = { action:'getAnalytics', state: userState, u: currentUser, token: userToken };
       const payloadWeather = { action:'getWeatherData', u: currentUser, token: userToken };
-
       const [r1, r2] = await Promise.all([
         fetch(API_URL, { method:'POST', body:JSON.stringify(payloadPest) }),
         fetch(API_URL, { method:'POST', body:JSON.stringify(payloadWeather) })
       ]);
-      pestResp    = await r1.json();
-      weatherResp = await r2.json();
+      pestResp = await r1.json(); weatherResp = await r2.json();
     }
-
     processPestData(pestResp.records || []);
     processWeatherData(weatherResp.data || []);
-    blendData();
-    buildFilters();
-    applyFilters();
-    updateLastUpdated();
+    blendData(); buildFilters(); applyFilters(); updateLastUpdated();
   } catch(err) {
-    console.error(err);
     showError('Gagal mendapatkan data: ' + err.message);
-  } finally {
-    showLoading(false);
-  }
+  } finally { showLoading(false); }
 }
 
-// ─── PROCESS PEST DATA ────────────────────────────────────────
 function processPestData(records) {
   rawPest = [];
   for (const r of records) {
     const ls = parseFloat(r.ls) || 0;
-    if (ls === 0) continue; // guard: abaikan rekod serangan 0 Ha
-
+    if (ls === 0) continue;
     const pestObj = r.p || {};
     let keys = Object.keys(pestObj).filter(k => !k.toUpperCase().includes('SERANGAN UMUM') && parseFloat(pestObj[k]) > 0);
-
     if (keys.length > 0) {
       keys.forEach(pestName => {
         rawPest.push({
-          date:      getDateKey(r.t),
-          monthKey:  getMonthKey(r.t),
-          state:     normalizeState(r.n),
-          district:  (r.d || '').trim().toUpperCase(),
-          crop:      (r.tn || 'UMUM').trim().toUpperCase(),
-          pest:      pestName.trim().toUpperCase(),
-          area:      parseFloat(pestObj[pestName]) || 0,
-          totalArea: ls
+          date: getDateKey(r.t), monthKey: getMonthKey(r.t), state: normalizeState(r.n),
+          district: (r.d || '').trim().toUpperCase(), crop: (r.tn || 'UMUM').trim().toUpperCase(),
+          pest: pestName.trim().toUpperCase(), area: parseFloat(pestObj[pestName]) || 0, totalArea: ls
         });
       });
     } else {
-      // Fallback sekiranya sub-object perosak kosong tetapi total luas melebihi 0 Ha
       rawPest.push({
-        date:      getDateKey(r.t),
-        monthKey:  getMonthKey(r.t),
-        state:     normalizeState(r.n),
-        district:  (r.d || '').trim().toUpperCase(),
-        crop:      (r.tn || 'UMUM').trim().toUpperCase(),
-        pest:      'PEROSAK UMUM',
-        area:      ls,
-        totalArea: ls
+        date: getDateKey(r.t), monthKey: getMonthKey(r.t), state: normalizeState(r.n),
+        district: (r.d || '').trim().toUpperCase(), crop: (r.tn || 'UMUM').trim().toUpperCase(),
+        pest: 'PEROSAK UMUM', area: ls, totalArea: ls
       });
     }
   }
 }
 
-// ─── PROCESS WEATHER DATA ─────────────────────────────────────
 function processWeatherData(records) {
   rawWeather = [];
   for (const r of records) {
     rawWeather.push({
-      date:      getDateKey(r.timestamp),
-      monthKey:  getMonthKey(r.timestamp),
-      state:     normalizeState(r.state),
-      district:  (r.district || '').trim().toUpperCase(),
-      temp:      parseFloat(r.temp_c)    || null,
-      humidity:  parseFloat(r.humidity)  || null,
-      precip:    parseFloat(r.precip_mm) || null
+      date: getDateKey(r.timestamp), monthKey: getMonthKey(r.timestamp), state: normalizeState(r.state),
+      district: (r.district || '').trim().toUpperCase(), temp: parseFloat(r.temp_c) || null,
+      humidity: parseFloat(r.humidity) || null, precip: parseFloat(r.precip_mm) || null
     });
   }
 }
 
-// ─── BLEND: STATE-LEVEL MATCHING (KEEPS 100% KPI MATCH) ──────
 function blendData() {
   const wMap = {};
   for (const w of rawWeather) {
     const key = `${w.date}|${w.state}`;
     if (!wMap[key]) wMap[key] = { temp:[], humidity:[], precip:[] };
-    if (w.temp   !== null) wMap[key].temp.push(w.temp);
-    if (w.humidity!==null) wMap[key].humidity.push(w.humidity);
+    if (w.temp !== null) wMap[key].temp.push(w.temp);
+    if (w.humidity !== null) wMap[key].humidity.push(w.humidity);
     if (w.precip !== null) wMap[key].precip.push(w.precip);
   }
-  
   const avg = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null;
-
-  // JANGAN tapis buang baris perosak sekiranya cuaca tiada, simpan sebagai null supaya Luas Serangan KPI tepat!
   blended = rawPest.map(p => {
-    const key = `${p.date}|${p.state}`;
-    const w   = wMap[key] || {};
-    return {
-      ...p,
-      temp:     avg(w.temp     || []),
-      humidity: avg(w.humidity || []),
-      precip:   avg(w.precip   || [])
-    };
+    const w = wMap[`${p.date}|${p.state}`] || {};
+    return { ...p, temp: avg(w.temp||[]), humidity: avg(w.humidity||[]), precip: avg(w.precip||[]) };
   });
 }
 
-// ─── FILTER STATE ─────────────────────────────────────────────
-let filterOptions = { negeri:[], tanaman:[], perosak:[], bulan:[] };
-let isFiltering = false;
+// ─── FILTER LOGIC ─────────────────────────────────────────────
+let filterOptions = { negeri:[], tanaman:[], perosak:[], bulan:[] }, isFiltering = false;
 
 function buildFilters() {
-  const negeri  = [...new Set(blended.map(r=>r.state))].sort();
+  const negeri = [...new Set(blended.map(r=>r.state))].sort();
   const tanaman = [...new Set(blended.map(r=>r.crop))].filter(Boolean).sort();
   const perosak = [...new Set(blended.map(r=>r.pest))].filter(Boolean).sort();
-  const bulan   = [...new Set(blended.map(r=>r.monthKey))].filter(Boolean).sort();
-
+  const bulan = [...new Set(blended.map(r=>r.monthKey))].filter(Boolean).sort();
   filterOptions = { negeri, tanaman, perosak, bulan };
   populateSelect('#filterNegeri', negeri, v=>v);
   populateSelect('#filterTanaman', tanaman, v=>v);
   populateSelect('#filterPerosak', perosak, v=>v);
-  populateSelect('#filterBulan',   bulan,   v=>getMonthLabel(v));
+  populateSelect('#filterBulan', bulan, v=>getMonthLabel(v));
 }
 
 function populateSelect(sel, values, labelFn) {
-  const $el = $(sel);
-  $el.empty();
-  values.forEach(v => {
-    $el.append(new Option(labelFn(v), v));
-  });
+  const $el = $(sel); $el.empty();
+  values.forEach(v => { $el.append(new Option(labelFn(v), v)); });
 }
 
 function getActiveFilters() {
   return {
-    negeri:  $('#filterNegeri').val()  || [],
-    tanaman: $('#filterTanaman').val() || [],
-    perosak: $('#filterPerosak').val() || [],
-    bulan:   $('#filterBulan').val()   || []
+    negeri: $('#filterNegeri').val() || [], tanaman: $('#filterTanaman').val() || [],
+    perosak: $('#filterPerosak').val() || [], bulan: $('#filterBulan').val() || []
   };
 }
 
 function applyFilters() {
   if(isFiltering) return;
   isFiltering = true;
-
   const f = getActiveFilters();
   filteredData = blended.filter(r => {
-    if (f.negeri.length  && !f.negeri.includes(r.state))    return false;
-    if (f.tanaman.length && !f.tanaman.includes(r.crop))    return false;
-    if (f.perosak.length && !f.perosak.includes(r.pest))    return false;
-    if (f.bulan.length   && !f.bulan.includes(r.monthKey))  return false;
+    if (f.negeri.length && !f.negeri.includes(r.state)) return false;
+    if (f.tanaman.length && !f.tanaman.includes(r.crop)) return false;
+    if (f.perosak.length && !f.perosak.includes(r.pest)) return false;
+    if (f.bulan.length && !f.bulan.includes(r.monthKey)) return false;
     return true;
   });
-
   cascadeFilters(f);
   updateMetrics();
   renderChart1();
@@ -810,252 +805,130 @@ function applyFilters() {
   generateInsights();
   document.getElementById('recordCountEl').textContent = filteredData.length.toLocaleString();
   
+  // NEW BANCIAN CHARTS TRIGGER
+  renderClimateEnvelope();
+  renderPrevalence();
+  renderIntensityDist();
+  renderVulnerabilityMatrix();
+  
   isFiltering = false;
 }
 
 function cascadeFilters(f) {
   ['negeri','tanaman','perosak','bulan'].forEach(dim => {
-    if (f[dim].length) return; // kekalkan pilihan sekiranya dipotong aktif
-
-    const available = [...new Set(filteredData.map(r => {
-      const map = { negeri: r.state, tanaman: r.crop, perosak: r.pest, bulan: r.monthKey };
-      return map[dim];
-    }))].filter(Boolean);
-
+    if (f[dim].length) return;
+    const available = [...new Set(filteredData.map(r => r[dim==='negeri'?'state':dim==='tanaman'?'crop':dim==='perosak'?'pest':'monthKey']))].filter(Boolean);
     const $el = $(`#filter${dim.charAt(0).toUpperCase()+dim.slice(1)}`);
-    $el.find('option').each(function() {
-      $(this).prop('disabled', !available.includes($(this).val()));
-    });
+    $el.find('option').each(function() { $(this).prop('disabled', !available.includes($(this).val())); });
     $el.trigger('change.select2');
   });
 }
 
-// ─── METRICS ─────────────────────────────────────────────────
 function updateMetrics() {
   const d = filteredData;
   if (!d.length) {
-    ['mSerangan','mSuhu','mHujan'].forEach(id => document.getElementById(id).textContent = '—');
-    document.getElementById('mPerosak').textContent = '—';
-    document.getElementById('mPerosakSub').textContent = '—';
-    return;
+    ['mSerangan','mSuhu','mHujan','mPerosak','mPerosakSub'].forEach(id => document.getElementById(id).textContent = '—'); return;
   }
-
-  // Pengiraan Luas Serangan Bersih (Menjumlahkan semua hektar aktif)
   const totalArea = d.reduce((a,r) => a + (r.area||0), 0);
   document.getElementById('mSerangan').textContent = totalArea.toFixed(2).toLocaleString();
 
-  const temps  = d.map(r=>r.temp).filter(v=>v!==null);
-  const precips = d.map(r=>r.precip).filter(v=>v!==null);
-  const avgTemp  = temps.length  ? (temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1)   : '—';
-  const avgPrecip= precips.length? (precips.reduce((a,b)=>a+b,0)/precips.length).toFixed(1): '—';
-
-  document.getElementById('mSuhu').textContent  = avgTemp  === '—' ? '—' : avgTemp + '°C';
+  const temps = d.map(r=>r.temp).filter(v=>v!==null), precips = d.map(r=>r.precip).filter(v=>v!==null);
+  const avgTemp = temps.length ? (temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1) : '—';
+  const avgPrecip = precips.length ? (precips.reduce((a,b)=>a+b,0)/precips.length).toFixed(1) : '—';
+  document.getElementById('mSuhu').textContent = avgTemp === '—' ? '—' : avgTemp + '°C';
   document.getElementById('mHujan').textContent = avgPrecip === '—' ? '—' : avgPrecip + ' mm';
 
   const pestTotal = {};
   d.forEach(r => { pestTotal[r.pest] = (pestTotal[r.pest]||0) + r.area; });
   const sorted = Object.entries(pestTotal).sort((a,b)=>b[1]-a[1]);
   if (sorted.length) {
-    document.getElementById('mPerosak').textContent    = sorted[0][0];
+    document.getElementById('mPerosak').textContent = sorted[0][0];
     document.getElementById('mPerosakSub').textContent = sorted[0][1].toFixed(2)+' Ha';
   }
 }
 
-// ─── CHART 1: DUAL-AXIS DRILL-DOWN ───────────────────────────
-function renderChart1() {
-  if (drillState) {
-    renderChart1Drill(drillState);
-    return;
-  }
-  renderChart1Macro();
-}
+// ─── CHARTS (CORE DASHBOARD) ──────────────────────────────────
+function renderChart1() { drillState ? renderChart1Drill(drillState) : renderChart1Macro(); }
 
 function renderChart1Macro() {
-  const d = filteredData;
   const byState = {};
-  d.forEach(r => {
+  filteredData.forEach(r => {
     if (!byState[r.state]) byState[r.state] = { area:0, precip:[] };
-    byState[r.state].area += r.area;
-    if (r.precip !== null) byState[r.state].precip.push(r.precip);
+    byState[r.state].area += r.area; if (r.precip !== null) byState[r.state].precip.push(r.precip);
   });
-
   const labels = Object.keys(byState).sort();
-  const areas  = labels.map(s => byState[s].area.toFixed(2));
-  const precips = labels.map(s => {
-    const arr = byState[s].precip;
-    return arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1) : 0;
-  });
-
-  buildChart1(labels, areas, precips, false);
+  buildChart1(labels, labels.map(s => byState[s].area.toFixed(2)), labels.map(s => byState[s].precip.length ? (byState[s].precip.reduce((a,b)=>a+b,0)/byState[s].precip.length).toFixed(1) : 0), false);
   document.getElementById('chart1Title').textContent = 'Serangan vs Hujan — Makro (Negeri)';
 }
 
 function renderChart1Drill(stateName) {
-  const d = filteredData.filter(r => r.state === stateName);
   const byDistrict = {};
-  d.forEach(r => {
+  filteredData.filter(r => r.state === stateName).forEach(r => {
     const k = r.district || 'LAIN-LAIN';
     if (!byDistrict[k]) byDistrict[k] = { area:0, precip:[] };
-    byDistrict[k].area += r.area;
-    if (r.precip!==null) byDistrict[k].precip.push(r.precip);
+    byDistrict[k].area += r.area; if (r.precip!==null) byDistrict[k].precip.push(r.precip);
   });
-
   const labels = Object.keys(byDistrict).sort();
-  const areas  = labels.map(k => byDistrict[k].area.toFixed(2));
-  const precips= labels.map(k => {
-    const arr = byDistrict[k].precip;
-    return arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1) : 0;
-  });
-
-  buildChart1(labels, areas, precips, true);
+  buildChart1(labels, labels.map(k => byDistrict[k].area.toFixed(2)), labels.map(k => byDistrict[k].precip.length ? (byDistrict[k].precip.reduce((a,b)=>a+b,0)/byDistrict[k].precip.length).toFixed(1) : 0), true);
   document.getElementById('chart1Title').textContent = `Serangan vs Hujan — ${stateName} (Daerah)`;
   document.getElementById('drillStateName').textContent = stateName;
   document.getElementById('drillLabel').style.display = 'flex';
-  document.getElementById('backBtn').style.display    = 'inline-flex';
+  document.getElementById('backBtn').style.display = 'inline-flex';
 }
 
 function buildChart1(labels, areas, precips, isDrill) {
   const ctx = document.getElementById('chart1');
   if (chart1Instance) chart1Instance.destroy();
-
-  if (!labels.length) {
-    ctx.getContext('2d').clearRect(0,0,ctx.width,ctx.height);
-    chart1Instance = null;
-    return;
-  }
-
+  if (!labels.length) { chart1Instance = null; return; }
   chart1Instance = new Chart(ctx, {
     data: {
       labels,
       datasets: [
-        {
-          type: 'bar',
-          label: 'Serangan (Ha)',
-          data: areas,
-          backgroundColor: 'rgba(46,160,67,0.6)',
-          borderColor:     '#2ea043',
-          borderWidth: 1,
-          borderRadius: 4,
-          yAxisID: 'y',
-          order: 2
-        },
-        {
-          type: 'line',
-          label: 'Purata Hujan (mm)',
-          data: precips,
-          borderColor: '#388bfd',
-          backgroundColor: 'rgba(56,139,253,0.08)',
-          pointBackgroundColor: '#388bfd',
-          pointBorderColor: '#0d1117',
-          pointRadius: 4,
-          tension: 0.3,
-          fill: true,
-          yAxisID: 'y2',
-          order: 1
-        }
+        { type: 'bar', label: 'Serangan (Ha)', data: areas, backgroundColor: 'rgba(46,160,67,0.6)', borderColor: '#2ea043', borderWidth: 1, borderRadius: 4, yAxisID: 'y', order: 2 },
+        { type: 'line', label: 'Purata Hujan (mm)', data: precips, borderColor: '#388bfd', backgroundColor: 'rgba(56,139,253,0.08)', pointBackgroundColor: '#388bfd', pointBorderColor: '#0d1117', pointRadius: 4, tension: 0.3, fill: true, yAxisID: 'y2', order: 1 }
       ]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode:'index', intersect:false },
+      responsive: true, maintainAspectRatio: false, interaction: { mode:'index', intersect:false },
       onClick: (evt, elements) => {
         if (isDrill || !elements.length) return;
-        const idx = elements[0].index;
-        drillState = labels[idx];
-        renderChart1Drill(drillState);
+        drillState = labels[elements[0].index]; renderChart1Drill(drillState);
       },
-      plugins: {
-        legend: { labels: { color:'#8b949e', boxWidth:12 } }
-      },
+      plugins: { legend: { labels: { color:'#8b949e', boxWidth:12 } } },
       scales: {
-        x: {
-          ticks: { color:'#6e7681', maxRotation:30 },
-          grid:  { color:'rgba(42,52,68,0.3)' }
-        },
-        y: {
-          position:'left',
-          title: { display:true, text:'Serangan (Ha)', color:'#56d364' },
-          ticks: { color:'#6e7681' },
-          grid:  { color:'rgba(42,52,68,0.3)' }
-        },
-        y2: {
-          position:'right',
-          title: { display:true, text:'Hujan (mm)', color:'#79c0ff' },
-          ticks: { color:'#6e7681' },
-          grid:  { drawOnChartArea:false }
-        }
+        x: { ticks: { color:'#6e7681', maxRotation:30 }, grid: { color:'rgba(42,52,68,0.3)' } },
+        y: { position:'left', title: { display:true, text:'Serangan (Ha)', color:'#56d364' }, ticks: { color:'#6e7681' }, grid: { color:'rgba(42,52,68,0.3)' } },
+        y2: { position:'right', title: { display:true, text:'Hujan (mm)', color:'#79c0ff' }, ticks: { color:'#6e7681' }, grid: { drawOnChartArea:false } }
       }
     }
   });
 }
+function resetDrillDown() { drillState = null; document.getElementById('backBtn').style.display = 'none'; document.getElementById('drillLabel').style.display = 'none'; renderChart1Macro(); }
 
-function resetDrillDown() {
-  drillState = null;
-  document.getElementById('backBtn').style.display  = 'none';
-  document.getElementById('drillLabel').style.display = 'none';
-  renderChart1Macro();
-}
-
-// ─── CHART 2: SCATTER/BUBBLE PLOT ────────────────────────────
 function renderChart2() {
   const d = filteredData.filter(r => r.temp!==null && r.humidity!==null);
-  const ctx = document.getElementById('chart2');
   if (chart2Instance) chart2Instance.destroy();
+  if (!d.length) { document.getElementById('scatterLegend').innerHTML = ''; chart2Instance = null; return; }
 
-  if (!d.length) {
-    document.getElementById('scatterLegend').innerHTML = '';
-    chart2Instance = null;
-    return;
-  }
-
-  const pestTotals = {};
-  d.forEach(r => { pestTotals[r.pest] = (pestTotals[r.pest]||0) + r.area; });
+  const pestTotals = {}; d.forEach(r => { pestTotals[r.pest] = (pestTotals[r.pest]||0) + r.area; });
   const top3 = Object.entries(pestTotals).sort((a,b)=>b[1]-a[1]).slice(0,3).map(e=>e[0]);
   const colors = [PALETTE_PEST[3], PALETTE_PEST[1], PALETTE_PEST[2]];
 
   const datasets = top3.map((pest, i) => {
     const pts = d.filter(r=>r.pest===pest).map(r=>({x:r.temp, y:r.humidity, r:Math.min(4+r.area/4, 12)}));
-    return {
-      label: pest,
-      data: pts,
-      backgroundColor: colors[i] + 'aa',
-      borderColor: colors[i],
-      borderWidth: 1,
-      pointRadius: pts.map(p=>p.r),
-      pointHoverRadius: pts.map(p=>p.r+2)
-    };
+    return { label: pest, data: pts, backgroundColor: colors[i] + 'aa', borderColor: colors[i], borderWidth: 1, pointRadius: pts.map(p=>p.r), pointHoverRadius: pts.map(p=>p.r+2) };
   });
 
   const otherPts = d.filter(r=>!top3.includes(r.pest)).map(r=>({x:r.temp,y:r.humidity}));
-  if (otherPts.length) {
-    datasets.push({
-      label: 'Lain-lain',
-      data: otherPts,
-      backgroundColor: 'rgba(110,118,129,0.3)',
-      borderColor: '#6e7681',
-      borderWidth: 1,
-      pointRadius: 3
-    });
-  }
+  if (otherPts.length) datasets.push({ label: 'Lain-lain', data: otherPts, backgroundColor: 'rgba(110,118,129,0.3)', borderColor: '#6e7681', borderWidth: 1, pointRadius: 3 });
 
-  chart2Instance = new Chart(ctx, {
-    type: 'bubble',
-    data: { datasets },
+  chart2Instance = new Chart(document.getElementById('chart2'), {
+    type: 'bubble', data: { datasets },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: {
-          backgroundColor:'#1c2330', borderColor:'#2a3444', borderWidth:1,
-          callbacks: {
-            title: items => items[0]?.dataset.label || '',
-            label: item => [
-              ` Suhu: ${item.raw.x?.toFixed(1)}°C`,
-              ` Kelembapan: ${item.raw.y?.toFixed(0)}%`
-            ]
-          }
-        }
+        tooltip: { backgroundColor:'#1c2330', borderColor:'#2a3444', borderWidth:1, callbacks: { title: items => items[0]?.dataset.label || '', label: item => [` Suhu: ${item.raw.x?.toFixed(1)}°C`, ` Kelembapan: ${item.raw.y?.toFixed(0)}%`] } }
       },
       scales: {
         x: { title:{ display:true, text:'Suhu (°C)', color:'#6e7681' }, ticks:{ color:'#6e7681' }, grid: { color:'rgba(42,52,68,0.3)' } },
@@ -1064,190 +937,238 @@ function renderChart2() {
     }
   });
 
-  const legend = document.getElementById('scatterLegend');
-  legend.innerHTML = datasets.map((ds,i)=>`
-    <div class="scatter-legend-item">
-      <div class="scatter-legend-dot" style="background:${ds.borderColor}"></div>
-      <span>${ds.label}</span>
-    </div>
-  `).join('');
+  document.getElementById('scatterLegend').innerHTML = datasets.map((ds,i)=>`<div class="scatter-legend-item"><div class="scatter-legend-dot" style="background:${ds.borderColor}"></div><span>${ds.label}</span></div>`).join('');
 }
 
-// ─── AUTOMATED INSIGHTS ENGINE ────────────────────────────────
 function generateInsights() {
-  const el = document.getElementById('insightsList');
-  const d  = filteredData;
-
-  if (!d.length) {
-    el.innerHTML = `<div id="insightsPlaceholder"><i class="bi bi-database-x"></i><br>Tiada data untuk dianalisis. Sila laraskan penapis.</div>`;
-    return;
-  }
+  const el = document.getElementById('insightsList'), d = filteredData;
+  if (!d.length) { el.innerHTML = `<div id="insightsPlaceholder"><i class="bi bi-database-x"></i><br>Tiada data untuk dianalisis.</div>`; return; }
 
   const insights = [];
-
-  // 1. Hujan vs Serangan
   const withPrecip = d.filter(r=>r.precip!==null);
   if (withPrecip.length >= 4) {
     const sorted = [...withPrecip].sort((a,b)=>b.precip-a.precip);
-    const topQ   = sorted.slice(0, Math.ceil(sorted.length*0.25));
-    const botQ   = sorted.slice(Math.floor(sorted.length*0.75));
-    const avgAreaHigh = topQ.reduce((s,r)=>s+r.area,0)/topQ.length;
-    const avgAreaLow  = botQ.reduce((s,r)=>s+r.area,0)/botQ.length;
+    const topQ = sorted.slice(0, Math.ceil(sorted.length*0.25)), botQ = sorted.slice(Math.floor(sorted.length*0.75));
+    const avgAreaHigh = topQ.reduce((s,r)=>s+r.area,0)/topQ.length, avgAreaLow = botQ.reduce((s,r)=>s+r.area,0)/botQ.length;
     const diff = (((avgAreaHigh - avgAreaLow)/Math.max(avgAreaLow,0.01))*100).toFixed(0);
-    if (Math.abs(diff) >= 5) {
-      insights.push({
-        icon: diff > 0 ? '🌧️' : '☀️',
-        text: `Kawasan dengan indeks curahan hujan tinggi menunjukkan purata keluasan serangan <strong>${diff > 0 ? 'meningkat' : 'menurun'} sebanyak ${Math.abs(diff)}%</strong> berbanding zon taburan hujan minimum.`,
-        meta: `Analisis rentas berpandukan ${withPrecip.length} titik padanan makro.`
-      });
-    }
+    if (Math.abs(diff) >= 5) insights.push({ icon: diff > 0 ? '🌧️' : '☀️', text: `Kawasan dengan curahan hujan tinggi menunjukkan purata serangan <strong>${diff > 0 ? 'meningkat' : 'menurun'} ${Math.abs(diff)}%</strong>.`, meta: `Berdasarkan ${withPrecip.length} padanan makro.` });
   }
 
-  // 2. Zon Suhu Perosak Dominan
-  const pestTotals = {};
-  d.forEach(r => { pestTotals[r.pest] = (pestTotals[r.pest]||0) + r.area; });
-  const topPests = Object.entries(pestTotals).sort((a,b)=>b[1]-a[1]).slice(0,2);
-  
-  topPests.forEach(([pest, area], idx) => {
-    const recs = d.filter(r=>r.pest===pest && r.temp!==null);
-    if (recs.length >= 2) {
-      const temps = recs.map(r=>r.temp);
-      const minT  = Math.min(...temps).toFixed(1);
-      const maxT  = Math.max(...temps).toFixed(1);
-      insights.push({
-        icon: '🐛',
-        text: `Wabak serangan <strong>${pest}</strong> terpapar paling padat pada koridor suhu mikroklimat antara <span class="val">${minT}°C hingga ${maxT}°C</span>.`,
-        meta: `Melibatkan ${area.toFixed(1)} Ha luas serangan aktif.`
-      });
-    }
+  const pestTotals = {}; d.forEach(r => { pestTotals[r.pest] = (pestTotals[r.pest]||0) + r.area; });
+  Object.entries(pestTotals).sort((a,b)=>b[1]-a[1]).slice(0,2).forEach(([pest, area], idx) => {
+    const temps = d.filter(r=>r.pest===pest && r.temp!==null).map(r=>r.temp);
+    if (temps.length >= 2) insights.push({ icon: '🐛', text: `Wabak <strong>${pest}</strong> terpapar padat pada koridor mikroklimat <span class="val">${Math.min(...temps).toFixed(1)}°C – ${Math.max(...temps).toFixed(1)}°C</span>.`, meta: `${area.toFixed(1)} Ha luas aktif.` });
   });
 
-  // 3. Amaran Kelembapan Tinggi
   const humid = d.filter(r=>r.humidity!==null);
-  if (humid.length) {
-    const highH = humid.filter(r=>r.humidity > 75);
-    if (highH.length / humid.length > 0.4) {
-      insights.push({
-        icon: '💧',
-        text: `Sebanyak <strong>${((highH.length/humid.length)*100).toFixed(0)}%</strong> kes dikesan berlaku pada kelembapan relatif tinggi (>75% RH), mewujudkan zon pembiakan tepu gas mikro yang memacu proliferasi spora/telur.`,
-        meta: `Purata kelembapan ambien semasa: ${(humid.reduce((s,r)=>s+r.humidity,0)/humid.length).toFixed(1)}%`
-      });
+  if (humid.length && humid.filter(r=>r.humidity > 75).length / humid.length > 0.4) {
+    insights.push({ icon: '💧', text: `<strong>${((humid.filter(r=>r.humidity > 75).length/humid.length)*100).toFixed(0)}%</strong> kes berlaku pada kelembapan >75% RH, memacu proliferasi spora.`, meta: `Purata ambien: ${(humid.reduce((s,r)=>s+r.humidity,0)/humid.length).toFixed(1)}%` });
+  }
+
+  el.innerHTML = insights.length ? insights.map((item, i) => `<div class="insight-item" style="animation-delay:${i*0.05}s"><div class="insight-icon">${item.icon}</div><div><div class="insight-text">${item.text}</div><div class="insight-meta"><i class="bi bi-cpu me-1"></i>${item.meta}</div></div></div>`).join('') : `<div class="insight-item"><div class="insight-icon">ℹ️</div><div class="insight-text">Sistem memerlukan lebih kepelbagaian data.</div></div>`;
+}
+
+// ─── BANCIAN HELPER FUNCTIONS (BLOCK 3) ───────────────────────
+function calcStats(arr) {
+  if (!arr || !arr.length) return null;
+  const clean = arr.filter(v => v !== null && !isNaN(v));
+  if (clean.length < 2) return null;
+  const sorted = [...clean].sort((a, b) => a - b);
+  const n = sorted.length, mean = clean.reduce((a, b) => a + b, 0) / n;
+  const median = n % 2 === 0 ? (sorted[n/2 - 1] + sorted[n/2]) / 2 : sorted[Math.floor(n / 2)];
+  const q1 = sorted[Math.floor(n * 0.25)], q3 = sorted[Math.floor(n * 0.75)];
+  const sd = Math.sqrt(clean.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / n);
+  return { min: sorted[0], max: sorted[n-1], mean, median, q1, q3, sd, n, range: sorted[n-1] - sorted[0], iqr: q3 - q1 };
+}
+
+function calcShannon(data) {
+  if (!data || !data.length) return null;
+  const pestArea = {}; const total = data.reduce((s, r) => s + r.area, 0);
+  if (total === 0) return null;
+  data.forEach(r => { pestArea[r.pest] = (pestArea[r.pest] || 0) + r.area; });
+  const H = Object.values(pestArea).reduce((s, a) => { const p = a / total; return s - (p > 0 ? p * Math.log(p) : 0); }, 0);
+  return { H: H, S: Object.keys(pestArea).length, Hmax: Math.log(Object.keys(pestArea).length) };
+}
+
+function getHeatColor(value, maxVal) {
+  if (!maxVal || value === 0) return 'transparent';
+  const r = value / maxVal;
+  if (r < 0.33) return `rgba(56,139,253,${(0.08 + r * 0.45).toFixed(2)})`;
+  if (r < 0.66) return `rgba(210,153,34,${(0.12 + r * 0.40).toFixed(2)})`;
+  return `rgba(248,81,73, ${(0.12 + r * 0.55).toFixed(2)})`;
+}
+
+function buildPestWeatherGroups(data) {
+  const groups = {};
+  data.forEach(r => {
+    if (!groups[r.pest]) groups[r.pest] = { temps: [], humidities: [], precips: [], areas: [], n: 0 };
+    if (r.temp !== null) groups[r.pest].temps.push(r.temp);
+    if (r.humidity !== null) groups[r.pest].humidities.push(r.humidity);
+    if (r.precip !== null) groups[r.pest].precips.push(r.precip);
+    groups[r.pest].areas.push(r.area); groups[r.pest].n++;
+  });
+  return groups;
+}
+
+function setEnvVar(varName) {
+  activeEnvVar = varName;
+  document.querySelectorAll('.env-tab-btn').forEach(btn => { btn.className = 'env-tab-btn'; });
+  const activeBtn = document.getElementById(varName === 'temp' ? 'envBtnTemp' : varName === 'humidity' ? 'envBtnHumidity' : 'envBtnPrecip');
+  if (activeBtn) activeBtn.classList.add(`active-${varName}`);
+  renderClimateEnvelope();
+}
+
+function renderClimateEnvelope() {
+  const d = filteredData, cfg = ENV_CONFIG[activeEnvVar], ctx = document.getElementById('chartEnvelope');
+  if (!ctx) return;
+  const groups = buildPestWeatherGroups(d);
+  const pests = Object.entries(groups).filter(([, g]) => g[cfg.key].length >= 3).sort((a, b) => b[1].areas.reduce((s,v)=>s+v,0) - a[1].areas.reduce((s,v)=>s+v,0)).slice(0, 8).map(e => e[0]);
+
+  if (!pests.length) {
+    if (ceChart) { ceChart.destroy(); ceChart = null; }
+    ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height);
+    document.getElementById('envelopeStatsBody').innerHTML = `<tr><td colspan="10" class="no-data-msg"><i class="bi bi-database-x"></i> Tiada data cuaca mencukupi</td></tr>`; return;
+  }
+
+  const stats = {}; pests.forEach(p => { stats[p] = calcStats(groups[p][cfg.key]); });
+  const rangeData = pests.map(p => [stats[p].min, stats[p].max]);
+  const iqrData = pests.map(p => [stats[p].q1, stats[p].q3]);
+  const meanData = pests.map(p => stats[p].mean);
+
+  if (ceChart) ceChart.destroy();
+  ceChart = new Chart(ctx, {
+    data: {
+      labels: pests,
+      datasets: [
+        { type: 'bar', label: 'Julat Penuh (Min–Maks)', data: rangeData, backgroundColor: cfg.color + '25', borderColor: cfg.color + '55', borderWidth: 1, borderRadius: 3, barPercentage: 0.55, categoryPercentage: 0.85, order: 3 },
+        { type: 'bar', label: 'IQR (Q1–Q3)', data: iqrData, backgroundColor: cfg.color + 'aa', borderColor: cfg.color, borderWidth: 1, borderRadius: 3, barPercentage: 0.55, categoryPercentage: 0.85, order: 2 },
+        { type: 'line', label: 'Purata (Mean)', data: meanData, borderColor: 'transparent', backgroundColor: '#fff', pointBackgroundColor: '#fff', pointBorderColor: cfg.color, pointBorderWidth: 2, pointRadius: 6, pointHoverRadius: 8, pointStyle: 'crossRot', showLine: false, order: 1 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { labels: { color:'#8b949e', font:{size:11,family:'DM Sans'}, boxWidth:10 } }, tooltip: { backgroundColor: '#1c2330', borderColor: '#2a3444', borderWidth: 1, titleColor: '#e6edf3', bodyColor: '#8b949e', padding: 10, callbacks: { title: items => items[0]?.label || '', label: item => { const p = pests[item.dataIndex], s = stats[p]; if (!s) return ''; if (item.dataset.label.includes('Mean')) return ` ✕ Purata: ${s.mean.toFixed(2)}${cfg.unit}`; if (item.dataset.label.includes('IQR')) return ` ▮ Q1: ${s.q1.toFixed(2)} → Q3: ${s.q3.toFixed(2)}${cfg.unit} (IQR: ${s.iqr.toFixed(2)})`; return ` ░ Min: ${s.min.toFixed(2)} → Maks: ${s.max.toFixed(2)}${cfg.unit}`; } } } },
+      scales: { x: { ticks: { color:'#6e7681', font:{size:10,family:'DM Sans'}, maxRotation: 25 }, grid: { color:'rgba(42,52,68,0.4)' } }, y: { title: { display:true, text: cfg.label, color:'#6e7681', font:{size:11} }, ticks: { color:'#6e7681', font:{size:11,family:'DM Mono'} }, grid: { color:'rgba(42,52,68,0.4)' } } }
     }
-  }
+  });
 
-  if (!insights.length) {
-    el.innerHTML = `<div class="insight-item"><div class="insight-icon">ℹ️</div><div class="insight-text">Sistem memerlukan lebih kepelbagaian julat data untuk menjana korelasi iklim lanjut.</div></div>`;
-    return;
-  }
+  document.getElementById('envelopeStatsBody').innerHTML = pests.map(pest => {
+    const s = stats[pest]; if (!s) return '';
+    return `<tr><td title="${pest}">${pest.length > 20 ? pest.slice(0,18)+'…' : pest}</td><td class="td-n">${s.n}</td><td>${s.min.toFixed(2)}</td><td>${s.q1.toFixed(2)}</td><td>${s.median.toFixed(2)}</td><td class="td-mean">${s.mean.toFixed(2)}${cfg.unit}</td><td>${s.q3.toFixed(2)}</td><td>${s.max.toFixed(2)}</td><td class="td-sd">±${s.sd.toFixed(2)}</td><td style="${s.range > (s.mean * 0.3) ? 'color:var(--clr-amber)' : 'color:var(--clr-accent2)'};font-family:var(--font-mono);font-weight:600;">${s.range.toFixed(2)}${cfg.unit}</td></tr>`;
+  }).join('');
 
-  el.innerHTML = insights.map((item, i) => `
-    <div class="insight-item" style="animation-delay:${i*0.05}s">
-      <div class="insight-icon">${item.icon}</div>
-      <div>
-        <div class="insight-text">${item.text}</div>
-        <div class="insight-meta"><i class="bi bi-cpu me-1"></i>${item.meta}</div>
-      </div>
-    </div>
-  `).join('');
+  const allRanges = pests.map(p => stats[p].range);
+  document.getElementById('envPestCount').textContent = pests.length;
+  document.getElementById('envActiveRange').textContent = `±${(allRanges.reduce((a,b)=>a+b,0)/allRanges.length).toFixed(1)}${cfg.unit}`;
+  document.getElementById('envWideRange').textContent = pests[allRanges.indexOf(Math.max(...allRanges))] || '—';
+  document.getElementById('envNarrowRange').textContent = pests[allRanges.indexOf(Math.min(...allRanges))] || '—';
 }
 
-// ─── SELECT2 & INTERACTION INIT ───────────────────────────────
+function renderPrevalence() {
+  const d = filteredData, ctx = document.getElementById('chartPrevalence');
+  if (!ctx) return;
+  const allSurveys = new Set(d.map(r => `${r.date}|${r.state}`)); const N = allSurveys.size;
+  if (!N) { if (prevChart) { prevChart.destroy(); prevChart = null; } document.getElementById('totalSurveysEl').textContent = '0 bancian'; document.getElementById('shannonValEl').textContent = '—'; document.getElementById('shannonInterpEl').textContent = '—'; return; }
+
+  const pestSurveys = {}; d.forEach(r => { if (!pestSurveys[r.pest]) pestSurveys[r.pest] = new Set(); pestSurveys[r.pest].add(`${r.date}|${r.state}`); });
+  const sorted = Object.entries(pestSurveys).map(([pest, set]) => ({ pest, count: set.size, pct: (set.size / N * 100) })).sort((a, b) => b.pct - a.pct).slice(0, 10);
+
+  const shannon = calcShannon(d);
+  if (shannon) {
+    const Hnorm = shannon.Hmax > 0 ? (shannon.H / shannon.Hmax).toFixed(2) : 0;
+    const interpEl = document.getElementById('shannonInterpEl');
+    document.getElementById('shannonValEl').textContent = shannon.H.toFixed(3);
+    interpEl.textContent = `${Hnorm >= 0.75 ? 'Tinggi' : Hnorm >= 0.4 ? 'Sederhana' : 'Rendah'} (J'=${Hnorm})`;
+    interpEl.style.cssText = `${Hnorm >= 0.75 ? 'background:rgba(46,160,67,0.2);color:var(--clr-accent2)' : Hnorm >= 0.4 ? 'background:rgba(210,153,34,0.2);color:var(--clr-amber)' : 'background:rgba(248,81,73,0.2);color:var(--clr-red)'};padding:2px 8px;border-radius:50px;font-size:10px;font-weight:600;`;
+  }
+  document.getElementById('totalSurveysEl').textContent = `N = ${N} unit bancian`;
+
+  if (prevChart) prevChart.destroy();
+  prevChart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: sorted.map(r => r.pest), datasets: [{ label: 'Kadar Prevalens (%)', data: sorted.map(r => r.pct.toFixed(1)), backgroundColor: sorted.map((_, i) => PALETTE_PEST[i % PALETTE_PEST.length] + 'bb'), borderColor: sorted.map((_, i) => PALETTE_PEST[i % PALETTE_PEST.length]), borderWidth: 1, borderRadius: 4 }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor:'#1c2330', borderColor:'#2a3444', borderWidth:1, callbacks: { title: items => items[0]?.label || '', label: item => [` Prevalens: ${parseFloat(item.raw).toFixed(1)}%`, ` Dijumpai dalam ${sorted[item.dataIndex].count} / ${N} bancian`] } } }, scales: { x: { min: 0, max: 100, title:{ display:true, text:'Prevalens (%)', color:'#6e7681', font:{size:11} }, ticks:{ color:'#6e7681', font:{size:11,family:'DM Mono'}, callback: v => v+'%' }, grid: { color:'rgba(42,52,68,0.4)' } }, y: { ticks: { color: '#8b949e', font:{size:10,family:'DM Sans'}, callback: v => v.length > 16 ? v.slice(0,14)+'…' : v }, grid: { display: false } } } }
+  });
+}
+
+function renderIntensityDist() {
+  const d = filteredData, ctx = document.getElementById('chartIntensity');
+  if (!ctx) return; const RINGAN_MAX = 2, TERUK_MIN = 5;
+  const gStats = calcStats(d.map(r => r.area));
+  if (gStats) {
+    document.getElementById('intMedianEl').textContent = gStats.median.toFixed(2) + ' Ha';
+    document.getElementById('intIQREl').textContent = gStats.iqr.toFixed(2) + ' Ha';
+    document.getElementById('intTerukPctEl').textContent = (d.filter(r=>r.area > TERUK_MIN).length / d.length * 100).toFixed(1) + '%';
+  }
+  const pestGroups = {};
+  d.forEach(r => {
+    if (!pestGroups[r.pest]) pestGroups[r.pest] = { ringan:0, sederhana:0, teruk:0, total:0 };
+    pestGroups[r.pest].total++;
+    if (r.area < RINGAN_MAX) pestGroups[r.pest].ringan++; else if (r.area <= TERUK_MIN) pestGroups[r.pest].sederhana++; else pestGroups[r.pest].teruk++;
+  });
+  const pests = Object.entries(pestGroups).sort((a, b) => b[1].total - a[1].total).slice(0, 8).map(e => e[0]);
+  if (!pests.length) { if (intensityChart) { intensityChart.destroy(); intensityChart = null; } return; }
+
+  const toPct = (band) => pests.map(p => (pestGroups[p][band] / pestGroups[p].total * 100).toFixed(1));
+  if (intensityChart) intensityChart.destroy();
+  intensityChart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: pests, datasets: [{ label: `Ringan (<${RINGAN_MAX} Ha)`, data: toPct('ringan'), backgroundColor: 'rgba(46,160,67,0.72)', borderColor: 'rgba(46,160,67,0.9)', borderWidth: 0, borderRadius: { topLeft:0, topRight:0, bottomLeft:4, bottomRight:4 } }, { label: `Sederhana (${RINGAN_MAX}–${TERUK_MIN} Ha)`, data: toPct('sederhana'), backgroundColor: 'rgba(210,153,34,0.72)', borderColor: 'rgba(210,153,34,0.9)', borderWidth: 0, borderRadius: 0 }, { label: `Teruk (>${TERUK_MIN} Ha)`, data: toPct('teruk'), backgroundColor: 'rgba(248,81,73,0.72)', borderColor: 'rgba(248,81,73,0.9)', borderWidth: 0, borderRadius: { topLeft:4, topRight:4, bottomLeft:0, bottomRight:0 } }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color:'#8b949e', font:{size:11,family:'DM Sans'} } }, tooltip: { backgroundColor:'#1c2330', borderColor:'#2a3444', borderWidth:1, callbacks: { title: items => items[0]?.label || '', label: item => { const g = pestGroups[pests[item.dataIndex]], n = item.datasetIndex === 0 ? g.ringan : item.datasetIndex===1 ? g.sederhana : g.teruk; return ` ${item.dataset.label}: ${item.raw}% (${n} rekod)`; } } } }, scales: { x: { stacked: true, min: 0, max: 100, title:{ display:true, text:'% Rekod Bancian', color:'#6e7681' }, ticks:{ color:'#6e7681', callback: v => v+'%' }, grid: { color:'rgba(42,52,68,0.4)' } }, y: { stacked: true, ticks: { color:'#8b949e', font:{size:10}, callback: v => v.length > 16 ? v.slice(0,14)+'…' : v }, grid: { display: false } } } }
+  });
+}
+
+function renderVulnerabilityMatrix() {
+  const d = filteredData, container = document.getElementById('matrixContainer');
+  if (!container) return;
+  if (!d.length) { container.innerHTML = `<div class="no-data-msg"><i class="bi bi-table"></i><br>Tiada data</div>`; return; }
+
+  const cropArea = {}, pestArea = {};
+  d.forEach(r => { cropArea[r.crop] = (cropArea[r.crop] || 0) + r.area; pestArea[r.pest] = (pestArea[r.pest] || 0) + r.area; });
+  const topCrops = Object.entries(cropArea).sort((a,b)=>b[1]-a[1]).slice(0,8).map(e=>e[0]);
+  const topPests = Object.entries(pestArea).sort((a,b)=>b[1]-a[1]).slice(0,8).map(e=>e[0]);
+
+  const matrix = {};
+  topCrops.forEach(c => { matrix[c] = {}; topPests.forEach(p => { matrix[c][p] = { sum:0, count:0 }; }); });
+  d.forEach(r => { if (matrix[r.crop] && matrix[r.crop][r.pest] !== undefined) { matrix[r.crop][r.pest].sum += r.area; matrix[r.crop][r.pest].count += 1; } });
+
+  let maxVal = 0;
+  topCrops.forEach(c => topPests.forEach(p => { const cell = matrix[c][p]; if (cell.count > 0) maxVal = Math.max(maxVal, cell.sum / cell.count); }));
+
+  let html = `<div class="matrix-scroll"><table class="matrix-table"><thead><tr><th class="matrix-corner">Tanaman ↓ &nbsp;/&nbsp; Perosak →</th>`;
+  topPests.forEach(p => { html += `<th class="matrix-pest-header" title="${p}">${p.length > 14 ? p.slice(0,12)+'…' : p}</th>`; });
+  html += `</tr></thead><tbody>`;
+
+  topCrops.forEach(c => {
+    html += `<tr><td class="matrix-crop-label">${c}<div style="font-size:9px;color:var(--clr-text-dim);margin-top:1px;">${topPests.reduce((s,p)=>s+matrix[c][p].sum, 0).toFixed(1)} Ha total</div></td>`;
+    topPests.forEach(p => {
+      const cell = matrix[c][p];
+      if (cell.count === 0) { html += `<td class="matrix-cell empty">—</td>`; } else {
+        const avg = cell.sum / cell.count;
+        html += `<td class="matrix-cell" style="background:${getHeatColor(avg, maxVal)};" title="${c} × ${p}&#10;Purata: ${avg.toFixed(2)} Ha&#10;n = ${cell.count} bancian"><div class="cell-val">${avg.toFixed(1)}</div><div class="cell-count">n=${cell.count}</div></td>`;
+      }
+    });
+    html += `</tr>`;
+  });
+  html += `</tbody></table></div><div class="matrix-legend mt-3"><span style="color:var(--clr-text-dim);font-size:11px;">Nilai = Purata Ha/bancian | n = bil bancian</span> <span class="legend-chip" style="background:rgba(56,139,253,0.25);">Rendah</span> <span style="color:var(--clr-text-dim);font-size:11px;">→</span> <span class="legend-chip" style="background:rgba(210,153,34,0.35);">Sederhana</span> <span style="color:var(--clr-text-dim);font-size:11px;">→</span> <span class="legend-chip" style="background:rgba(248,81,73,0.5);">Tinggi</span></div>`;
+  container.innerHTML = html;
+}
+
+// ─── INITIALIZATION ───────────────────────────────────────────
 function initSelect2() {
-  const config = (placeholder) => ({
-    theme: 'bootstrap-5',
-    placeholder,
-    allowClear: true,
-    width: '100%',
-    closeOnSelect: false
-  });
-
-  $('#filterNegeri').select2(config('Semua Negeri'));
-  $('#filterTanaman').select2(config('Semua Tanaman'));
-  $('#filterPerosak').select2(config('Semua Perosak'));
-  $('#filterBulan').select2(config('Semua Bulan'));
-
-  ['#filterNegeri','#filterTanaman','#filterPerosak','#filterBulan'].forEach(sel => {
-    $(sel).on('change', debounce(() => { applyFilters(); }, 150));
-  });
-
-  document.getElementById('resetFilters').addEventListener('click', () => {
-    ['#filterNegeri','#filterTanaman','#filterPerosak','#filterBulan'].forEach(sel => {
-      $(sel).val(null).trigger('change');
-    });
-  });
+  const config = (placeholder) => ({ theme: 'bootstrap-5', placeholder, allowClear: true, width: '100%', closeOnSelect: false });
+  $('#filterNegeri').select2(config('Semua Negeri')); $('#filterTanaman').select2(config('Semua Tanaman')); $('#filterPerosak').select2(config('Semua Perosak')); $('#filterBulan').select2(config('Semua Bulan'));
+  ['#filterNegeri','#filterTanaman','#filterPerosak','#filterBulan'].forEach(sel => { $(sel).on('change', debounce(() => { applyFilters(); }, 150)); });
+  document.getElementById('resetFilters').addEventListener('click', () => { ['#filterNegeri','#filterTanaman','#filterPerosak','#filterBulan'].forEach(sel => { $(sel).val(null).trigger('change'); }); });
 }
+function debounce(fn, ms) { let t; return (...args) => { clearTimeout(t); t = setTimeout(()=>fn(...args), ms); }; }
+function showLoading(state) { document.getElementById('loadingOverlay').classList[state ? 'remove' : 'add']('hidden'); }
+function showError(msg) { const toast = document.getElementById('errorToast'); document.getElementById('errorMsg').textContent = msg; toast.style.display = 'block'; setTimeout(()=>{ toast.style.display='none'; }, 5500); }
+function updateLastUpdated() { const now = new Date(); document.getElementById('lastUpdatedEl').textContent = 'Kemaskini: ' + now.toLocaleDateString('ms-MY') + ' ' + now.toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'}); }
+function getMockPestData() { /* Demo Fallback */ return { records: [] }; }
+function getMockWeatherData() { return { data: [] }; }
 
-// ─── UTILITIES ────────────────────────────────────────────────
-function debounce(fn, ms) {
-  let t;
-  return (...args) => { clearTimeout(t); t = setTimeout(()=>fn(...args), ms); };
-}
-function showLoading(state) {
-  const el = document.getElementById('loadingOverlay');
-  if (state) el.classList.remove('hidden');
-  else el.classList.add('hidden');
-}
-function showError(msg) {
-  const toast = document.getElementById('errorToast');
-  document.getElementById('errorMsg').textContent = msg;
-  toast.style.display = 'block';
-  setTimeout(()=>{ toast.style.display='none'; }, 5500);
-}
-function updateLastUpdated() {
-  const now = new Date();
-  document.getElementById('lastUpdatedEl').textContent = 'Kemaskini: ' +
-    now.toLocaleDateString('ms-MY') + ' ' + now.toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'});
-}
-
-// ─── MOCK DATA GENERATORS (DEMO MODE FALLBACK) ───────────────
-function getMockPestData() {
-  const states = ['JOHOR','KEDAH','KELANTAN','PAHANG','PERAK','SELANGOR','MELAKA','SABAH','SARAWAK'];
-  const crops  = ['PADI','KELAPA SAWIT','JAGUNG','SAYURAN'];
-  const pests  = ['FALL ARMYWORM','BENA PERANG','ULAT GULUNG DAUN','MOISTURE ROT'];
-  const records = [];
-  for (let m = 3; m >= 0; m--) {
-    states.forEach(state => {
-      const num = 2 + Math.floor(Math.random()*3);
-      for (let i = 0; i < num; i++) {
-        const ls = parseFloat((5 + Math.random()*15).toFixed(2));
-        const pName = pests[Math.floor(Math.random()*pests.length)];
-        records.push({
-          t: new Date(2026, 4 - m, 1 + Math.floor(Math.random()*25)).toISOString(),
-          n: state, d: 'DAERAH ' + state + ' ' + (i+1),
-          tn: crops[Math.floor(Math.random()*crops.length)],
-          ls: ls, p: { [pName]: ls }
-        });
-      }
-    });
-  }
-  return { records };
-}
-
-function getMockWeatherData() {
-  const states = ['JOHOR','KEDAH','KELANTAN','PAHANG','PERAK','SELANGOR','MELAKA','SABAH','SARAWAK'];
-  const data = [];
-  for (let m = 3; m >= 0; m--) {
-    states.forEach(state => {
-      for (let d = 1; d <= 28; d += 4) {
-        data.push({
-          timestamp: `2026-0${5-m}-${d < 10 ? '0' + d : d}`,
-          state: state, district: 'DAERAH UTAMA',
-          temp_c: 27 + Math.random()*5,
-          humidity: 70 + Math.random()*20,
-          precip_mm: Math.random()*25
-        });
-      }
-    });
-  }
-  return { data };
-}
-
-// ─── ENTRY POINT ──────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  loadSession();
-  initSelect2();
-  fetchAll();
-});
+document.addEventListener('DOMContentLoaded', () => { loadSession(); initSelect2(); fetchAll(); });
 </script>
 </body>
 </html>
