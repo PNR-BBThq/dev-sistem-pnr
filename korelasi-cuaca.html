@@ -42,15 +42,20 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: var(--font-main); background: var(--clr-bg); color: var(--clr-text);
-      min-height: 100vh; font-size: 14px; line-height: 1.6;
+      font-family: var(--font-main);
+      background: var(--clr-bg);
+      color: var(--clr-text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.6;
     }
 
     /* ── TOPBAR ───────────────────────────────────────────── */
     .topbar {
-      position: sticky; top: 0; z-index: 1030; background: var(--clr-surface);
-      border-bottom: 1px solid var(--clr-border); padding: 0 1.5rem; height: 58px;
-      display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 1030;
+      background: var(--clr-surface); border-bottom: 1px solid var(--clr-border);
+      padding: 0 1.5rem; height: 58px; display: flex; align-items: center;
+      justify-content: space-between; backdrop-filter: blur(12px);
     }
     .topbar-brand { display: flex; align-items: center; gap: 10px; }
     .brand-icon {
@@ -93,7 +98,7 @@
     .card-header-title .dot { width: 8px; height: 8px; border-radius: 50%; }
     .card-body-dark { padding: 16px; }
 
-    /* ── INFO BTN & POPUP ─────────────────────────────────── */
+    /* IKON INFO INTERAKTIF */
     .info-btn {
       cursor: pointer; color: var(--clr-text-dim); transition: color var(--transition), transform var(--transition);
       font-size: 14px; display: inline-flex; align-items: center; margin-left: 4px;
@@ -367,7 +372,7 @@
           </div>
           <div class="d-flex align-items-center gap-2">
             <span id="drillLabel">⬛ <span id="drillStateName"></span></span>
-            <button id="backBtn" onclick="resetDrillDown()"><i class="bi bi-arrow-left me-1"></i>Balik Paparan Makro</button>
+            <button id="backBtn" onclick="resetDrillDown()"><i class="bi bi-arrow-left me-1"></i>Balik Makro</button>
           </div>
         </div>
         <div class="card-body-dark">
@@ -384,7 +389,7 @@
         <div class="card-header-dark">
           <div class="card-header-title">
             <div class="dot" style="background:var(--clr-blue);"></div>
-            Profil Mikroiklim — Suhu vs Kelembapan
+            Profil Mikroklimat
             <i class="bi bi-info-circle info-btn" onclick="showHelp('chart2')" title="Klik untuk maklumat lanjut"></i>
           </div>
         </div>
@@ -403,7 +408,7 @@
     </div>
     <div id="insightsList">
       <div id="insightsPlaceholder">
-        <i class="bi bi-cpu" style="font-size:28px;display:block;margin-bottom:8px;opacity:0.3;"></i> Memuatkan analisis korelasi...
+        <i class="bi bi-cpu" style="font-size:28px;display:block;margin-bottom:8px;opacity:0.3;"></i> Memuatkan analisis...
       </div>
     </div>
   </div>
@@ -423,7 +428,7 @@
         <div class="card-header-dark">
           <div class="card-header-title">
             <div class="dot" style="background:var(--clr-blue);"></div>
-            Climate Envelope Perosak — Julat Cuaca Semasa Perosak Aktif
+            Climate Envelope Perosak — Julat Cuaca
             <i class="bi bi-info-circle info-btn" onclick="showHelp('envelope')" title="Klik untuk maklumat lanjut"></i>
           </div>
           <div class="env-tab-group">
@@ -475,7 +480,7 @@
       <div class="card-dark h-100">
         <div class="card-header-dark">
           <div class="card-header-title">
-            <div class="dot" style="background:var(--clr-amber);"></div> Taburan Intensiti Serangan (% Rekod)
+            <div class="dot" style="background:var(--clr-amber);"></div> Taburan Intensiti Serangan
             <i class="bi bi-info-circle info-btn" onclick="showHelp('intensity')" title="Klik untuk maklumat lanjut"></i>
           </div>
           <div style="display:flex;gap:6px;align-items:center;">
@@ -521,10 +526,9 @@
 <script>
 /* ============================================================
    PNR DIGITAL — KORELASI CUACA & PEROSAK
-   Version 3.2 | Info Popup & Bug Fixes Edition
+   Version 3.3 | Stable Final Edition (Bug Fixes)
 ============================================================ */
 
-// 🟢 TING TING! URL WEB APP TUAN TELAH DIMASUKKAN SIAP-SIAP
 const API_URL = 'https://script.google.com/macros/s/AKfycbx1hlsIWN5MCo7ab_ytT_d_oFqVjy1XMJwM39oBC8yPp9OLukRSbk47Ufate26quu4k/exec'; 
 
 const MONTHS_MS = ['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogs','Sep','Okt','Nov','Dis'];
@@ -552,12 +556,16 @@ function getMonthKey(dateStr) {
 function getMonthLabel(mk) { const [y, m] = mk.split('-'); return `${MONTHS_MS[parseInt(m)-1]} ${y}`; }
 function getDateKey(dateStr) { return new Date(dateStr).toISOString().slice(0,10); }
 
-// ─── SESSION & GLOBAL DATA ───────────────────────────────────
+// ─── SESSION & GLOBAL DATA (FIXED: isFiltering DECLARED) ─────
 let SESSION = {};
 let userToken = '', currentUser = '', userState = 'ALL';
 let rawPest = [], rawWeather = [], blended = [], filteredData = [];
 let chart1Instance = null, chart2Instance = null, drillState = null;
 let activeEnvVar = 'temp', ceChart = null, prevChart = null, intensityChart = null;
+
+// 🟢 TING TING! INILAH PUNCA MASALAH TADI - VARIABEL INI TELAH DIISYTIHARKAN KEMBALI
+let isFiltering = false; 
+let filterOptions = { negeri:[], tanaman:[], perosak:[], bulan:[] };
 
 const ENV_CONFIG = {
   temp:     { label:'Suhu (°C)',       key:'temps',      color:'#388bfd', unit:'°C',  icon:'🌡️' },
@@ -681,7 +689,10 @@ function blendData() {
     if (w.temp !== null) wMap[key].temp.push(w.temp); if (w.humidity !== null) wMap[key].humidity.push(w.humidity); if (w.precip !== null) wMap[key].precip.push(w.precip);
   }
   const avg = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null;
-  blended = rawPest.map(p => { const w = wMap[`${p.date}|${p.state}`] || {}; return { ...p, temp: avg(w.temp||[]), humidity: avg(w.humidity||[]), precip: avg(w.precip||[]) }; });
+  blended = rawPest.map(p => {
+    const w = wMap[`${p.date}|${p.state}`] || {};
+    return { ...p, temp: avg(w.temp||[]), humidity: avg(w.humidity||[]), precip: avg(w.precip||[]) };
+  });
 }
 
 // ─── FILTER LOGIC ─────────────────────────────────────────────
@@ -695,7 +706,9 @@ function populateSelect(sel, values, labelFn) { const $el = $(sel); $el.empty();
 function getActiveFilters() { return { negeri: $('#filterNegeri').val() || [], tanaman: $('#filterTanaman').val() || [], perosak: $('#filterPerosak').val() || [], bulan: $('#filterBulan').val() || [] }; }
 
 function applyFilters() {
-  if(isFiltering) return; isFiltering = true; const f = getActiveFilters();
+  if(isFiltering) return; 
+  isFiltering = true; 
+  const f = getActiveFilters();
   filteredData = blended.filter(r => {
     if (f.negeri.length && !f.negeri.includes(r.state)) return false; if (f.tanaman.length && !f.tanaman.includes(r.crop)) return false;
     if (f.perosak.length && !f.perosak.includes(r.pest)) return false; if (f.bulan.length && !f.bulan.includes(r.monthKey)) return false; return true;
@@ -854,7 +867,10 @@ function renderIntensityDist() {
   const gStats = calcStats(d.map(r => r.area));
   if (gStats) { document.getElementById('intMedianEl').textContent = gStats.median.toFixed(2) + ' Ha'; document.getElementById('intIQREl').textContent = gStats.iqr.toFixed(2) + ' Ha'; document.getElementById('intTerukPctEl').textContent = (d.filter(r=>r.area > TERUK_MIN).length / d.length * 100).toFixed(1) + '%'; }
   const pestGroups = {};
-  d.forEach(r => { if (!pestGroups[r.pest]) pestGroups[r.pest] = { ringan:0, sederhana:0, teruk:0, total:0 }; pestGroups[r.pest].total++; if (r.area < RINGAN_MAX) pestGroups[r.pest].ringan++; else if (r.area <= TERUK_MIN) pestGroups[r.pest].sederhana++; else pestGroups[r.pest].teruk++; });
+  d.forEach(r => {
+    if (!pestGroups[r.pest]) pestGroups[r.pest] = { ringan:0, sederhana:0, teruk:0, total:0 };
+    pestGroups[r.pest].total++; if (r.area < RINGAN_MAX) pestGroups[r.pest].ringan++; else if (r.area <= TERUK_MIN) pestGroups[r.pest].sederhana++; else pestGroups[r.pest].teruk++;
+  });
   const pests = Object.entries(pestGroups).sort((a, b) => b[1].total - a[1].total).slice(0, 8).map(e => e[0]);
   if (!pests.length) { if (intensityChart) { intensityChart.destroy(); intensityChart = null; } return; }
   const toPct = (band) => pests.map(p => (pestGroups[p][band] / pestGroups[p].total * 100).toFixed(1));
