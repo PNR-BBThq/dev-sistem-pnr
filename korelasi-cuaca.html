@@ -42,20 +42,15 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: var(--font-main);
-      background: var(--clr-bg);
-      color: var(--clr-text);
-      min-height: 100vh;
-      font-size: 14px;
-      line-height: 1.6;
+      font-family: var(--font-main); background: var(--clr-bg); color: var(--clr-text);
+      min-height: 100vh; font-size: 14px; line-height: 1.6;
     }
 
     /* ── TOPBAR ───────────────────────────────────────────── */
     .topbar {
-      position: sticky; top: 0; z-index: 1030;
-      background: var(--clr-surface); border-bottom: 1px solid var(--clr-border);
-      padding: 0 1.5rem; height: 58px; display: flex; align-items: center;
-      justify-content: space-between; backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 1030; background: var(--clr-surface);
+      border-bottom: 1px solid var(--clr-border); padding: 0 1.5rem; height: 58px;
+      display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(12px);
     }
     .topbar-brand { display: flex; align-items: center; gap: 10px; }
     .brand-icon {
@@ -74,7 +69,7 @@
       display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff;
     }
     .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--clr-accent2); box-shadow: 0 0 6px var(--clr-accent2); }
-    
+
     /* ── PAGE TITLE BAR ───────────────────────────────────── */
     .page-title-bar {
       background: var(--clr-surface); border-bottom: 1px solid var(--clr-border);
@@ -98,14 +93,12 @@
     .card-header-title .dot { width: 8px; height: 8px; border-radius: 50%; }
     .card-body-dark { padding: 16px; }
 
-    /* IKON INFO INTERAKTIF (NEW UX ELEMENT) */
+    /* ── INFO BTN & POPUP ─────────────────────────────────── */
     .info-btn {
       cursor: pointer; color: var(--clr-text-dim); transition: color var(--transition), transform var(--transition);
-      font-size: 13px; display: inline-flex; align-items: center;
+      font-size: 14px; display: inline-flex; align-items: center; margin-left: 4px;
     }
     .info-btn:hover { color: var(--clr-accent3); transform: scale(1.15); }
-
-    /* Teks dalam popup SweetAlert agar serasi dengan sistem Dark Mode */
     .swal2-dark-popup { background: #161b22 !important; color: #e6edf3 !important; border: 1px solid #2a3444 !important; font-family: 'DM Sans', sans-serif; text-align: left !important; }
     .swal2-dark-popup .section-title { font-size: 13px; font-weight: 700; color: #56d364; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
 
@@ -121,10 +114,7 @@
     .metric-card.mc-amber::before  { background: var(--clr-amber); }
     .metric-card.mc-red::before    { background: var(--clr-red); }
     .metric-card:hover { border-color: var(--clr-border2); transform: translateY(-1px); }
-    .metric-icon {
-      width: 40px; height: 40px; border-radius: var(--radius-sm); display: flex; align-items: center;
-      justify-content: center; font-size: 18px; flex-shrink: 0;
-    }
+    .metric-icon { width: 40px; height: 40px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
     .mc-green .metric-icon  { background: rgba(46,160,67,0.12); color: var(--clr-accent2); }
     .mc-blue .metric-icon   { background: rgba(56,139,253,0.12); color: var(--clr-blue); }
     .mc-amber .metric-icon  { background: rgba(210,153,34,0.12); color: var(--clr-amber); }
@@ -138,58 +128,70 @@
       background: var(--clr-surface); border: 1px solid var(--clr-border);
       border-radius: var(--radius-lg); padding: 14px 16px;
     }
-    .filter-label {
-      font-size: 11px; font-weight: 600; color: var(--clr-text-muted);
-      text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px;
-    }
-    .select2-container--bootstrap-5 .select2-selection {
-      background: var(--clr-surface2) !important; border-color: var(--clr-border) !important;
-      color: var(--clr-text) !important; border-radius: var(--radius-sm) !important;
-      font-size: 13px !important; min-height: 36px !important;
-    }
-    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
-      background: rgba(46,160,67,0.15) !important; border-color: rgba(46,160,67,0.4) !important;
-      color: var(--clr-accent3) !important; border-radius: 4px !important; font-size: 12px !important;
-    }
+    .filter-label { font-size: 11px; font-weight: 600; color: var(--clr-text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+    .select2-container--bootstrap-5 .select2-selection { background: var(--clr-surface2) !important; border-color: var(--clr-border) !important; color: var(--clr-text) !important; border-radius: var(--radius-sm) !important; font-size: 13px !important; min-height: 36px !important; }
+    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice { background: rgba(46,160,67,0.15) !important; border-color: rgba(46,160,67,0.4) !important; color: var(--clr-accent3) !important; border-radius: 4px !important; font-size: 12px !important; }
     .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove { color: var(--clr-accent2) !important; }
-    .select2-dropdown {
-      background: var(--clr-surface2) !important; border-color: var(--clr-border2) !important; border-radius: var(--radius-md) !important;
-    }
+    .select2-dropdown { background: var(--clr-surface2) !important; border-color: var(--clr-border2) !important; border-radius: var(--radius-md) !important; }
     .select2-results__option { color: var(--clr-text) !important; font-size: 13px !important; }
     .select2-results__option--highlighted { background: rgba(46,160,67,0.2) !important; }
-    .select2-search__field {
-      background: var(--clr-surface) !important; border-color: var(--clr-border2) !important;
-      color: var(--clr-text) !important; border-radius: var(--radius-sm) !important;
-    }
-    .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered { padding: 2px 8px !important; }
+    .select2-search__field { background: var(--clr-surface) !important; border-color: var(--clr-border2) !important; color: var(--clr-text) !important; border-radius: var(--radius-sm) !important; }
 
     /* ── CHARTS & DRILL-DOWN ─────────────────────────────── */
     .chart-wrap { position: relative; width: 100%; }
     canvas { border-radius: var(--radius-sm); }
-    #backBtn {
-      display: none; font-size: 12px; padding: 5px 12px; border-radius: 50px; border: 1px solid var(--clr-border2);
-      background: transparent; color: var(--clr-text-muted); cursor: pointer; transition: all var(--transition);
-    }
+    #backBtn { display: none; font-size: 12px; padding: 5px 12px; border-radius: 50px; border: 1px solid var(--clr-border2); background: transparent; color: var(--clr-text-muted); cursor: pointer; transition: all var(--transition); }
     #backBtn:hover { border-color: var(--clr-accent); color: var(--clr-accent2); }
     #drillLabel { font-size: 11px; color: var(--clr-accent2); font-family: var(--font-mono); display: none; }
 
-    /* ── BANCIAN SECTION (BLOCK 1) ─────────────────────── */
+    /* ── AI INSIGHTS ─────────────────────────────────────── */
+    .insights-panel {
+      background: linear-gradient(135deg, rgba(46,160,67,0.04) 0%, rgba(56,139,253,0.04) 100%);
+      border: 1px solid rgba(46,160,67,0.2); border-radius: var(--radius-lg); padding: 20px; position: relative; overflow: hidden;
+    }
+    .insights-panel::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--clr-accent), var(--clr-blue), var(--clr-accent)); background-size: 200% 100%; animation: shimmer 3s infinite linear;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .insights-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .ai-badge { font-size: 10px; font-weight: 700; background: linear-gradient(135deg, var(--clr-accent), var(--clr-blue)); color: #fff; padding: 3px 9px; border-radius: 50px; font-family: var(--font-mono); letter-spacing: 0.5px; }
+    .insights-title { font-size: 14px; font-weight: 700; }
+    .insight-item { display: flex; gap: 12px; padding: 10px 14px; background: rgba(22,27,34,0.7); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); margin-bottom: 8px; animation: fadeSlide 0.4s ease both; }
+    @keyframes fadeSlide { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+    .insight-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .insight-text { font-size: 13px; line-height: 1.5; color: var(--clr-text); }
+    .insight-text strong { color: var(--clr-accent3); font-weight: 600; }
+    .insight-text .val { font-family: var(--font-mono); color: var(--clr-blue); }
+    .insight-meta { font-size: 11px; color: var(--clr-text-dim); margin-top: 2px; }
+    #insightsPlaceholder { color: var(--clr-text-muted); font-size: 13px; text-align: center; padding: 20px; }
+
+    /* ── LOADING OVERLAY & ALERTS ────────────────────────── */
+    #loadingOverlay {
+      position: fixed; inset: 0; z-index: 9999; background: var(--clr-bg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; transition: opacity 0.4s ease;
+    }
+    #loadingOverlay.hidden { opacity: 0; pointer-events: none; }
+    .spinner-ring {
+      width: 48px; height: 48px; border: 3px solid var(--clr-border2); border-top-color: var(--clr-accent); border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .loading-text { font-size: 13px; color: var(--clr-text-muted); font-family: var(--font-mono); }
+    
+    #errorToast {
+      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9990; background: rgba(248,81,73,0.12);
+      border: 1px solid rgba(248,81,73,0.4); border-radius: var(--radius-md); padding: 12px 16px;
+      color: var(--clr-red); font-size: 13px; display: none; max-width: 340px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    /* ── BANCIAN SECTION ─────────────────────── */
     .bancian-divider { display: flex; align-items: center; gap: 14px; margin: 1.5rem 0 1rem; }
     .bancian-divider-line { flex: 1; height: 1px; background: var(--clr-border); }
-    .bancian-divider-label {
-      display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700;
-      color: var(--clr-text-dim); text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
-    }
-    .bancian-divider-badge {
-      font-size: 10px; padding: 2px 8px; background: rgba(56,139,253,0.12);
-      border: 1px solid rgba(56,139,253,0.3); color: var(--clr-blue); border-radius: 50px; font-family: var(--font-mono);
-    }
+    .bancian-divider-label { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; color: var(--clr-text-dim); text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+    .bancian-divider-badge { font-size: 10px; padding: 2px 8px; background: rgba(56,139,253,0.12); border: 1px solid rgba(56,139,253,0.3); color: var(--clr-blue); border-radius: 50px; font-family: var(--font-mono); }
     .env-tab-group { display: flex; gap: 4px; }
-    .env-tab-btn {
-      font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 50px;
-      border: 1px solid var(--clr-border2); background: transparent; color: var(--clr-text-muted);
-      cursor: pointer; transition: all var(--transition); font-family: var(--font-main);
-    }
+    .env-tab-btn { font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 50px; border: 1px solid var(--clr-border2); background: transparent; color: var(--clr-text-muted); cursor: pointer; transition: all var(--transition); font-family: var(--font-main); }
     .env-tab-btn:hover { border-color: var(--clr-blue); color: var(--clr-blue); }
     .env-tab-btn.active-temp     { background: rgba(56,139,253,0.15); border-color: rgba(56,139,253,0.5); color: var(--clr-blue); }
     .env-tab-btn.active-humidity { background: rgba(210,153,34,0.15); border-color: rgba(210,153,34,0.5); color: var(--clr-amber); }
@@ -197,45 +199,25 @@
 
     .stats-scroll { overflow-x: auto; margin-top: 14px; }
     .stats-table { width: 100%; border-collapse: collapse; font-size: 11.5px; font-family: var(--font-mono); }
-    .stats-table th {
-      padding: 6px 10px; text-align: center; background: var(--clr-surface2); color: var(--clr-text-dim);
-      font-weight: 600; border-bottom: 1px solid var(--clr-border); white-space: nowrap; font-size: 10px;
-      text-transform: uppercase; letter-spacing: 0.5px;
-    }
+    .stats-table th { padding: 6px 10px; text-align: center; background: var(--clr-surface2); color: var(--clr-text-dim); font-weight: 600; border-bottom: 1px solid var(--clr-border); white-space: nowrap; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
     .stats-table th:first-child { text-align: left; }
-    .stats-table td {
-      padding: 6px 10px; text-align: center; border-bottom: 1px solid rgba(42,52,68,0.5);
-      color: var(--clr-text-muted); white-space: nowrap;
-    }
+    .stats-table td { padding: 6px 10px; text-align: center; border-bottom: 1px solid rgba(42,52,68,0.5); color: var(--clr-text-muted); white-space: nowrap; }
     .stats-table td:first-child { text-align: left; color: var(--clr-text); font-family: var(--font-main); font-size: 11px; }
     .stats-table tr:hover td { background: rgba(255,255,255,0.02); }
     .stats-table .td-mean  { color: var(--clr-blue) !important; font-weight: 600; }
     .stats-table .td-sd    { color: var(--clr-text-dim); }
     .stats-table .td-n     { color: var(--clr-accent2); font-weight: 600; }
 
-    .shannon-badge {
-      display: inline-flex; align-items: center; gap: 6px; background: rgba(56,139,253,0.08);
-      border: 1px solid rgba(56,139,253,0.2); border-radius: var(--radius-sm); padding: 5px 12px; font-size: 12px;
-    }
+    .shannon-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(56,139,253,0.08); border: 1px solid rgba(56,139,253,0.2); border-radius: var(--radius-sm); padding: 5px 12px; font-size: 12px; }
     .shannon-badge .sh-val { font-family: var(--font-mono); font-weight: 700; color: var(--clr-blue); font-size: 15px; }
     .shannon-badge .sh-label { color: var(--clr-text-muted); }
     .shannon-interp { font-size: 11px; padding: 2px 8px; border-radius: 50px; }
 
     .matrix-scroll { overflow-x: auto; overflow-y: auto; max-height: 380px; }
     .matrix-table { border-collapse: collapse; width: 100%; font-size: 11.5px; }
-    .matrix-corner {
-      background: var(--clr-surface2); color: var(--clr-text-dim); font-size: 10px; font-weight: 600;
-      padding: 8px 12px; border: 1px solid var(--clr-border); white-space: nowrap; position: sticky; top: 0; left: 0; z-index: 3;
-    }
-    .matrix-pest-header {
-      background: var(--clr-surface2); color: var(--clr-text-muted); font-size: 10px; font-weight: 600;
-      padding: 8px 10px; text-align: center; border: 1px solid var(--clr-border); white-space: nowrap;
-      position: sticky; top: 0; z-index: 2; max-width: 110px; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.3px;
-    }
-    .matrix-crop-label {
-      background: var(--clr-surface2); color: var(--clr-text); font-size: 11px; font-weight: 600;
-      padding: 8px 12px; border: 1px solid var(--clr-border); white-space: nowrap; position: sticky; left: 0; z-index: 1;
-    }
+    .matrix-corner { background: var(--clr-surface2); color: var(--clr-text-dim); font-size: 10px; font-weight: 600; padding: 8px 12px; border: 1px solid var(--clr-border); white-space: nowrap; position: sticky; top: 0; left: 0; z-index: 3; }
+    .matrix-pest-header { background: var(--clr-surface2); color: var(--clr-text-muted); font-size: 10px; font-weight: 600; padding: 8px 10px; text-align: center; border: 1px solid var(--clr-border); white-space: nowrap; position: sticky; top: 0; z-index: 2; max-width: 110px; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.3px; }
+    .matrix-crop-label { background: var(--clr-surface2); color: var(--clr-text); font-size: 11px; font-weight: 600; padding: 8px 12px; border: 1px solid var(--clr-border); white-space: nowrap; position: sticky; left: 0; z-index: 1; }
     .matrix-cell { padding: 7px 10px; text-align: center; border: 1px solid rgba(42,52,68,0.4); transition: filter 0.15s ease; min-width: 70px; }
     .matrix-cell:hover { filter: brightness(1.3); cursor: default; }
     .matrix-cell.empty { color: var(--clr-text-dim); font-size: 12px; }
@@ -247,6 +229,12 @@
     .mini-metric { flex: 1; min-width: 120px; background: var(--clr-surface2); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); padding: 8px 12px; }
     .mini-metric-label { font-size: 10px; color: var(--clr-text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
     .mini-metric-value { font-size: 16px; font-weight: 700; font-family: var(--font-mono); margin-top: 2px; }
+    
+    @media (max-width: 768px) { .topbar { padding: 0 1rem; } .main-content { padding: 1rem; } }
+    .scatter-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--clr-text-muted); }
+    .scatter-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .no-data-msg { text-align: center; padding: 40px 20px; color: var(--clr-text-muted); font-size: 13px; }
+    .no-data-msg i { font-size: 32px; display: block; margin-bottom: 8px; opacity: 0.4; }
   </style>
 </head>
 <body>
@@ -375,19 +363,15 @@
           <div class="card-header-title">
             <div class="dot" style="background:var(--clr-accent2);"></div>
             <span id="chart1Title">Serangan vs Hujan — Makro (Negeri)</span>
-            <i class="bi bi-info-circle info-btn ms-1" onclick="showHelp('chart1')"></i>
+            <i class="bi bi-info-circle info-btn" onclick="showHelp('chart1')" title="Klik untuk maklumat lanjut"></i>
           </div>
           <div class="d-flex align-items-center gap-2">
             <span id="drillLabel">⬛ <span id="drillStateName"></span></span>
-            <button id="backBtn" onclick="resetDrillDown()">
-              <i class="bi bi-arrow-left me-1"></i>Balik Paparan Makro
-            </button>
+            <button id="backBtn" onclick="resetDrillDown()"><i class="bi bi-arrow-left me-1"></i>Balik Paparan Makro</button>
           </div>
         </div>
         <div class="card-body-dark">
-          <div class="chart-wrap" style="height:300px;">
-            <canvas id="chart1"></canvas>
-          </div>
+          <div class="chart-wrap" style="height:300px;"><canvas id="chart1"></canvas></div>
           <div style="font-size:11px;color:var(--clr-text-dim);margin-top:8px;">
             <i class="bi bi-hand-index-thumb me-1"></i>Klik pada bar negeri untuk melihat daerah
           </div>
@@ -400,14 +384,12 @@
         <div class="card-header-dark">
           <div class="card-header-title">
             <div class="dot" style="background:var(--clr-blue);"></div>
-            Profil Mikroklimat — Suhu vs Kelembapan
-            <i class="bi bi-info-circle info-btn ms-1" onclick="showHelp('chart2')"></i>
+            Profil Mikroiklim — Suhu vs Kelembapan
+            <i class="bi bi-info-circle info-btn" onclick="showHelp('chart2')" title="Klik untuk maklumat lanjut"></i>
           </div>
         </div>
         <div class="card-body-dark">
-          <div class="chart-wrap" style="height:260px;">
-            <canvas id="chart2"></canvas>
-          </div>
+          <div class="chart-wrap" style="height:260px;"><canvas id="chart2"></canvas></div>
           <div id="scatterLegend" class="d-flex flex-wrap gap-3 mt-3"></div>
         </div>
       </div>
@@ -442,7 +424,7 @@
           <div class="card-header-title">
             <div class="dot" style="background:var(--clr-blue);"></div>
             Climate Envelope Perosak — Julat Cuaca Semasa Perosak Aktif
-            <i class="bi bi-info-circle info-btn ms-1" onclick="showHelp('envelope')"></i>
+            <i class="bi bi-info-circle info-btn" onclick="showHelp('envelope')" title="Klik untuk maklumat lanjut"></i>
           </div>
           <div class="env-tab-group">
             <button class="env-tab-btn active-temp" id="envBtnTemp" onclick="setEnvVar('temp')">🌡️ Suhu</button>
@@ -452,39 +434,17 @@
         </div>
         <div class="card-body-dark">
           <div class="mini-metric-row" id="envMiniMetrics">
-            <div class="mini-metric">
-              <div class="mini-metric-label">Perosak Dianalisis</div>
-              <div class="mini-metric-value" id="envPestCount" style="color:var(--clr-blue);">—</div>
-            </div>
-            <div class="mini-metric">
-              <div class="mini-metric-label">Julat Aktif (Purata)</div>
-              <div class="mini-metric-value" id="envActiveRange" style="color:var(--clr-accent2);">—</div>
-            </div>
-            <div class="mini-metric">
-              <div class="mini-metric-label">Perosak Toleransi Luas</div>
-              <div class="mini-metric-value" id="envWideRange" style="color:var(--clr-amber);font-size:13px;">—</div>
-            </div>
-            <div class="mini-metric">
-              <div class="mini-metric-label">Perosak Niche Sempit</div>
-              <div class="mini-metric-value" id="envNarrowRange" style="color:var(--clr-red);font-size:13px;">—</div>
-            </div>
+            <div class="mini-metric"><div class="mini-metric-label">Perosak Dianalisis</div><div class="mini-metric-value" id="envPestCount" style="color:var(--clr-blue);">—</div></div>
+            <div class="mini-metric"><div class="mini-metric-label">Julat Aktif (Purata)</div><div class="mini-metric-value" id="envActiveRange" style="color:var(--clr-accent2);">—</div></div>
+            <div class="mini-metric"><div class="mini-metric-label">Perosak Toleransi Luas</div><div class="mini-metric-value" id="envWideRange" style="color:var(--clr-amber);font-size:13px;">—</div></div>
+            <div class="mini-metric"><div class="mini-metric-label">Perosak Niche Sempit</div><div class="mini-metric-value" id="envNarrowRange" style="color:var(--clr-red);font-size:13px;">—</div></div>
           </div>
           <div class="chart-wrap" style="height:270px;"><canvas id="chartEnvelope"></canvas></div>
           <div class="stats-scroll">
             <table class="stats-table">
-              <thead>
-                <tr>
-                  <th>Perosak</th><th>n</th><th>Min</th><th>Q1</th><th>Median</th>
-                  <th>Mean ★</th><th>Q3</th><th>Maks</th><th>SD</th><th>Julat (Maks–Min)</th>
-                </tr>
-              </thead>
-              <tbody id="envelopeStatsBody">
-                <tr><td colspan="10" style="text-align:center;color:var(--clr-text-dim);padding:16px;">Memuat data...</td></tr>
-              </tbody>
+              <thead><tr><th>Perosak</th><th>n</th><th>Min</th><th>Q1</th><th>Median</th><th>Mean ★</th><th>Q3</th><th>Maks</th><th>SD</th><th>Julat (Maks–Min)</th></tr></thead>
+              <tbody id="envelopeStatsBody"><tr><td colspan="10" style="text-align:center;color:var(--clr-text-dim);padding:16px;">Memuat data...</td></tr></tbody>
             </table>
-          </div>
-          <div style="font-size:11px;color:var(--clr-text-dim);margin-top:6px;">
-            <i class="bi bi-info-circle me-1"></i> Bar gelap = IQR (Q1–Q3) ialah julat 50% data tengah. Bar cerah = julat penuh (Min–Maks). ✕ = Purata (Mean).
           </div>
         </div>
       </div>
@@ -497,22 +457,17 @@
         <div class="card-header-dark">
           <div class="card-header-title">
             <div class="dot" style="background:var(--clr-accent2);"></div> Kadar Prevalens Perosak (%)
-            <i class="bi bi-info-circle info-btn ms-1" onclick="showHelp('prevalence')"></i>
+            <i class="bi bi-info-circle info-btn" onclick="showHelp('prevalence')" title="Klik untuk maklumat lanjut"></i>
           </div>
           <span id="totalSurveysEl" style="font-size:11px;color:var(--clr-text-dim);font-family:var(--font-mono);">—</span>
         </div>
         <div class="card-body-dark">
           <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
             <div class="shannon-badge">
-              <span class="sh-label">Indeks Kepelbagaian Shannon (H'):</span>
-              <span class="sh-val" id="shannonValEl">—</span>
-              <span class="shannon-interp" id="shannonInterpEl">—</span>
+              <span class="sh-label">Indeks Kepelbagaian Shannon (H'):</span><span class="sh-val" id="shannonValEl">—</span><span class="shannon-interp" id="shannonInterpEl">—</span>
             </div>
           </div>
           <div class="chart-wrap" style="height:280px;"><canvas id="chartPrevalence"></canvas></div>
-          <div style="font-size:11px;color:var(--clr-text-dim);margin-top:8px;">
-            <i class="bi bi-info-circle me-1"></i> Prevalens = % unit bancian (Tarikh+Negeri) yang mengesan perosak ini
-          </div>
         </div>
       </div>
     </div>
@@ -521,10 +476,9 @@
         <div class="card-header-dark">
           <div class="card-header-title">
             <div class="dot" style="background:var(--clr-amber);"></div> Taburan Intensiti Serangan (% Rekod)
-            <i class="bi bi-info-circle info-btn ms-1" onclick="showHelp('intensity')"></i>
+            <i class="bi bi-info-circle info-btn" onclick="showHelp('intensity')" title="Klik untuk maklumat lanjut"></i>
           </div>
           <div style="display:flex;gap:6px;align-items:center;">
-            <span style="font-size:10px;color:var(--clr-text-dim);">Ambang:</span>
             <span style="font-size:10px;padding:2px 7px;background:rgba(46,160,67,0.15);border-radius:4px;color:var(--clr-accent2);">Ringan &lt;2Ha</span>
             <span style="font-size:10px;padding:2px 7px;background:rgba(210,153,34,0.15);border-radius:4px;color:var(--clr-amber);">Sederhana 2–5Ha</span>
             <span style="font-size:10px;padding:2px 7px;background:rgba(248,81,73,0.15);border-radius:4px;color:var(--clr-red);">Teruk &gt;5Ha</span>
@@ -532,18 +486,9 @@
         </div>
         <div class="card-body-dark">
           <div id="intensityMiniStats" class="mini-metric-row">
-            <div class="mini-metric">
-              <div class="mini-metric-label">Median Keluasan (Semua)</div>
-              <div class="mini-metric-value" id="intMedianEl" style="color:var(--clr-amber);">—</div>
-            </div>
-            <div class="mini-metric">
-              <div class="mini-metric-label">% Rekod Teruk (&gt;5Ha)</div>
-              <div class="mini-metric-value" id="intTerukPctEl" style="color:var(--clr-red);">—</div>
-            </div>
-            <div class="mini-metric">
-              <div class="mini-metric-label">IQR Keluasan</div>
-              <div class="mini-metric-value" id="intIQREl" style="color:var(--clr-blue);">—</div>
-            </div>
+            <div class="mini-metric"><div class="mini-metric-label">Median Keluasan (Semua)</div><div class="mini-metric-value" id="intMedianEl" style="color:var(--clr-amber);">—</div></div>
+            <div class="mini-metric"><div class="mini-metric-label">% Rekod Teruk (&gt;5Ha)</div><div class="mini-metric-value" id="intTerukPctEl" style="color:var(--clr-red);">—</div></div>
+            <div class="mini-metric"><div class="mini-metric-label">IQR Keluasan</div><div class="mini-metric-value" id="intIQREl" style="color:var(--clr-blue);">—</div></div>
           </div>
           <div class="chart-wrap" style="height:260px;"><canvas id="chartIntensity"></canvas></div>
         </div>
@@ -556,10 +501,9 @@
       <div class="card-dark">
         <div class="card-header-dark">
           <div class="card-header-title">
-            <div class="dot" style="background:var(--clr-red);"></div> Matriks Kerentanan — Tanaman × Perosak (Purata Ha/Bancian)
-            <i class="bi bi-info-circle info-btn ms-1" onclick="showHelp('matrix')"></i>
+            <div class="dot" style="background:var(--clr-red);"></div> Matriks Kerentanan — Tanaman × Perosak
+            <i class="bi bi-info-circle info-btn" onclick="showHelp('matrix')" title="Klik untuk maklumat lanjut"></i>
           </div>
-          <div style="font-size:11px;color:var(--clr-text-dim);">Top 8 tanaman × Top 8 perosak (mengikut keluasan tertinggi)</div>
         </div>
         <div class="card-body-dark">
           <div id="matrixContainer"><div class="no-data-msg"><i class="bi bi-table"></i> Memuat matriks...</div></div>
@@ -572,13 +516,15 @@
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
 /* ============================================================
    PNR DIGITAL — KORELASI CUACA & PEROSAK
-   Version 3.1 | Edu-Interactive Dashboard Edition
+   Version 3.2 | Info Popup & Bug Fixes Edition
 ============================================================ */
 
+// 🟢 TING TING! URL WEB APP TUAN TELAH DIMASUKKAN SIAP-SIAP
 const API_URL = 'https://script.google.com/macros/s/AKfycbx1hlsIWN5MCo7ab_ytT_d_oFqVjy1XMJwM39oBC8yPp9OLukRSbk47Ufate26quu4k/exec'; 
 
 const MONTHS_MS = ['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogs','Sep','Okt','Nov','Dis'];
@@ -601,80 +547,70 @@ function normalizeState(s) {
 }
 
 function getMonthKey(dateStr) {
-  const d = new Date(dateStr);
-  return isNaN(d) ? null : `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  const d = new Date(dateStr); return isNaN(d) ? null : `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
 }
-function getMonthLabel(mk) {
-  const [y, m] = mk.split('-');
-  return `${MONTHS_MS[parseInt(m)-1]} ${y}`;
-}
+function getMonthLabel(mk) { const [y, m] = mk.split('-'); return `${MONTHS_MS[parseInt(m)-1]} ${y}`; }
 function getDateKey(dateStr) { return new Date(dateStr).toISOString().slice(0,10); }
 
 // ─── SESSION & GLOBAL DATA ───────────────────────────────────
 let SESSION = {};
 let userToken = '', currentUser = '', userState = 'ALL';
-
 let rawPest = [], rawWeather = [], blended = [], filteredData = [];
 let chart1Instance = null, chart2Instance = null, drillState = null;
+let activeEnvVar = 'temp', ceChart = null, prevChart = null, intensityChart = null;
 
-let activeEnvVar = 'temp';
-let ceChart = null, prevChart = null, intensityChart = null;
 const ENV_CONFIG = {
   temp:     { label:'Suhu (°C)',       key:'temps',      color:'#388bfd', unit:'°C',  icon:'🌡️' },
   humidity: { label:'Kelembapan (%)',  key:'humidities', color:'#d29922', unit:'%',   icon:'💧' },
   precip:   { label:'Hujan (mm)',      key:'precips',    color:'#2ea043', unit:' mm', icon:'🌧️' }
 };
 
-// ─── ENJIN POPUP PENJELASAN KONTEKSTUAL (NEW FEATURE) ─────────
+// ─── TEKS POPUP RUJUKAN AI ───────────────────────────────────
 const HELP_TEXTS = {
   chart1: {
     title: "📊 Serangan vs Hujan (Drill-Down)",
-    html: `<div class="section-title">📋 Definisi Kes</div>Kegunaan graf ini adalah untuk melihat sama ada kuantiti curahan air hujan mempengaruhi saiz gempak serangan serangga/penyakit di lapangan.
-           <div class="section-title">🔍 Cara Baca Graf</div><b>Bar Hijau:</b> Memaparkan kuantiti purata hujan (mm) di paksi sebelah kiri.<br><b>Garis Oren:</b> Memaparkan jumlah luas serangan (Hektar) di paksi sebelah kanan.<br>💡 <i>Sistem ini menyokong interaksi ketukan!</i> Klik pada bar mana-mana negeri untuk menceroboh (Drill-Down) analisis ke peringkat Daerah negeri tersebut.
-           <div class="section-title">💡 Tindakan Strategik</div>Sekiranya Tuan mengesan garis oren melonjak naik secara drastik dalam tempoh beberapa minggu selepas bar hujan meninggi, ia adalah isyarat awal berlakunya wabak kesan kelembapan mendadak. Ambil tindakan pencegahan semprotan racun biologi awal.`
+    html: `<div class="section-title">📋 Definisi Kes</div>Graf korelasi utama untuk melihat sama ada perubahan curahan hujan memacu luasan serangan serangga/penyakit di lapangan.
+           <div class="section-title">🔍 Cara Baca Graf</div><b>Bar Hijau:</b> Kuantiti purata hujan (mm) di paksi kiri.<br><b>Garis Oren:</b> Jumlah luas serangan (Hektar) di paksi kanan.<br>💡 <i>Sistem ini interaktif!</i> Klik pada bar mana-mana negeri untuk terus menggali analisis ke peringkat Daerah.
+           <div class="section-title">💡 Tindakan Strategik</div>Sekiranya garis oren melonjak naik beberapa hari/minggu selepas bar hujan meninggi, ia adalah isyarat wabak kesan kelembapan mendadak. Sedia untuk kawalan kulat/penyakit.`
   },
   chart2: {
-    title: "🔵 Profil Mikroklimat (Taburan Titik)",
-    html: `<div class="section-title">📋 Definisi Kes</div>Menjejaki kedudukan parameter cuaca (Suhu vs Kelembapan) secara serentak pada waktu tinjauan kes serangan direkodkan aktif.
-           <div class="section-title">🔍 Cara Baca Graf</div>Setiap satu titik bulat mewakili satu laporan kes aktif. <b>Paksi X (Melintang):</b> Nilai Suhu (°C). <b>Paksi Y (Menegak):</b> Peratus Kelembapan (%). Saiz titik bulat akan membesar secara automatik mengikut saiz keluasan Hektar serangan. Tiga perosak paling utama akan diwarnakan secara tersendiri.
-           <div class="section-title">💡 Tindakan Strategik</div>Kelompok titik yang berkumpul padat menandakan "Zon Pembiakan Optimum" bagi spesies tersebut. Jika titik perosak A mengelompok pada kawasan suhu kering (32°C), ia adalah zon kritikal serangan perosak mengunyah.`
+    title: "🔵 Profil Mikroklimat",
+    html: `<div class="section-title">📋 Definisi Kes</div>Menjejaki profil persekitaran (Suhu & Kelembapan) pada setiap tapak yang diserang.
+           <div class="section-title">🔍 Cara Baca Graf</div>Setiap titik mewakili satu laporan kes. <b>Paksi X:</b> Suhu (°C). <b>Paksi Y:</b> Kelembapan (%). Saiz titik mewakili luas serangan. Tiga perosak paling dominan diwarnakan secara spesifik.
+           <div class="section-title">💡 Tindakan Strategik</div>Titik yang berkumpul padat menandakan "Zon Selesa" biologi spesies tersebut. Jika titik perosak mengelompok pada kawasan suhu kering tinggi (32°C), ia menyukai musim kemarau.`
   },
   envelope: {
     title: "🌡️ Climate Envelope Perosak",
-    html: `<div class="section-title">📋 Definisi Kes</div>Satu model statistik deskriptif yang memetakan garisan batas toleransi cuaca (Suhu, Kelembapan, atau Hujan) khusus bagi setiap spesies perosak dominan.
-           <div class="section-title">🔍 Cara Baca Graf</div><b>Bar Biru Gelap (IQR):</b> Julat 50% data tengah. Ini mewakili 'Zon Selesa' optimum di mana perosak paling gemar menyerang.<br><b>Bar Biru Cerah (Min-Maks):</b> Batas sempadan ekstrem (Toleransi paling sejuk dan paling panas yang mampu dihadapi perosak).<br><b>Tanda Silang ✕:</b> Purata (Mean) kedudukan cuaca kes.<br>Perosak dengan bar panjang bermaksud ia berdaya tahan lasak (Toleransi Luas), manakala bar pendek bermaksud ia sensitif cuaca (Niche Sempit).
-           <div class="section-title">💡 Tindakan Strategik</div>Sekiranya ramalan cuaca jabatan bagi bulan hadapan dilaporkan menyamai zon bar gelap (IQR) perosak sensitif, kebarangkalian berlakunya serangan meningkat sebanyak 70%. Rancang agihan aset operasi segera.`
+    html: `<div class="section-title">📋 Definisi Kes</div>Model statistik yang memetakan garisan batas toleransi cuaca (Suhu, Kelembapan, Hujan) bagi setiap spesies perosak.
+           <div class="section-title">🔍 Cara Baca Graf</div><b>Bar Biru Gelap (IQR):</b> Julat 50% data tengah (Zon Optimum Perosak).<br><b>Bar Biru Cerah:</b> Batas sempadan ekstrem (Toleransi cuaca maksima).<br>Bar panjang = Tahan lasak. Bar pendek = Sensitif cuaca.
+           <div class="section-title">💡 Tindakan Strategik</div>Bandingkan zon IQR perosak dengan ramalan cuaca MET Malaysia. Jika ramalan cuaca padan dengan zon IQR sesuatu perosak, bersiap sedia untuk lonjakan kes.`
   },
   prevalence: {
-    title: "📈 Kadar Prevalens & Indeks Shannon",
-    html: `<div class="section-title">📋 Definisi Kes</div><b>Prevalens:</b> Mengira tahap perluasan/kekerapan perosak dijumpai berdasarkan jumlah unit bancian (bukan saiz Hektar).<br><b>Indeks Shannon (H'):</b> Mengukur tahap komparatif kepelbagaian bio-spesies perosak yang menyerang negara pada satu masa.
-           <div class="section-title">🔍 Cara Baca Graf</div>Graf bar melintang menunjukkan peratus (%). Contohnya, Prevalens 60% bermaksud daripada 100 siri bancian turun padang, 60 kali kelibat perosak ini ditemui. Jika Indeks Shannon (H') berwarna hijau (Tinggi), kebun sedang berhadapan dengan pelbagai spesies serangga serentak. Jika merah (Rendah), kebun diserang oleh satu spesies dominan tunggal (Wabak Monokultur).
-           <div class="section-title">💡 Tindakan Strategik</div>Perosak dengan Prevalens tinggi tetapi Hektar rendah menandakan serangan berlaku secara merata tetapi berskala kecil (Perlu kempen kawalan umum). Sebaliknya, Prevalens rendah tetapi Hektar tinggi bermaksud wabak setempat yang kronik (Perlu gempak zon kuarantin spesifik).`
+    title: "📈 Prevalens & Indeks Shannon",
+    html: `<div class="section-title">📋 Definisi Kes</div><b>Prevalens:</b> Tahap kekerapan perosak dijumpai (peratusan unit bancian diserang).<br><b>Indeks Shannon (H'):</b> Mengukur kepelbagaian biologi perosak yang aktif.
+           <div class="section-title">🔍 Cara Baca Graf</div>Graf bar (%): Prevalens 60% bermaksud 60 dari 100 lawatan bancian menemui perosak ini. Indeks H' Hijau (Tinggi) bermaksud kebun diserang pelbagai spesies. Indeks Merah bermaksud satu wabak dominan.
+           <div class="section-title">💡 Tindakan Strategik</div>Prevalens tinggi bermaksud perosak bertebaran secara rawak. Prevalens rendah tapi Hektar tinggi (di Kad KPI) bermaksud wabak setempat yang amat kritikal (perlukan zon kuarantin).`
   },
   intensity: {
     title: "🔶 Taburan Intensiti Serangan",
-    html: `<div class="section-title">📋 Definisi Kes</div>Memecahkan keseluruhan rekod pangkalan data serangan kepada profil keseriusan serangan di lapangan berasaskan ambang standard: Ringan (&lt;2 Ha), Sederhana (2-5 Ha), dan Teruk (&gt;5 Ha).
-           <div class="section-title">🔍 Cara Baca Graf</div>Graf bar bertindan 100% ini mempamerkan pecahan peratusan watak serangan. Warna hijau menandakan peratusan kes ringan, kuning sederhana, dan merah mewakili kes kerosakan teruk (ekstrem).
-           <div class="section-title">💡 Tindakan Strategik</div>Gunakan carta ini untuk memahami 'daya pemusnah' biologi sesuatu spesies. Jika sejenis ulat mempunyai kadar peratusan bar merah (Teruk) melebihi 30%, ia dikategorikan sebagai perosak berimpak tinggi. Setiap kali ia dikesan di kebun, keutamaan kawalan mestilah diberikan serta-merta sebelum ia merosakkan seluruh ladang.`
+    html: `<div class="section-title">📋 Definisi Kes</div>Memprofilkan kerosakan spesies mengikut ambang kritikal: Ringan (<2 Ha), Sederhana (2-5 Ha), dan Teruk (>5 Ha).
+           <div class="section-title">🔍 Cara Baca Graf</div>Graf bar bertindan 100% mempamerkan pecahan tahap keseriusan kerosakan setiap perosak.
+           <div class="section-title">💡 Tindakan Strategik</div>Gunakan ini untuk mengenali 'daya pemusnah' serangga. Perosak dengan bar merah (Teruk) yang panjang bermaksud setiap kali ia masuk kebun, ia berpotensi besar merosakkan seluruh ladang dengan pantas.`
   },
   matrix: {
-    title: "🟥 Matriks Kerentanan (Tanaman × Perosak)",
-    html: `<div class="section-title">📋 Definisi Kes</div>Peta haba silang (*cross-tabulation heatmap*) yang mempertemukan jenis Tanaman utama dengan jenis Perosak untuk mengira purata luas kerosakan (Ha) bagi setiap satu insiden laporan.
-           <div class="section-title">🔍 Cara Baca Graf</div><b>Warna Kotak (Peta Haba):</b> Semakin pekat warna merah kotak tersebut, semakin tinggi purata impak kemusnahan Ha yang dicatatkan bagi gandingan tanaman dan perosak tersebut. Angka di dalam kotak memaparkan purata Hektar musnah, dan nilai <code>n</code> menunjukkan jumlah kes laporan yang wujud.
-           <div class="section-title">💡 Tindakan Strategik</div>Analisis ini mengesan gandingan paling rapuh. Jika ulat pengorek buah mencatatkan warna biru (Rendah) pada tanaman mangga tetapi mencatatkan warna merah pekat (Tinggi) pada durian, ini fakta sahih bahawa pokok durian mempunyai kerentanan biologi yang sangat tinggi terhadap perosak tersebut. Fokus pelan mitigasi insurans pertanian Tuan pada zon kotak merah.`
+    title: "🟥 Matriks Kerentanan",
+    html: `<div class="section-title">📋 Definisi Kes</div>Peta haba (heatmap) kerentanan yang menemukan jenis Tanaman dengan jenis Perosak.
+           <div class="section-title">🔍 Cara Baca Graf</div>Semakin pekat warna merah kotak, semakin tinggi purata impak kemusnahan Hektar (Ha) bagi gandingan tanaman dan perosak tersebut.
+           <div class="section-title">💡 Tindakan Strategik</div>Jika ulat yang sama mencatatkan warna biru pada Jagung tapi merah pada Padi, maka tanaman Padi terbukti sangat rentan (vulnerable) dan berisiko tinggi musnah. Arahkan dana pencegahan ke zon merah ini.`
   }
 };
 
 function showHelp(topic) {
-  const info = HELP_TEXTS[topic];
-  if (!info) return;
+  if(typeof Swal === 'undefined') { alert("Ralat: Pustaka tetingkap gagal dimuatkan."); return; }
+  const info = HELP_TEXTS[topic]; if (!info) return;
   Swal.fire({
-    title: info.title,
-    html: `<div style="font-size:12.5px; line-height:1.5;">${info.html}</div>`,
-    icon: "info",
-    customClass: { popup: "swal2-dark-popup" },
-    confirmButtonText: "Faham & Tutup",
-    confirmButtonColor: "#2ea043"
+    title: info.title, html: `<div style="font-size:12.5px; line-height:1.5;">${info.html}</div>`,
+    icon: "info", customClass: { popup: "swal2-dark-popup" }, confirmButtonText: "Faham & Tutup", confirmButtonColor: "#2ea043"
   });
 }
 
@@ -712,117 +648,61 @@ async function fetchAll() {
       ]);
       pestResp = await r1.json(); weatherResp = await r2.json();
     }
-    processPestData(pestResp.records || []);
-    processWeatherData(weatherResp.data || []);
+    processPestData(pestResp.records || []); processWeatherData(weatherResp.data || []);
     blendData(); buildFilters(); applyFilters(); updateLastUpdated();
-  } catch(err) {
-    showError('Gagal mendapatkan data: ' + err.message);
-  } finally { showLoading(false); }
+  } catch(err) { showError('Gagal mendapatkan data: ' + err.message); } finally { showLoading(false); }
 }
 
 function processPestData(records) {
   rawPest = [];
   for (const r of records) {
-    const ls = parseFloat(r.ls) || 0;
-    if (ls === 0) continue;
+    const ls = parseFloat(r.ls) || 0; if (ls === 0) continue;
     const pestObj = r.p || {};
     let keys = Object.keys(pestObj).filter(k => !k.toUpperCase().includes('SERANGAN UMUM') && parseFloat(pestObj[k]) > 0);
     if (keys.length > 0) {
       keys.forEach(pestName => {
-        rawPest.push({
-          date: getDateKey(r.t), monthKey: getMonthKey(r.t), state: normalizeState(r.n),
-          district: (r.d || '').trim().toUpperCase(), crop: (r.tn || 'UMUM').trim().toUpperCase(),
-          pest: pestName.trim().toUpperCase(), area: parseFloat(pestObj[pestName]) || 0, totalArea: ls
-        });
+        rawPest.push({ date: getDateKey(r.t), monthKey: getMonthKey(r.t), state: normalizeState(r.n), district: (r.d || '').trim().toUpperCase(), crop: (r.tn || 'UMUM').trim().toUpperCase(), pest: pestName.trim().toUpperCase(), area: parseFloat(pestObj[pestName]) || 0, totalArea: ls });
       });
     } else {
-      rawPest.push({
-        date: getDateKey(r.t), monthKey: getMonthKey(r.t), state: normalizeState(r.n),
-        district: (r.d || '').trim().toUpperCase(), crop: (r.tn || 'UMUM').trim().toUpperCase(),
-        pest: 'PEROSAK UMUM', area: ls, totalArea: ls
-      });
+      rawPest.push({ date: getDateKey(r.t), monthKey: getMonthKey(r.t), state: normalizeState(r.n), district: (r.d || '').trim().toUpperCase(), crop: (r.tn || 'UMUM').trim().toUpperCase(), pest: 'PEROSAK UMUM', area: ls, totalArea: ls });
     }
   }
 }
 
 function processWeatherData(records) {
   rawWeather = [];
-  for (const r of records) {
-    rawWeather.push({
-      date: getDateKey(r.timestamp), monthKey: getMonthKey(r.timestamp), state: normalizeState(r.state),
-      district: (r.district || '').trim().toUpperCase(), temp: parseFloat(r.temp_c) || null,
-      humidity: parseFloat(r.humidity) || null, precip: parseFloat(r.precip_mm) || null
-    });
-  }
+  for (const r of records) { rawWeather.push({ date: getDateKey(r.timestamp), monthKey: getMonthKey(r.timestamp), state: normalizeState(r.state), district: (r.district || '').trim().toUpperCase(), temp: parseFloat(r.temp_c) || null, humidity: parseFloat(r.humidity) || null, precip: parseFloat(r.precip_mm) || null }); }
 }
 
 function blendData() {
   const wMap = {};
   for (const w of rawWeather) {
-    const key = `${w.date}|${w.state}`;
-    if (!wMap[key]) wMap[key] = { temp:[], humidity:[], precip:[] };
-    if (w.temp !== null) wMap[key].temp.push(w.temp);
-    if (w.humidity !== null) wMap[key].humidity.push(w.humidity);
-    if (w.precip !== null) wMap[key].precip.push(w.precip);
+    const key = `${w.date}|${w.state}`; if (!wMap[key]) wMap[key] = { temp:[], humidity:[], precip:[] };
+    if (w.temp !== null) wMap[key].temp.push(w.temp); if (w.humidity !== null) wMap[key].humidity.push(w.humidity); if (w.precip !== null) wMap[key].precip.push(w.precip);
   }
   const avg = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null;
-  blended = rawPest.map(p => {
-    const w = wMap[`${p.date}|${p.state}`] || {};
-    return { ...p, temp: avg(w.temp||[]), humidity: avg(w.humidity||[]), precip: avg(w.precip||[]) };
-  });
+  blended = rawPest.map(p => { const w = wMap[`${p.date}|${p.state}`] || {}; return { ...p, temp: avg(w.temp||[]), humidity: avg(w.humidity||[]), precip: avg(w.precip||[]) }; });
 }
 
 // ─── FILTER LOGIC ─────────────────────────────────────────────
-let filterOptions = { negeri:[], tanaman:[], perosak:[], bulan:[] }, isFiltering = false;
-
 function buildFilters() {
-  const negeri = [...new Set(blended.map(r=>r.state))].sort();
-  const tanaman = [...new Set(blended.map(r=>r.crop))].filter(Boolean).sort();
-  const perosak = [...new Set(blended.map(r=>r.pest))].filter(Boolean).sort();
-  const bulan = [...new Set(blended.map(r=>r.monthKey))].filter(Boolean).sort();
+  const negeri = [...new Set(blended.map(r=>r.state))].sort(); const tanaman = [...new Set(blended.map(r=>r.crop))].filter(Boolean).sort(); const perosak = [...new Set(blended.map(r=>r.pest))].filter(Boolean).sort(); const bulan = [...new Set(blended.map(r=>r.monthKey))].filter(Boolean).sort();
   filterOptions = { negeri, tanaman, perosak, bulan };
-  populateSelect('#filterNegeri', negeri, v=>v);
-  populateSelect('#filterTanaman', tanaman, v=>v);
-  populateSelect('#filterPerosak', perosak, v=>v);
-  populateSelect('#filterBulan', bulan, v=>getMonthLabel(v));
+  populateSelect('#filterNegeri', negeri, v=>v); populateSelect('#filterTanaman', tanaman, v=>v); populateSelect('#filterPerosak', perosak, v=>v); populateSelect('#filterBulan', bulan, v=>getMonthLabel(v));
 }
 
-function populateSelect(sel, values, labelFn) {
-  const $el = $(sel); $el.empty();
-  values.forEach(v => { $el.append(new Option(labelFn(v), v)); });
-}
-
-function getActiveFilters() {
-  return {
-    negeri: $('#filterNegeri').val() || [], tanaman: $('#filterTanaman').val() || [],
-    perosak: $('#filterPerosak').val() || [], bulan: $('#filterBulan').val() || []
-  };
-}
+function populateSelect(sel, values, labelFn) { const $el = $(sel); $el.empty(); values.forEach(v => { $el.append(new Option(labelFn(v), v)); }); }
+function getActiveFilters() { return { negeri: $('#filterNegeri').val() || [], tanaman: $('#filterTanaman').val() || [], perosak: $('#filterPerosak').val() || [], bulan: $('#filterBulan').val() || [] }; }
 
 function applyFilters() {
-  if(isFiltering) return;
-  isFiltering = true;
-  const f = getActiveFilters();
+  if(isFiltering) return; isFiltering = true; const f = getActiveFilters();
   filteredData = blended.filter(r => {
-    if (f.negeri.length && !f.negeri.includes(r.state)) return false;
-    if (f.tanaman.length && !f.tanaman.includes(r.crop)) return false;
-    if (f.perosak.length && !f.perosak.includes(r.pest)) return false;
-    if (f.bulan.length && !f.bulan.includes(r.monthKey)) return false;
-    return true;
+    if (f.negeri.length && !f.negeri.includes(r.state)) return false; if (f.tanaman.length && !f.tanaman.includes(r.crop)) return false;
+    if (f.perosak.length && !f.perosak.includes(r.pest)) return false; if (f.bulan.length && !f.bulan.includes(r.monthKey)) return false; return true;
   });
-  cascadeFilters(f);
-  updateMetrics();
-  renderChart1();
-  renderChart2();
-  generateInsights();
+  cascadeFilters(f); updateMetrics(); renderChart1(); renderChart2(); generateInsights();
   document.getElementById('recordCountEl').textContent = filteredData.length.toLocaleString();
-  
-  // NEW BANCIAN CHARTS TRIGGER
-  renderClimateEnvelope();
-  renderPrevalence();
-  renderIntensityDist();
-  renderVulnerabilityMatrix();
-  
+  renderClimateEnvelope(); renderPrevalence(); renderIntensityDist(); renderVulnerabilityMatrix();
   isFiltering = false;
 }
 
@@ -838,329 +718,172 @@ function cascadeFilters(f) {
 
 function updateMetrics() {
   const d = filteredData;
-  if (!d.length) {
-    ['mSerangan','mSuhu','mHujan','mPerosak','mPerosakSub'].forEach(id => document.getElementById(id).textContent = '—'); return;
-  }
-  const totalArea = d.reduce((a,r) => a + (r.area||0), 0);
-  document.getElementById('mSerangan').textContent = totalArea.toFixed(2).toLocaleString();
-
+  if (!d.length) { ['mSerangan','mSuhu','mHujan','mPerosak','mPerosakSub'].forEach(id => document.getElementById(id).textContent = '—'); return; }
+  const totalArea = d.reduce((a,r) => a + (r.area||0), 0); document.getElementById('mSerangan').textContent = totalArea.toFixed(2).toLocaleString();
   const temps = d.map(r=>r.temp).filter(v=>v!==null), precips = d.map(r=>r.precip).filter(v=>v!==null);
-  const avgTemp = temps.length ? (temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1) : '—';
-  const avgPrecip = precips.length ? (precips.reduce((a,b)=>a+b,0)/precips.length).toFixed(1) : '—';
-  document.getElementById('mSuhu').textContent = avgTemp === '—' ? '—' : avgTemp + '°C';
-  document.getElementById('mHujan').textContent = avgPrecip === '—' ? '—' : avgPrecip + ' mm';
-
-  const pestTotal = {};
-  d.forEach(r => { pestTotal[r.pest] = (pestTotal[r.pest]||0) + r.area; });
-  const sorted = Object.entries(pestTotal).sort((a,b)=>b[1]-a[1]);
-  if (sorted.length) {
-    document.getElementById('mPerosak').textContent = sorted[0][0];
-    document.getElementById('mPerosakSub').textContent = sorted[0][1].toFixed(2)+' Ha';
-  }
+  const avgTemp = temps.length ? (temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1) : '—'; const avgPrecip = precips.length ? (precips.reduce((a,b)=>a+b,0)/precips.length).toFixed(1) : '—';
+  document.getElementById('mSuhu').textContent = avgTemp === '—' ? '—' : avgTemp + '°C'; document.getElementById('mHujan').textContent = avgPrecip === '—' ? '—' : avgPrecip + ' mm';
+  const pestTotal = {}; d.forEach(r => { pestTotal[r.pest] = (pestTotal[r.pest]||0) + r.area; }); const sorted = Object.entries(pestTotal).sort((a,b)=>b[1]-a[1]);
+  if (sorted.length) { document.getElementById('mPerosak').textContent = sorted[0][0]; document.getElementById('mPerosakSub').textContent = sorted[0][1].toFixed(2)+' Ha'; }
 }
 
 // ─── CHARTS (CORE DASHBOARD) ──────────────────────────────────
 function renderChart1() { drillState ? renderChart1Drill(drillState) : renderChart1Macro(); }
-
 function renderChart1Macro() {
-  const byState = {};
-  filteredData.forEach(r => {
-    if (!byState[r.state]) byState[r.state] = { area:0, precip:[] };
-    byState[r.state].area += r.area; if (r.precip !== null) byState[r.state].precip.push(r.precip);
-  });
+  const byState = {}; filteredData.forEach(r => { if (!byState[r.state]) byState[r.state] = { area:0, precip:[] }; byState[r.state].area += r.area; if (r.precip !== null) byState[r.state].precip.push(r.precip); });
   const labels = Object.keys(byState).sort();
   buildChart1(labels, labels.map(s => byState[s].area.toFixed(2)), labels.map(s => byState[s].precip.length ? (byState[s].precip.reduce((a,b)=>a+b,0)/byState[s].precip.length).toFixed(1) : 0), false);
   document.getElementById('chart1Title').textContent = 'Serangan vs Hujan — Makro (Negeri)';
 }
-
 function renderChart1Drill(stateName) {
-  const byDistrict = {};
-  filteredData.filter(r => r.state === stateName).forEach(r => {
-    const k = r.district || 'LAIN-LAIN';
-    if (!byDistrict[k]) byDistrict[k] = { area:0, precip:[] };
-    byDistrict[k].area += r.area; if (r.precip!==null) byDistrict[k].precip.push(r.precip);
-  });
+  const byDistrict = {}; filteredData.filter(r => r.state === stateName).forEach(r => { const k = r.district || 'LAIN-LAIN'; if (!byDistrict[k]) byDistrict[k] = { area:0, precip:[] }; byDistrict[k].area += r.area; if (r.precip!==null) byDistrict[k].precip.push(r.precip); });
   const labels = Object.keys(byDistrict).sort();
   buildChart1(labels, labels.map(k => byDistrict[k].area.toFixed(2)), labels.map(k => byDistrict[k].precip.length ? (byDistrict[k].precip.reduce((a,b)=>a+b,0)/byDistrict[k].precip.length).toFixed(1) : 0), true);
-  document.getElementById('chart1Title').textContent = `Serangan vs Hujan — ${stateName} (Daerah)`;
-  document.getElementById('drillStateName').textContent = stateName;
-  document.getElementById('drillLabel').style.display = 'flex';
-  document.getElementById('backBtn').style.display = 'inline-flex';
+  document.getElementById('chart1Title').textContent = `Serangan vs Hujan — ${stateName} (Daerah)`; document.getElementById('drillStateName').textContent = stateName;
+  document.getElementById('drillLabel').style.display = 'flex'; document.getElementById('backBtn').style.display = 'inline-flex';
 }
-
 function buildChart1(labels, areas, precips, isDrill) {
-  const ctx = document.getElementById('chart1');
-  if (chart1Instance) chart1Instance.destroy();
-  if (!labels.length) { chart1Instance = null; return; }
+  const ctx = document.getElementById('chart1'); if (chart1Instance) chart1Instance.destroy(); if (!labels.length) { chart1Instance = null; return; }
   chart1Instance = new Chart(ctx, {
-    data: {
-      labels,
-      datasets: [
-        { type: 'bar', label: 'Serangan (Ha)', data: areas, backgroundColor: 'rgba(46,160,67,0.6)', borderColor: '#2ea043', borderWidth: 1, borderRadius: 4, yAxisID: 'y', order: 2 },
-        { type: 'line', label: 'Purata Hujan (mm)', data: precips, borderColor: '#388bfd', backgroundColor: 'rgba(56,139,253,0.08)', pointBackgroundColor: '#388bfd', pointBorderColor: '#0d1117', pointRadius: 4, tension: 0.3, fill: true, yAxisID: 'y2', order: 1 }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false, interaction: { mode:'index', intersect:false },
-      onClick: (evt, elements) => {
-        if (isDrill || !elements.length) return;
-        drillState = labels[elements[0].index]; renderChart1Drill(drillState);
-      },
-      plugins: { legend: { labels: { color:'#8b949e', boxWidth:12 } } },
-      scales: {
-        x: { ticks: { color:'#6e7681', maxRotation:30 }, grid: { color:'rgba(42,52,68,0.3)' } },
-        y: { position:'left', title: { display:true, text:'Serangan (Ha)', color:'#56d364' }, ticks: { color:'#6e7681' }, grid: { color:'rgba(42,52,68,0.3)' } },
-        y2: { position:'right', title: { display:true, text:'Hujan (mm)', color:'#79c0ff' }, ticks: { color:'#6e7681' }, grid: { drawOnChartArea:false } }
-      }
-    }
+    data: { labels, datasets: [ { type: 'bar', label: 'Serangan (Ha)', data: areas, backgroundColor: 'rgba(46,160,67,0.6)', borderColor: '#2ea043', borderWidth: 1, borderRadius: 4, yAxisID: 'y', order: 2 }, { type: 'line', label: 'Purata Hujan (mm)', data: precips, borderColor: '#388bfd', backgroundColor: 'rgba(56,139,253,0.08)', pointBackgroundColor: '#388bfd', pointBorderColor: '#0d1117', pointRadius: 4, tension: 0.3, fill: true, yAxisID: 'y2', order: 1 } ] },
+    options: { responsive: true, maintainAspectRatio: false, interaction: { mode:'index', intersect:false }, onClick: (evt, elements) => { if (isDrill || !elements.length) return; drillState = labels[elements[0].index]; renderChart1Drill(drillState); }, plugins: { legend: { labels: { color:'#8b949e', boxWidth:12 } } }, scales: { x: { ticks: { color:'#6e7681', maxRotation:30 }, grid: { color:'rgba(42,52,68,0.3)' } }, y: { position:'left', title: { display:true, text:'Serangan (Ha)', color:'#56d364' }, ticks: { color:'#6e7681' }, grid: { color:'rgba(42,52,68,0.3)' } }, y2: { position:'right', title: { display:true, text:'Hujan (mm)', color:'#79c0ff' }, ticks: { color:'#6e7681' }, grid: { drawOnChartArea:false } } } }
   });
 }
 function resetDrillDown() { drillState = null; document.getElementById('backBtn').style.display = 'none'; document.getElementById('drillLabel').style.display = 'none'; renderChart1Macro(); }
 
 function renderChart2() {
-  const d = filteredData.filter(r => r.temp!==null && r.humidity!==null);
-  if (chart2Instance) chart2Instance.destroy();
-  if (!d.length) { document.getElementById('scatterLegend').innerHTML = ''; chart2Instance = null; return; }
-
-  const pestTotals = {}; d.forEach(r => { pestTotals[r.pest] = (pestTotals[r.pest]||0) + r.area; });
-  const top3 = Object.entries(pestTotals).sort((a,b)=>b[1]-a[1]).slice(0,3).map(e=>e[0]);
-  const colors = [PALETTE_PEST[3], PALETTE_PEST[1], PALETTE_PEST[2]];
-
-  const datasets = top3.map((pest, i) => {
-    const pts = d.filter(r=>r.pest===pest).map(r=>({x:r.temp, y:r.humidity, r:Math.min(4+r.area/4, 12)}));
-    return { label: pest, data: pts, backgroundColor: colors[i] + 'aa', borderColor: colors[i], borderWidth: 1, pointRadius: pts.map(p=>p.r), pointHoverRadius: pts.map(p=>p.r+2) };
-  });
-
-  const otherPts = d.filter(r=>!top3.includes(r.pest)).map(r=>({x:r.temp,y:r.humidity}));
-  if (otherPts.length) datasets.push({ label: 'Lain-lain', data: otherPts, backgroundColor: 'rgba(110,118,129,0.3)', borderColor: '#6e7681', borderWidth: 1, pointRadius: 3 });
-
+  const d = filteredData.filter(r => r.temp!==null && r.humidity!==null); if (chart2Instance) chart2Instance.destroy(); if (!d.length) { document.getElementById('scatterLegend').innerHTML = ''; chart2Instance = null; return; }
+  const pestTotals = {}; d.forEach(r => { pestTotals[r.pest] = (pestTotals[r.pest]||0) + r.area; }); const top3 = Object.entries(pestTotals).sort((a,b)=>b[1]-a[1]).slice(0,3).map(e=>e[0]); const colors = [PALETTE_PEST[3], PALETTE_PEST[1], PALETTE_PEST[2]];
+  const datasets = top3.map((pest, i) => { const pts = d.filter(r=>r.pest===pest).map(r=>({x:r.temp, y:r.humidity, r:Math.min(4+r.area/4, 12)})); return { label: pest, data: pts, backgroundColor: colors[i] + 'aa', borderColor: colors[i], borderWidth: 1, pointRadius: pts.map(p=>p.r), pointHoverRadius: pts.map(p=>p.r+2) }; });
+  const otherPts = d.filter(r=>!top3.includes(r.pest)).map(r=>({x:r.temp,y:r.humidity})); if (otherPts.length) datasets.push({ label: 'Lain-lain', data: otherPts, backgroundColor: 'rgba(110,118,129,0.3)', borderColor: '#6e7681', borderWidth: 1, pointRadius: 3 });
   chart2Instance = new Chart(document.getElementById('chart2'), {
     type: 'bubble', data: { datasets },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { backgroundColor:'#1c2330', borderColor:'#2a3444', borderWidth:1, callbacks: { title: items => items[0]?.dataset.label || '', label: item => [` Suhu: ${item.raw.x?.toFixed(1)}°C`, ` Kelembapan: ${item.raw.y?.toFixed(0)}%`] } }
-      },
-      scales: {
-        x: { title:{ display:true, text:'Suhu (°C)', color:'#6e7681' }, ticks:{ color:'#6e7681' }, grid: { color:'rgba(42,52,68,0.3)' } },
-        y: { title:{ display:true, text:'Kelembapan (%)', color:'#6e7681' }, ticks:{ color:'#6e7681' }, grid: { color:'rgba(42,52,68,0.3)' } }
-      }
-    }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor:'#1c2330', borderColor:'#2a3444', borderWidth:1, callbacks: { title: items => items[0]?.dataset.label || '', label: item => [` Suhu: ${item.raw.x?.toFixed(1)}°C`, ` Kelembapan: ${item.raw.y?.toFixed(0)}%`] } } }, scales: { x: { title:{ display:true, text:'Suhu (°C)', color:'#6e7681' }, ticks:{ color:'#6e7681' }, grid: { color:'rgba(42,52,68,0.3)' } }, y: { title:{ display:true, text:'Kelembapan (%)', color:'#6e7681' }, ticks:{ color:'#6e7681' }, grid: { color:'rgba(42,52,68,0.3)' } } } }
   });
-
   document.getElementById('scatterLegend').innerHTML = datasets.map((ds,i)=>`<div class="scatter-legend-item"><div class="scatter-legend-dot" style="background:${ds.borderColor}"></div><span>${ds.label}</span></div>`).join('');
 }
 
 function generateInsights() {
   const el = document.getElementById('insightsList'), d = filteredData;
   if (!d.length) { el.innerHTML = `<div id="insightsPlaceholder"><i class="bi bi-database-x"></i><br>Tiada data untuk dianalisis.</div>`; return; }
-
-  const insights = [];
-  const withPrecip = d.filter(r=>r.precip!==null);
+  const insights = []; const withPrecip = d.filter(r=>r.precip!==null);
   if (withPrecip.length >= 4) {
-    const sorted = [...withPrecip].sort((a,b)=>b.precip-a.precip);
-    const topQ = sorted.slice(0, Math.ceil(sorted.length*0.25)), botQ = sorted.slice(Math.floor(sorted.length*0.75));
+    const sorted = [...withPrecip].sort((a,b)=>b.precip-a.precip); const topQ = sorted.slice(0, Math.ceil(sorted.length*0.25)), botQ = sorted.slice(Math.floor(sorted.length*0.75));
     const avgAreaHigh = topQ.reduce((s,r)=>s+r.area,0)/topQ.length, avgAreaLow = botQ.reduce((s,r)=>s+r.area,0)/botQ.length;
     const diff = (((avgAreaHigh - avgAreaLow)/Math.max(avgAreaLow,0.01))*100).toFixed(0);
     if (Math.abs(diff) >= 5) insights.push({ icon: diff > 0 ? '🌧️' : '☀️', text: `Kawasan dengan curahan hujan tinggi menunjukkan purata serangan <strong>${diff > 0 ? 'meningkat' : 'menurun'} ${Math.abs(diff)}%</strong>.`, meta: `Berdasarkan ${withPrecip.length} padanan makro.` });
   }
-
   const pestTotals = {}; d.forEach(r => { pestTotals[r.pest] = (pestTotals[r.pest]||0) + r.area; });
   Object.entries(pestTotals).sort((a,b)=>b[1]-a[1]).slice(0,2).forEach(([pest, area], idx) => {
     const temps = d.filter(r=>r.pest===pest && r.temp!==null).map(r=>r.temp);
     if (temps.length >= 2) insights.push({ icon: '🐛', text: `Wabak <strong>${pest}</strong> terpapar padat pada koridor mikroklimat <span class="val">${Math.min(...temps).toFixed(1)}°C – ${Math.max(...temps).toFixed(1)}°C</span>.`, meta: `${area.toFixed(1)} Ha luas aktif.` });
   });
-
   const humid = d.filter(r=>r.humidity!==null);
-  if (humid.length && humid.filter(r=>r.humidity > 75).length / humid.length > 0.4) {
-    insights.push({ icon: '💧', text: `<strong>${((humid.filter(r=>r.humidity > 75).length/humid.length)*100).toFixed(0)}%</strong> kes berlaku pada kelembapan >75% RH, memacu proliferasi spora.`, meta: `Purata ambien: ${(humid.reduce((s,r)=>s+r.humidity,0)/humid.length).toFixed(1)}%` });
-  }
-
+  if (humid.length && humid.filter(r=>r.humidity > 75).length / humid.length > 0.4) { insights.push({ icon: '💧', text: `<strong>${((humid.filter(r=>r.humidity > 75).length/humid.length)*100).toFixed(0)}%</strong> kes berlaku pada kelembapan >75% RH, memacu proliferasi spora.`, meta: `Purata ambien: ${(humid.reduce((s,r)=>s+r.humidity,0)/humid.length).toFixed(1)}%` }); }
   el.innerHTML = insights.length ? insights.map((item, i) => `<div class="insight-item" style="animation-delay:${i*0.05}s"><div class="insight-icon">${item.icon}</div><div><div class="insight-text">${item.text}</div><div class="insight-meta"><i class="bi bi-cpu me-1"></i>${item.meta}</div></div></div>`).join('') : `<div class="insight-item"><div class="insight-icon">ℹ️</div><div class="insight-text">Sistem memerlukan lebih kepelbagaian data.</div></div>`;
 }
 
 // ─── BANCIAN CALCULATOR ENGINE (BLOCK 3) ───────────────────────
 function calcStats(arr) {
-  if (!arr || !arr.length) return null;
-  const clean = arr.filter(v => v !== null && !isNaN(v));
-  if (clean.length < 2) return null;
-  const sorted = [...clean].sort((a, b) => a - b);
-  const n = sorted.length, mean = clean.reduce((a, b) => a + b, 0) / n;
+  if (!arr || !arr.length) return null; const clean = arr.filter(v => v !== null && !isNaN(v)); if (clean.length < 2) return null;
+  const sorted = [...clean].sort((a, b) => a - b), n = sorted.length, mean = clean.reduce((a, b) => a + b, 0) / n;
   const median = n % 2 === 0 ? (sorted[n/2 - 1] + sorted[n/2]) / 2 : sorted[Math.floor(n / 2)];
-  const q1 = sorted[Math.floor(n * 0.25)], q3 = sorted[Math.floor(n * 0.75)];
-  const sd = Math.sqrt(clean.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / n);
+  const q1 = sorted[Math.floor(n * 0.25)], q3 = sorted[Math.floor(n * 0.75)], sd = Math.sqrt(clean.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / n);
   return { min: sorted[0], max: sorted[n-1], mean, median, q1, q3, sd, n, range: sorted[n-1] - sorted[0], iqr: q3 - q1 };
 }
-
 function calcShannon(data) {
-  if (!data || !data.length) return null;
-  const pestArea = {}; const total = data.reduce((s, r) => s + r.area, 0);
-  if (total === 0) return null;
+  if (!data || !data.length) return null; const pestArea = {}; const total = data.reduce((s, r) => s + r.area, 0); if (total === 0) return null;
   data.forEach(r => { pestArea[r.pest] = (pestArea[r.pest] || 0) + r.area; });
   const H = Object.values(pestArea).reduce((s, a) => { const p = a / total; return s - (p > 0 ? p * Math.log(p) : 0); }, 0);
   return { H: H, S: Object.keys(pestArea).length, Hmax: Math.log(Object.keys(pestArea).length) };
 }
-
 function getHeatColor(value, maxVal) {
-  if (!maxVal || value === 0) return 'transparent';
-  const r = value / maxVal;
-  if (r < 0.33) return `rgba(56,139,253,${(0.08 + r * 0.45).toFixed(2)})`;
-  if (r < 0.66) return `rgba(210,153,34,${(0.12 + r * 0.40).toFixed(2)})`;
-  return `rgba(248,81,73, ${(0.12 + r * 0.55).toFixed(2)})`;
+  if (!maxVal || value === 0) return 'transparent'; const r = value / maxVal;
+  if (r < 0.33) return `rgba(56,139,253,${(0.08 + r * 0.45).toFixed(2)})`; if (r < 0.66) return `rgba(210,153,34,${(0.12 + r * 0.40).toFixed(2)})`; return `rgba(248,81,73, ${(0.12 + r * 0.55).toFixed(2)})`;
 }
-
 function buildPestWeatherGroups(data) {
   const groups = {};
   data.forEach(r => {
     if (!groups[r.pest]) groups[r.pest] = { temps: [], humidities: [], precips: [], areas: [], n: 0 };
-    if (r.temp !== null) groups[r.pest].temps.push(r.temp);
-    if (r.humidity !== null) groups[r.pest].humidities.push(r.humidity);
-    if (r.precip !== null) groups[r.pest].precips.push(r.precip);
+    if (r.temp !== null) groups[r.pest].temps.push(r.temp); if (r.humidity !== null) groups[r.pest].humidities.push(r.humidity); if (r.precip !== null) groups[r.pest].precips.push(r.precip);
     groups[r.pest].areas.push(r.area); groups[r.pest].n++;
-  });
-  return groups;
+  }); return groups;
 }
-
-function setEnvVar(varName) {
-  activeEnvVar = varName;
-  document.querySelectorAll('.env-tab-btn').forEach(btn => { btn.className = 'env-tab-btn'; });
-  const activeBtn = document.getElementById(varName === 'temp' ? 'envBtnTemp' : varName === 'humidity' ? 'envBtnHumidity' : 'envBtnPrecip');
-  if (activeBtn) activeBtn.classList.add(`active-${varName}`);
-  renderClimateEnvelope();
-}
+function setEnvVar(varName) { activeEnvVar = varName; document.querySelectorAll('.env-tab-btn').forEach(btn => { btn.className = 'env-tab-btn'; }); const activeBtn = document.getElementById(varName === 'temp' ? 'envBtnTemp' : varName === 'humidity' ? 'envBtnHumidity' : 'envBtnPrecip'); if (activeBtn) activeBtn.classList.add(`active-${varName}`); renderClimateEnvelope(); }
 
 function renderClimateEnvelope() {
-  const d = filteredData, cfg = ENV_CONFIG[activeEnvVar], ctx = document.getElementById('chartEnvelope');
-  if (!ctx) return;
-  const groups = buildPestWeatherGroups(d);
-  const pests = Object.entries(groups).filter(([, g]) => g[cfg.key].length >= 3).sort((a, b) => b[1].areas.reduce((s,v)=>s+v,0) - a[1].areas.reduce((s,v)=>s+v,0)).slice(0, 8).map(e => e[0]);
-
-  if (!pests.length) {
-    if (ceChart) { ceChart.destroy(); ceChart = null; }
-    ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height);
-    document.getElementById('envelopeStatsBody').innerHTML = `<tr><td colspan="10" class="no-data-msg"><i class="bi bi-database-x"></i> Tiada data cuaca mencukupi</td></tr>`; return;
-  }
-
+  const d = filteredData, cfg = ENV_CONFIG[activeEnvVar], ctx = document.getElementById('chartEnvelope'); if (!ctx) return;
+  const groups = buildPestWeatherGroups(d); const pests = Object.entries(groups).filter(([, g]) => g[cfg.key].length >= 3).sort((a, b) => b[1].areas.reduce((s,v)=>s+v,0) - a[1].areas.reduce((s,v)=>s+v,0)).slice(0, 8).map(e => e[0]);
+  if (!pests.length) { if (ceChart) { ceChart.destroy(); ceChart = null; } ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height); document.getElementById('envelopeStatsBody').innerHTML = `<tr><td colspan="10" class="no-data-msg"><i class="bi bi-database-x"></i> Tiada data cuaca mencukupi</td></tr>`; return; }
   const stats = {}; pests.forEach(p => { stats[p] = calcStats(groups[p][cfg.key]); });
-  const rangeData = pests.map(p => [stats[p].min, stats[p].max]);
-  const iqrData = pests.map(p => [stats[p].q1, stats[p].q3]);
-  const meanData = pests.map(p => stats[p].mean);
-
+  const rangeData = pests.map(p => [stats[p].min, stats[p].max]), iqrData = pests.map(p => [stats[p].q1, stats[p].q3]), meanData = pests.map(p => stats[p].mean);
   if (ceChart) ceChart.destroy();
   ceChart = new Chart(ctx, {
-    data: {
-      labels: pests,
-      datasets: [
-        { type: 'bar', label: 'Julat Penuh (Min–Maks)', data: rangeData, backgroundColor: cfg.color + '25', borderColor: cfg.color + '55', borderWidth: 1, borderRadius: 3, barPercentage: 0.55, categoryPercentage: 0.85, order: 3 },
-        { type: 'bar', label: 'IQR (Q1–Q3)', data: iqrData, backgroundColor: cfg.color + 'aa', borderColor: cfg.color, borderWidth: 1, borderRadius: 3, barPercentage: 0.55, categoryPercentage: 0.85, order: 2 },
-        { type: 'line', label: 'Purata (Mean)', data: meanData, borderColor: 'transparent', backgroundColor: '#fff', pointBackgroundColor: '#fff', pointBorderColor: cfg.color, pointBorderWidth: 2, pointRadius: 6, pointHoverRadius: 8, pointStyle: 'crossRot', showLine: false, order: 1 }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { labels: { color:'#8b949e', font:{size:11,family:'DM Sans'}, boxWidth:10 } }, tooltip: { backgroundColor: '#1c2330', borderColor: '#2a3444', borderWidth: 1, titleColor: '#e6edf3', bodyColor: '#8b949e', padding: 10, callbacks: { title: items => items[0]?.label || '', label: item => { const p = pests[item.dataIndex], s = stats[p]; if (!s) return ''; if (item.dataset.label.includes('Mean')) return ` ✕ Purata: ${s.mean.toFixed(2)}${cfg.unit}`; if (item.dataset.label.includes('IQR')) return ` ▮ Q1: ${s.q1.toFixed(2)} → Q3: ${s.q3.toFixed(2)}${cfg.unit} (IQR: ${s.iqr.toFixed(2)})`; return ` ░ Min: ${s.min.toFixed(2)} → Maks: ${s.max.toFixed(2)}${cfg.unit}`; } } } },
-      scales: { x: { ticks: { color:'#6e7681', font:{size:10,family:'DM Sans'}, maxRotation: 25 }, grid: { color:'rgba(42,52,68,0.4)' } }, y: { title: { display:true, text: cfg.label, color:'#6e7681', font:{size:11} }, ticks: { color:'#6e7681', font:{size:11,family:'DM Mono'} }, grid: { color:'rgba(42,52,68,0.4)' } } }
-    }
+    data: { labels: pests, datasets: [ { type: 'bar', label: 'Julat Penuh (Min–Maks)', data: rangeData, backgroundColor: cfg.color + '25', borderColor: cfg.color + '55', borderWidth: 1, borderRadius: 3, barPercentage: 0.55, categoryPercentage: 0.85, order: 3 }, { type: 'bar', label: 'IQR (Q1–Q3)', data: iqrData, backgroundColor: cfg.color + 'aa', borderColor: cfg.color, borderWidth: 1, borderRadius: 3, barPercentage: 0.55, categoryPercentage: 0.85, order: 2 }, { type: 'line', label: 'Purata (Mean)', data: meanData, borderColor: 'transparent', backgroundColor: '#fff', pointBackgroundColor: '#fff', pointBorderColor: cfg.color, pointBorderWidth: 2, pointRadius: 6, pointHoverRadius: 8, pointStyle: 'crossRot', showLine: false, order: 1 } ] },
+    options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { labels: { color:'#8b949e', font:{size:11,family:'DM Sans'}, boxWidth:10 } }, tooltip: { backgroundColor: '#1c2330', borderColor: '#2a3444', borderWidth: 1, titleColor: '#e6edf3', bodyColor: '#8b949e', padding: 10, callbacks: { title: items => items[0]?.label || '', label: item => { const p = pests[item.dataIndex], s = stats[p]; if (!s) return ''; if (item.dataset.label.includes('Mean')) return ` ✕ Purata: ${s.mean.toFixed(2)}${cfg.unit}`; if (item.dataset.label.includes('IQR')) return ` ▮ Q1: ${s.q1.toFixed(2)} → Q3: ${s.q3.toFixed(2)}${cfg.unit} (IQR: ${s.iqr.toFixed(2)})`; return ` ░ Min: ${s.min.toFixed(2)} → Maks: ${s.max.toFixed(2)}${cfg.unit}`; } } } }, scales: { x: { ticks: { color:'#6e7681', font:{size:10,family:'DM Sans'}, maxRotation: 25 }, grid: { color:'rgba(42,52,68,0.4)' } }, y: { title: { display:true, text: cfg.label, color:'#6e7681', font:{size:11} }, ticks: { color:'#6e7681', font:{size:11,family:'DM Mono'} }, grid: { color:'rgba(42,52,68,0.4)' } } } }
   });
-
   document.getElementById('envelopeStatsBody').innerHTML = pests.map(pest => {
     const s = stats[pest]; if (!s) return '';
     return `<tr><td title="${pest}">${pest.length > 20 ? pest.slice(0,18)+'…' : pest}</td><td class="td-n">${s.n}</td><td>${s.min.toFixed(2)}</td><td>${s.q1.toFixed(2)}</td><td>${s.median.toFixed(2)}</td><td class="td-mean">${s.mean.toFixed(2)}${cfg.unit}</td><td>${s.q3.toFixed(2)}</td><td>${s.max.toFixed(2)}</td><td class="td-sd">±${s.sd.toFixed(2)}</td><td style="${s.range > (s.mean * 0.3) ? 'color:var(--clr-amber)' : 'color:var(--clr-accent2)'};font-family:var(--font-mono);font-weight:600;">${s.range.toFixed(2)}${cfg.unit}</td></tr>`;
   }).join('');
-
   const allRanges = pests.map(p => stats[p].range);
-  document.getElementById('envPestCount').textContent = pests.length;
-  document.getElementById('envActiveRange').textContent = `±${(allRanges.reduce((a,b)=>a+b,0)/allRanges.length).toFixed(1)}${cfg.unit}`;
-  document.getElementById('envWideRange').textContent = pests[allRanges.indexOf(Math.max(...allRanges))] || '—';
-  document.getElementById('envNarrowRange').textContent = pests[allRanges.indexOf(Math.min(...allRanges))] || '—';
+  document.getElementById('envPestCount').textContent = pests.length; document.getElementById('envActiveRange').textContent = `±${(allRanges.reduce((a,b)=>a+b,0)/allRanges.length).toFixed(1)}${cfg.unit}`; document.getElementById('envWideRange').textContent = pests[allRanges.indexOf(Math.max(...allRanges))] || '—'; document.getElementById('envNarrowRange').textContent = pests[allRanges.indexOf(Math.min(...allRanges))] || '—';
 }
 
 function renderPrevalence() {
-  const d = filteredData, ctx = document.getElementById('chartPrevalence');
-  if (!ctx) return;
+  const d = filteredData, ctx = document.getElementById('chartPrevalence'); if (!ctx) return;
   const allSurveys = new Set(d.map(r => `${r.date}|${r.state}`)); const N = allSurveys.size;
   if (!N) { if (prevChart) { prevChart.destroy(); prevChart = null; } document.getElementById('totalSurveysEl').textContent = '0 bancian'; document.getElementById('shannonValEl').textContent = '—'; document.getElementById('shannonInterpEl').textContent = '—'; return; }
-
   const pestSurveys = {}; d.forEach(r => { if (!pestSurveys[r.pest]) pestSurveys[r.pest] = new Set(); pestSurveys[r.pest].add(`${r.date}|${r.state}`); });
   const sorted = Object.entries(pestSurveys).map(([pest, set]) => ({ pest, count: set.size, pct: (set.size / N * 100) })).sort((a, b) => b.pct - a.pct).slice(0, 10);
-
   const shannon = calcShannon(d);
   if (shannon) {
-    const Hnorm = shannon.Hmax > 0 ? (shannon.H / shannon.Hmax).toFixed(2) : 0;
-    const interpEl = document.getElementById('shannonInterpEl');
-    document.getElementById('shannonValEl').textContent = shannon.H.toFixed(3);
-    interpEl.textContent = `${Hnorm >= 0.75 ? 'Tinggi' : Hnorm >= 0.4 ? 'Sederhana' : 'Rendah'} (J'=${Hnorm})`;
-    interpEl.style.cssText = `${Hnorm >= 0.75 ? 'background:rgba(46,160,67,0.2);color:var(--clr-accent2)' : Hnorm >= 0.4 ? 'background:rgba(210,153,34,0.2);color:var(--clr-amber)' : 'background:rgba(248,81,73,0.2);color:var(--clr-red)'};padding:2px 8px;border-radius:50px;font-size:10px;font-weight:600;`;
+    const Hnorm = shannon.Hmax > 0 ? (shannon.H / shannon.Hmax).toFixed(2) : 0; const interpEl = document.getElementById('shannonInterpEl'); document.getElementById('shannonValEl').textContent = shannon.H.toFixed(3);
+    interpEl.textContent = `${Hnorm >= 0.75 ? 'Tinggi' : Hnorm >= 0.4 ? 'Sederhana' : 'Rendah'} (J'=${Hnorm})`; interpEl.style.cssText = `${Hnorm >= 0.75 ? 'background:rgba(46,160,67,0.2);color:var(--clr-accent2)' : Hnorm >= 0.4 ? 'background:rgba(210,153,34,0.2);color:var(--clr-amber)' : 'background:rgba(248,81,73,0.2);color:var(--clr-red)'};padding:2px 8px;border-radius:50px;font-size:10px;font-weight:600;`;
   }
   document.getElementById('totalSurveysEl').textContent = `N = ${N} unit bancian`;
-
   if (prevChart) prevChart.destroy();
   prevChart = new Chart(ctx, {
-    type: 'bar',
-    data: { labels: sorted.map(r => r.pest), datasets: [{ label: 'Kadar Prevalens (%)', data: sorted.map(r => r.pct.toFixed(1)), backgroundColor: sorted.map((_, i) => PALETTE_PEST[i % PALETTE_PEST.length] + 'bb'), borderColor: sorted.map((_, i) => PALETTE_PEST[i % PALETTE_PEST.length]), borderWidth: 1, borderRadius: 4 }] },
+    type: 'bar', data: { labels: sorted.map(r => r.pest), datasets: [{ label: 'Kadar Prevalens (%)', data: sorted.map(r => r.pct.toFixed(1)), backgroundColor: sorted.map((_, i) => PALETTE_PEST[i % PALETTE_PEST.length] + 'bb'), borderColor: sorted.map((_, i) => PALETTE_PEST[i % PALETTE_PEST.length]), borderWidth: 1, borderRadius: 4 }] },
     options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor:'#1c2330', borderColor:'#2a3444', borderWidth:1, callbacks: { title: items => items[0]?.label || '', label: item => [` Prevalens: ${parseFloat(item.raw).toFixed(1)}%`, ` Dijumpai dalam ${sorted[item.dataIndex].count} / ${N} bancian`] } } }, scales: { x: { min: 0, max: 100, title:{ display:true, text:'Prevalens (%)', color:'#6e7681', font:{size:11} }, ticks:{ color:'#6e7681', font:{size:11,family:'DM Mono'}, callback: v => v+'%' }, grid: { color:'rgba(42,52,68,0.4)' } }, y: { ticks: { color: '#8b949e', font:{size:10,family:'DM Sans'}, callback: v => v.length > 16 ? v.slice(0,14)+'…' : v }, grid: { display: false } } } }
   });
 }
 
 function renderIntensityDist() {
-  const d = filteredData, ctx = document.getElementById('chartIntensity');
-  if (!ctx) return; const RINGAN_MAX = 2, TERUK_MIN = 5;
+  const d = filteredData, ctx = document.getElementById('chartIntensity'); if (!ctx) return; const RINGAN_MAX = 2, TERUK_MIN = 5;
   const gStats = calcStats(d.map(r => r.area));
-  if (gStats) {
-    document.getElementById('intMedianEl').textContent = gStats.median.toFixed(2) + ' Ha';
-    document.getElementById('intIQREl').textContent = gStats.iqr.toFixed(2) + ' Ha';
-    document.getElementById('intTerukPctEl').textContent = (d.filter(r=>r.area > TERUK_MIN).length / d.length * 100).toFixed(1) + '%';
-  }
+  if (gStats) { document.getElementById('intMedianEl').textContent = gStats.median.toFixed(2) + ' Ha'; document.getElementById('intIQREl').textContent = gStats.iqr.toFixed(2) + ' Ha'; document.getElementById('intTerukPctEl').textContent = (d.filter(r=>r.area > TERUK_MIN).length / d.length * 100).toFixed(1) + '%'; }
   const pestGroups = {};
-  d.forEach(r => {
-    if (!pestGroups[r.pest]) pestGroups[r.pest] = { ringan:0, sederhana:0, teruk:0, total:0 };
-    pestGroups[r.pest].total++;
-    if (r.area < RINGAN_MAX) pestGroups[r.pest].ringan++; else if (r.area <= TERUK_MIN) pestGroups[r.pest].sederhana++; else pestGroups[r.pest].teruk++;
-  });
+  d.forEach(r => { if (!pestGroups[r.pest]) pestGroups[r.pest] = { ringan:0, sederhana:0, teruk:0, total:0 }; pestGroups[r.pest].total++; if (r.area < RINGAN_MAX) pestGroups[r.pest].ringan++; else if (r.area <= TERUK_MIN) pestGroups[r.pest].sederhana++; else pestGroups[r.pest].teruk++; });
   const pests = Object.entries(pestGroups).sort((a, b) => b[1].total - a[1].total).slice(0, 8).map(e => e[0]);
   if (!pests.length) { if (intensityChart) { intensityChart.destroy(); intensityChart = null; } return; }
-
   const toPct = (band) => pests.map(p => (pestGroups[p][band] / pestGroups[p].total * 100).toFixed(1));
   if (intensityChart) intensityChart.destroy();
   intensityChart = new Chart(ctx, {
-    type: 'bar',
-    data: { labels: pests, datasets: [{ label: `Ringan (<${RINGAN_MAX} Ha)`, data: toPct('ringan'), backgroundColor: 'rgba(46,160,67,0.72)', borderColor: 'rgba(46,160,67,0.9)', borderWidth: 0, borderRadius: { topLeft:0, topRight:0, bottomLeft:4, bottomRight:4 } }, { label: `Sederhana (${RINGAN_MAX}–${TERUK_MIN} Ha)`, data: toPct('sederhana'), backgroundColor: 'rgba(210,153,34,0.72)', borderColor: 'rgba(210,153,34,0.9)', borderWidth: 0, borderRadius: 0 }, { label: `Teruk (>${TERUK_MIN} Ha)`, data: toPct('teruk'), backgroundColor: 'rgba(248,81,73,0.72)', borderColor: 'rgba(248,81,73,0.9)', borderWidth: 0, borderRadius: { topLeft:4, topRight:4, bottomLeft:0, bottomRight:0 } }] },
+    type: 'bar', data: { labels: pests, datasets: [{ label: `Ringan (<${RINGAN_MAX} Ha)`, data: toPct('ringan'), backgroundColor: 'rgba(46,160,67,0.72)', borderColor: 'rgba(46,160,67,0.9)', borderWidth: 0, borderRadius: { topLeft:0, topRight:0, bottomLeft:4, bottomRight:4 } }, { label: `Sederhana (${RINGAN_MAX}–${TERUK_MIN} Ha)`, data: toPct('sederhana'), backgroundColor: 'rgba(210,153,34,0.72)', borderColor: 'rgba(210,153,34,0.9)', borderWidth: 0, borderRadius: 0 }, { label: `Teruk (>${TERUK_MIN} Ha)`, data: toPct('teruk'), backgroundColor: 'rgba(248,81,73,0.72)', borderColor: 'rgba(248,81,73,0.9)', borderWidth: 0, borderRadius: { topLeft:4, topRight:4, bottomLeft:0, bottomRight:0 } }] },
     options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color:'#8b949e', font:{size:11,family:'DM Sans'} } }, tooltip: { backgroundColor:'#1c2330', borderColor:'#2a3444', borderWidth:1, callbacks: { title: items => items[0]?.label || '', label: item => { const g = pestGroups[pests[item.dataIndex]], n = item.datasetIndex === 0 ? g.ringan : item.datasetIndex===1 ? g.sederhana : g.teruk; return ` ${item.dataset.label}: ${item.raw}% (${n} rekod)`; } } } }, scales: { x: { stacked: true, min: 0, max: 100, title:{ display:true, text:'% Rekod Bancian', color:'#6e7681' }, ticks:{ color:'#6e7681', callback: v => v+'%' }, grid: { color:'rgba(42,52,68,0.4)' } }, y: { stacked: true, ticks: { color:'#8b949e', font:{size:10}, callback: v => v.length > 16 ? v.slice(0,14)+'…' : v }, grid: { display: false } } } }
   });
 }
 
 function renderVulnerabilityMatrix() {
-  const d = filteredData, container = document.getElementById('matrixContainer');
-  if (!container) return;
+  const d = filteredData, container = document.getElementById('matrixContainer'); if (!container) return;
   if (!d.length) { container.innerHTML = `<div class="no-data-msg"><i class="bi bi-table"></i><br>Tiada data</div>`; return; }
-
-  const cropArea = {}, pestArea = {};
-  d.forEach(r => { cropArea[r.crop] = (cropArea[r.crop] || 0) + r.area; pestArea[r.pest] = (pestArea[r.pest] || 0) + r.area; });
-  const topCrops = Object.entries(cropArea).sort((a,b)=>b[1]-a[1]).slice(0,8).map(e=>e[0]);
-  const topPests = Object.entries(pestArea).sort((a,b)=>b[1]-a[1]).slice(0,8).map(e=>e[0]);
-
-  const matrix = {};
-  topCrops.forEach(c => { matrix[c] = {}; topPests.forEach(p => { matrix[c][p] = { sum:0, count:0 }; }); });
+  const cropArea = {}, pestArea = {}; d.forEach(r => { cropArea[r.crop] = (cropArea[r.crop] || 0) + r.area; pestArea[r.pest] = (pestArea[r.pest] || 0) + r.area; });
+  const topCrops = Object.entries(cropArea).sort((a,b)=>b[1]-a[1]).slice(0,8).map(e=>e[0]), topPests = Object.entries(pestArea).sort((a,b)=>b[1]-a[1]).slice(0,8).map(e=>e[0]);
+  const matrix = {}; topCrops.forEach(c => { matrix[c] = {}; topPests.forEach(p => { matrix[c][p] = { sum:0, count:0 }; }); });
   d.forEach(r => { if (matrix[r.crop] && matrix[r.crop][r.pest] !== undefined) { matrix[r.crop][r.pest].sum += r.area; matrix[r.crop][r.pest].count += 1; } });
-
-  let maxVal = 0;
-  topCrops.forEach(c => topPests.forEach(p => { const cell = matrix[c][p]; if (cell.count > 0) maxVal = Math.max(maxVal, cell.sum / cell.count); }));
-
+  let maxVal = 0; topCrops.forEach(c => topPests.forEach(p => { const cell = matrix[c][p]; if (cell.count > 0) maxVal = Math.max(maxVal, cell.sum / cell.count); }));
   let html = `<div class="matrix-scroll"><table class="matrix-table"><thead><tr><th class="matrix-corner">Tanaman ↓ &nbsp;/&nbsp; Perosak →</th>`;
   topPests.forEach(p => { html += `<th class="matrix-pest-header" title="${p}">${p.length > 14 ? p.slice(0,12)+'…' : p}</th>`; });
   html += `</tr></thead><tbody>`;
-
   topCrops.forEach(c => {
     html += `<tr><td class="matrix-crop-label">${c}<div style="font-size:9px;color:var(--clr-text-dim);margin-top:1px;">${topPests.reduce((s,p)=>s+matrix[c][p].sum, 0).toFixed(1)} Ha total</div></td>`;
     topPests.forEach(p => {
       const cell = matrix[c][p];
       if (cell.count === 0) { html += `<td class="matrix-cell empty">—</td>`; } else {
-        const avg = cell.sum / cell.count;
-        html += `<td class="matrix-cell" style="background:${getHeatColor(avg, maxVal)};" title="${c} × ${p}&&#10;Purata: ${avg.toFixed(2)} Ha&#10;n = ${cell.count} bancian"><div class="cell-val">${avg.toFixed(1)}</div><div class="cell-count">n=${cell.count}</div></td>`;
+        const avg = cell.sum / cell.count; html += `<td class="matrix-cell" style="background:${getHeatColor(avg, maxVal)};" title="${c} × ${p}&#10;Purata: ${avg.toFixed(2)} Ha&#10;n = ${cell.count} bancian"><div class="cell-val">${avg.toFixed(1)}</div><div class="cell-count">n=${cell.count}</div></td>`;
       }
-    });
-    html += `</tr>`;
+    }); html += `</tr>`;
   });
   html += `</tbody></table></div><div class="matrix-legend mt-3"><span style="color:var(--clr-text-dim);font-size:11px;">Nilai = Purata Ha/bancian | n = bil bancian</span> <span class="legend-chip" style="background:rgba(56,139,253,0.25);">Rendah</span> <span style="color:var(--clr-text-dim);font-size:11px;">→</span> <span class="legend-chip" style="background:rgba(210,153,34,0.35);">Sederhana</span> <span style="color:var(--clr-text-dim);font-size:11px;">→</span> <span class="legend-chip" style="background:rgba(248,81,73,0.5);">Tinggi</span></div>`;
   container.innerHTML = html;
@@ -1175,7 +898,11 @@ function initSelect2() {
 }
 function debounce(fn, ms) { let t; return (...args) => { clearTimeout(t); t = setTimeout(()=>fn(...args), ms); }; }
 function showLoading(state) { document.getElementById('loadingOverlay').classList[state ? 'remove' : 'add']('hidden'); }
-function showError(msg) { const toast = document.getElementById('errorToast'); document.getElementById('errorMsg').textContent = msg; toast.style.display = 'block'; setTimeout(()=>{ toast.style.display='none'; }, 5500); }
+function showError(msg) {
+  const toast = document.getElementById('errorToast');
+  if(!toast) return;
+  document.getElementById('errorMsg').textContent = msg; toast.style.display = 'block'; setTimeout(()=>{ toast.style.display='none'; }, 5500);
+}
 function updateLastUpdated() { const now = new Date(); document.getElementById('lastUpdatedEl').textContent = 'Kemaskini: ' + now.toLocaleDateString('ms-MY') + ' ' + now.toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'}); }
 function getMockPestData() { return { records: [] }; }
 function getMockWeatherData() { return { data: [] }; }
