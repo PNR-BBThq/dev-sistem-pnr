@@ -159,138 +159,171 @@
             <button class="btn btn-light btn-sm border" onclick="document.getElementById('sidebar').classList.toggle('active'); document.getElementById('mobileOverlay').classList.toggle('active');"><i class="bi bi-list fs-5"></i></button>
         </div>
 
-       <div id="view-main" class="app-view">
+       <div id="view-main" class="app-view dash-canggih">
+            
+            <style>
+                .dash-canggih { background-color: #0b1121; color: #94a3b8; font-family: 'Inter', sans-serif; padding: 20px; border-radius: 16px; min-height: 100vh; }
+                .c-card { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: transform 0.3s; }
+                .c-card:hover { border: 1px solid rgba(56, 189, 248, 0.2); }
+                .text-glow { color: #ffffff; text-shadow: 0 0 15px rgba(255, 255, 255, 0.4); }
+                .neon-green { color: #10b981; text-shadow: 0 0 12px rgba(16, 185, 129, 0.6); }
+                .neon-red { color: #f43f5e; text-shadow: 0 0 12px rgba(244, 63, 94, 0.6); }
+                .neon-blue { color: #38bdf8; text-shadow: 0 0 12px rgba(56, 189, 248, 0.6); }
+                .neon-amber { color: #f59e0b; text-shadow: 0 0 12px rgba(245, 158, 11, 0.6); }
+                .pulse-dot { height: 8px; width: 8px; background-color: #10b981; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px #10b981; animation: pulse 2s infinite; }
+                @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.5); } 100% { opacity: 1; transform: scale(1); } }
+                .font-mono { font-family: 'Courier New', Courier, monospace; letter-spacing: -0.5px; }
+                .c-table th { background: rgba(15, 23, 42, 0.6) !important; color: #38bdf8 !important; border-bottom: 1px solid rgba(56, 189, 248, 0.3) !important; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+                .c-table td { background: transparent !important; color: #cbd5e1 !important; border-bottom: 1px solid rgba(255,255,255,0.05) !important; font-size: 0.85rem; }
+                .c-table tr:hover td { background: rgba(255,255,255,0.03) !important; }
+                .seg-control { background: rgba(15, 23, 42, 0.8); padding: 4px; border-radius: 12px; display: inline-flex; border: 1px solid rgba(255,255,255,0.05); }
+                .seg-control .nav-link { color: #64748b; border-radius: 8px; padding: 6px 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; transition: all 0.3s; }
+                .seg-control .nav-link.active { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+                .btn-c-outline { border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.02); color: #cbd5e1; transition: 0.3s; }
+                .btn-c-outline:hover { border-color: #38bdf8; color: #38bdf8; background: rgba(56,189,248,0.05); }
+            </style>
+
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
                 <div>
-                    <h4 class="fw-bold m-0 text-dark" style="letter-spacing: -0.5px;">Pusat Kawalan Operasi</h4>
-                    <div class="d-flex align-items-center mt-1">
-                        <small class="text-muted me-3" id="lastUpdate">Data setakat: Terkini</small>
-                        <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-2 py-1" style="font-size: 0.75rem;">
-                            <i class="bi bi-stopwatch"></i> Purata Pengesahan: 1.2 Hari
+                    <h4 class="fw-bolder m-0 text-white" style="letter-spacing: 1px; text-transform: uppercase;">PNR National Command Center</h4>
+                    <div class="d-flex align-items-center mt-1 font-mono small">
+                        <span class="pulse-dot me-2"></span>
+                        <span class="text-white me-3" id="lastUpdate">SYS_STATUS: ONLINE | DATA: TERKINI</span>
+                        <span class="badge bg-transparent border border-secondary text-secondary rounded-pill px-2 py-1" style="font-size: 0.65rem;">
+                            SLA PENGESAHAN: <span class="neon-green fw-bold">1.2 HARI</span>
                         </span>
                     </div>
                 </div>
-                <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-                    <div class="btn-group shadow-sm rounded-pill">
-                        <button class="btn btn-white border text-secondary btn-sm px-3" id="btnRefreshDash"><i class="bi bi-arrow-clockwise"></i></button>
-                        <button class="btn btn-white border text-success btn-sm px-3" id="btnDlExcel"><i class="bi bi-file-earmark-excel-fill me-1"></i> Excel</button>
-                        <button class="btn btn-white border text-danger btn-sm px-3" id="btnDlPDF"><i class="bi bi-file-earmark-pdf-fill me-1"></i> PDF</button>
-                    </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-sm btn-c-outline rounded-pill px-3" id="btnRefreshDash"><i class="bi bi-arrow-clockwise"></i> SYNC</button>
+                    <button class="btn btn-sm btn-c-outline rounded-pill px-3 text-success" id="btnDlExcel"><i class="bi bi-file-earmark-excel-fill"></i> XLS</button>
+                    <button class="btn btn-sm btn-c-outline rounded-pill px-3 text-danger" id="btnDlPDF"><i class="bi bi-file-earmark-pdf-fill"></i> PDF</button>
                 </div>
             </div>
             
-            <div class="card mb-4 border-0 shadow-sm" style="background: #ffffff; border-left: 4px solid #064e3b !important; border-radius: 12px;">
+            <div class="c-card mb-4" style="border-left: 4px solid #38bdf8;">
                 <div class="card-body p-3 d-flex align-items-center">
-                    <div class="bg-light rounded-circle p-2 me-3 text-primary"><i class="bi bi-cpu fs-4"></i></div>
-                    <div id="smartSummary" class="text-dark w-100">
-                        <p class="mb-0 text-muted fst-italic">[Sila masukkan penjelasan atau ringkasan AI / Eksekutif anda di sini]</p>
+                    <div class="me-4 text-center">
+                        <i class="bi bi-cpu fs-3 neon-blue d-block"></i>
+                        <span class="font-mono text-uppercase" style="font-size: 0.55rem; color:#38bdf8;">AI Engine</span>
+                    </div>
+                    <div id="smartSummary" class="w-100">
+                        <h6 class="text-white fw-bold mb-1" style="font-size: 0.85rem; letter-spacing: 1px;">THREAT INTELLIGENCE REPORT</h6>
+                        <p class="mb-0 text-muted font-mono" style="font-size: 0.8rem;">[Sila masukkan penjelasan atau ringkasan AI / Eksekutif anda di sini]</p>
                     </div>
                 </div>
             </div>
 
             <div class="row g-3 mb-4" id="kpiCardsContainer">
                 <div class="col-6 col-md-3">
-                    <div class="card h-100 border-0 shadow-sm rounded-4 p-3 bg-white">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="text-muted small fw-bold text-uppercase">Luas Bancian</span>
-                            <i class="bi bi-rulers text-primary bg-primary bg-opacity-10 p-1 rounded"></i>
+                    <div class="c-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="text-muted small fw-bold text-uppercase" style="letter-spacing: 1px;">Kawasan Bancian</span>
+                            <i class="bi bi-crosshair neon-blue fs-5"></i>
                         </div>
-                        <div class="fs-3 fw-bolder text-dark" id="kpiTotalBancian">0.00</div>
-                        <div class="text-success small fw-bold mt-1"><i class="bi bi-arrow-up-right"></i> +12 Ha (Minggu ini)</div>
-                        <p class="text-muted mt-2 mb-0" style="font-size: 0.7rem;">[Sila masukkan penjelasan metrik ini di sini]</p>
+                        <div class="mt-3">
+                            <div class="fs-2 fw-bolder font-mono text-glow" id="kpiTotalBancian">0.00</div>
+                            <div class="font-mono neon-green mt-1" style="font-size: 0.7rem;"><i class="bi bi-caret-up-fill"></i> +12 Ha (7 Hari)</div>
+                            <p class="text-muted mt-2 mb-0" style="font-size: 0.65rem; line-height: 1.2;">[Sila masukkan penjelasan metrik ini di sini]</p>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="col-6 col-md-3">
-                    <div class="card h-100 border-0 shadow-sm rounded-4 p-3 bg-white">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="text-muted small fw-bold text-uppercase">Luas Serangan</span>
-                            <i class="bi bi-bug-fill text-danger bg-danger bg-opacity-10 p-1 rounded"></i>
+                    <div class="c-card p-4 h-100 d-flex flex-column justify-content-between" style="border-bottom: 2px solid #f43f5e;">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="text-muted small fw-bold text-uppercase" style="letter-spacing: 1px;">Kawasan Serangan</span>
+                            <i class="bi bi-bug-fill neon-red fs-5"></i>
                         </div>
-                        <div class="fs-3 fw-bolder text-danger" id="kpiTotalSerangan">0.00</div>
-                        <div class="text-danger small fw-bold mt-1"><i class="bi bi-arrow-up-right"></i> +5.2 Ha (Amaran)</div>
-                        <p class="text-muted mt-2 mb-0" style="font-size: 0.7rem;">[Sila masukkan penjelasan metrik ini di sini]</p>
+                        <div class="mt-3">
+                            <div class="fs-2 fw-bolder font-mono neon-red" id="kpiTotalSerangan">0.00</div>
+                            <div class="font-mono neon-red mt-1" style="font-size: 0.7rem;"><i class="bi bi-exclamation-triangle-fill"></i> +5.2 Ha (Amaran)</div>
+                            <p class="text-muted mt-2 mb-0" style="font-size: 0.65rem; line-height: 1.2;">[Sila masukkan penjelasan metrik ini di sini]</p>
+                        </div>
                     </div>
                 </div>
 
                 <div class="col-6 col-md-3">
-                    <div class="card h-100 border-0 shadow-sm rounded-4 p-3 bg-white">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="text-muted small fw-bold text-uppercase">Kadar Serangan</span>
-                            <i class="bi bi-percent text-warning bg-warning bg-opacity-10 p-1 rounded"></i>
+                    <div class="c-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="text-muted small fw-bold text-uppercase" style="letter-spacing: 1px;">Kadar Kemusnahan</span>
+                            <i class="bi bi-activity neon-amber fs-5"></i>
                         </div>
-                        <div class="fs-3 fw-bolder text-dark" id="kpiPeratus">0%</div>
-                        <div class="text-muted small mt-1">Nisbah Jangkitan</div>
-                        <p class="text-muted mt-2 mb-0" style="font-size: 0.7rem;">[Sila masukkan penjelasan metrik ini di sini]</p>
+                        <div class="mt-3">
+                            <div class="fs-2 fw-bolder font-mono text-glow" id="kpiPeratus">0%</div>
+                            <div class="font-mono text-muted mt-1" style="font-size: 0.7rem;">Nisbah Jangkitan Nasional</div>
+                            <p class="text-muted mt-2 mb-0" style="font-size: 0.65rem; line-height: 1.2;">[Sila masukkan penjelasan metrik ini di sini]</p>
+                        </div>
                     </div>
                 </div>
 
                 <div class="col-6 col-md-3">
-                    <div class="card h-100 border-0 shadow-sm rounded-4 p-3 bg-white">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="text-muted small fw-bold text-uppercase">Indeks Keterukan</span>
-                            <i class="bi bi-exclamation-triangle-fill text-dark bg-secondary bg-opacity-10 p-1 rounded"></i>
+                    <div class="c-card p-3 h-100 d-flex flex-column justify-content-between">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="text-muted small fw-bold text-uppercase" style="letter-spacing: 1px;">Indeks Keterukan</span>
+                            <i class="bi bi-pie-chart-fill text-muted fs-6"></i>
                         </div>
-                        <div class="mt-2" style="height: 50px; position: relative;">
+                        <div style="height: 60px; position: relative;">
                             <canvas id="cPie"></canvas>
                         </div>
-                        <p class="text-muted mt-2 mb-0" style="font-size: 0.7rem;">[Sila masukkan penjelasan metrik ini di sini]</p>
+                        <p class="text-muted mt-2 mb-0 text-center" style="font-size: 0.65rem; line-height: 1.2;">[Sila masukkan penjelasan metrik ini di sini]</p>
                     </div>
                 </div>
             </div>
 
             <div class="row g-3 mb-4">
                 <div class="col-xl-7">
-                    <div class="card h-100 border-0 shadow-sm rounded-4">
-                        <div class="card-header bg-white border-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-center">
-                            <h6 class="fw-bold m-0 text-dark"><i class="bi bi-geo-alt-fill text-danger me-2"></i>Pemetaan Spatial Nasional</h6>
+                    <div class="c-card h-100">
+                        <div class="p-3 d-flex justify-content-between align-items-center border-bottom" style="border-color: rgba(255,255,255,0.05) !important;">
+                            <h6 class="fw-bold m-0 text-white" style="letter-spacing: 1px;"><i class="bi bi-radar neon-green me-2"></i>LIVE SPATIAL MAPPING</h6>
+                            <span class="badge bg-transparent border border-success neon-green rounded-0 font-mono">GPS ACTIVE</span>
                         </div>
-                        <div class="px-4 mt-1 mb-2">
-                            <p class="text-muted small m-0">[Sila masukkan penjelasan tentang pemetaan spatial ini di sini]</p>
+                        <div class="p-3 pb-0">
+                            <p class="text-muted m-0" style="font-size: 0.75rem;">[Sila masukkan penjelasan tentang pemetaan spatial ini di sini]</p>
                         </div>
-                        <div class="card-body p-3">
-                            <div class="map-box rounded-4" id="map" style="height: 400px; border: 1px solid #f3f4f6;"></div>
+                        <div class="p-3">
+                            <div class="map-box" id="map" style="height: 380px; border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 8px; filter: invert(90%) hue-rotate(180deg) contrast(110%);"></div>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-xl-5">
-                    <div class="card h-100 border-0 shadow-sm rounded-4">
-                        <div class="card-header bg-white border-0 pt-4 pb-0 px-4">
-                            <ul class="nav nav-pills nav-fill bg-light p-1 rounded-pill mb-2" id="vizTab" role="tablist" style="font-size: 0.85rem;">
+                    <div class="c-card h-100">
+                        <div class="p-3 border-bottom d-flex flex-column align-items-center" style="border-color: rgba(255,255,255,0.05) !important;">
+                            <ul class="nav seg-control mb-2" id="vizTab" role="tablist">
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link active rounded-pill text-dark fw-bold py-1" id="hotspot-tab" data-bs-toggle="tab" data-bs-target="#hotspot" type="button" role="tab">Taburan Daerah</button>
+                                    <button class="nav-link active" id="hotspot-tab" data-bs-toggle="tab" data-bs-target="#hotspot" type="button" role="tab">Hotspot Zone</button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link rounded-pill text-dark fw-bold py-1" id="chart-tab" data-bs-toggle="tab" data-bs-target="#chart" type="button" role="tab">Analisis Perosak</button>
+                                    <button class="nav-link" id="chart-tab" data-bs-toggle="tab" data-bs-target="#chart" type="button" role="tab">Trend Analysis</button>
                                 </li>
                             </ul>
-                            <p class="text-muted small m-0">[Sila masukkan penjelasan tentang data jadual/carta di sini]</p>
+                            <p class="text-muted text-center m-0 w-100" style="font-size: 0.7rem; line-height: 1.2;">[Sila masukkan penjelasan tentang data jadual/carta di sini]</p>
                         </div>
                         
-                        <div class="card-body px-4 pb-4 pt-2">
+                        <div class="p-3">
                             <div class="tab-content" id="vizTabContent">
                                 <div class="tab-pane fade show active" id="hotspot" role="tabpanel">
-                                    <div class="table-responsive" style="max-height: 320px; overflow-y: auto;">
-                                        <table class="table table-hover table-borderless align-middle mb-0">
-                                            <thead class="bg-light sticky-top" style="font-size: 0.75rem; text-transform: uppercase;">
+                                    <div class="table-responsive" style="max-height: 330px; overflow-y: auto;">
+                                        <table class="table table-borderless c-table align-middle m-0">
+                                            <thead>
                                                 <tr>
-                                                    <th class="rounded-start">Daerah</th>
-                                                    <th class="text-end rounded-end">Luas (Ha)</th>
+                                                    <th>Daerah Terjejas</th>
+                                                    <th class="text-end">Kawasan (Ha)</th>
                                                 </tr>
                                             </thead>
-                                            <tbody id="hotspotTable" style="font-size: 0.9rem;">
+                                            <tbody id="hotspotTable" class="font-mono">
                                                 </tbody>
                                         </table>
                                     </div>
                                 </div>
                                 
                                 <div class="tab-pane fade" id="chart" role="tabpanel">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <h6 class="fw-bold text-secondary m-0 small" id="tajukCBar">Analisis Trend</h6>
-                                        <button id="btnBackPest" class="btn btn-xs btn-outline-secondary rounded-pill py-0 px-2" style="display:none; font-size: 0.7rem;"><i class="bi bi-arrow-left"></i> Kembali</button>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="fw-bold text-white m-0 font-mono" id="tajukCBar" style="font-size: 0.8rem;">DATA VISUALIZATION</h6>
+                                        <button id="btnBackPest" class="btn btn-sm btn-c-outline py-0 px-2 font-mono" style="display:none; font-size: 0.7rem;">&lt; BACK</button>
                                     </div>
-                                    <div style="height: 300px;"><canvas id="cBar"></canvas></div>
+                                    <div style="height: 310px;"><canvas id="cBar"></canvas></div>
                                 </div>
                             </div>
                         </div>
@@ -298,38 +331,39 @@
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+            <div class="c-card">
+                <div class="p-4 d-flex justify-content-between align-items-center border-bottom" style="border-color: rgba(255,255,255,0.05) !important;">
                     <div>
-                        <h6 class="fw-bold m-0"><i class="bi bi-card-list me-2"></i>Strim Data Semasa</h6>
+                        <h6 class="fw-bold m-0 text-white" style="letter-spacing: 1px;"><i class="bi bi-list-columns-reverse neon-blue me-2"></i>LIVE OPERATIONAL STREAM</h6>
                         <p class="text-muted small m-0 mt-1">[Sila masukkan penjelasan tentang penggunaan jadual data mentah ini di sini]</p>
                     </div>
-                    <small id="pgInfo" class="text-muted fw-bold bg-light px-3 py-1 rounded-pill"></small>
+                    <small id="pgInfo" class="font-mono neon-blue border border-info rounded px-2 py-1" style="background: rgba(56, 189, 248, 0.1);"></small>
                 </div>
-                <div class="card-body p-0">
+                <div class="p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0" style="font-family: 'Segoe UI', sans-serif;">
-                            <thead class="bg-light text-muted" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <table class="table table-borderless c-table align-middle m-0">
+                            <thead>
                                 <tr>
-                                    <th class="ps-4">Tarikh</th>
-                                    <th>Negeri / Daerah</th>
-                                    <th>Tanaman</th>
+                                    <th class="ps-4">Timestamp</th>
+                                    <th>Zon Operasi</th>
+                                    <th>Komoditi</th>
                                     <th>Luas Bancian</th>
-                                    <th>Luas Serangan</th>
-                                    <th class="pe-4 text-end">Tindakan</th>
+                                    <th>Impak (Ha)</th>
+                                    <th class="pe-4 text-center">Tindakan</th>
                                 </tr>
                             </thead>
-                            <tbody id="tBody">
+                            <tbody id="tBody" class="font-mono">
                                 </tbody>
                         </table>
                     </div>
                 </div>
-                <div class="card-footer bg-white border-0 pb-4 pt-3 d-flex justify-content-center gap-2">
-                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-4" id="btnPrevPg">Sebelumnya</button>
-                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-4" id="btnNextPg">Seterusnya</button>
+                <div class="p-3 d-flex justify-content-center gap-2">
+                    <button class="btn btn-sm btn-c-outline rounded-pill px-4" id="btnPrevPg">PREV</button>
+                    <button class="btn btn-sm btn-c-outline rounded-pill px-4" id="btnNextPg">NEXT</button>
                 </div>
             </div>
         </div>
+       
         <div id="view-verify" class="app-view" style="display:none">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4 class="fw-bold m-0 text-dark">Pengesahan Data</h4>
