@@ -108,6 +108,7 @@ const DataManager = {
     }
 };
 
+// SALIN DAN GANTIKAN KESELURUHAN BLOK VerifyManager INI:
 const VerifyManager = {
     checkPendingCount: async function() { 
         try { 
@@ -142,7 +143,7 @@ const VerifyManager = {
         } 
     },
 
-   subVer: async function(row, act) { 
+    subVer: async function(row, act) { 
         let re = ""; 
         if(act === 'REJECT') { 
             re = prompt("Sebab Ditolak:"); 
@@ -181,9 +182,6 @@ const VerifyManager = {
                     document.getElementById('verifyContainer').innerHTML = '<div class="col-12 text-center p-5 text-muted bg-white rounded border border-dashed"><i class="bi bi-check-circle fs-3 text-success d-block mb-2"></i>Semua data telah disahkan.</div>';
                 }
             }
-
-            // NOTA: Kita BUANG panggilan loadPend() dan initDash() di sini.
-            // Dashboard akan automatik dikemas kini apabila user klik tab 'Dashboard' nanti.
         } else {
             alert("Ralat pelayan: " + r.message);
             btn.innerHTML = originalText; 
@@ -191,7 +189,7 @@ const VerifyManager = {
         }
     },
 
-   approveAll: async function() { 
+    approveAll: async function() { 
         if(!confirm("Sahkan SEMUA data yang telah diisi? Ini mungkin mengambil masa beberapa saat.")) return; 
         
         const btn = event.target.closest('button');
@@ -224,6 +222,7 @@ const VerifyManager = {
         btn.innerHTML = originalText; 
         btn.disabled = false;
     }
+};
 
 const TaskManager = {
     retainedImagesGlobal: [],
