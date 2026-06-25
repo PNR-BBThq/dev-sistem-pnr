@@ -142,57 +142,88 @@ const VerifyManager = {
         } 
     },
 
-    subVer: async function(row, act) { 
+   subVer: async function(row, act) { 
         let re = ""; 
-        if(act==='REJECT'){ re=prompt("Sebab:"); if(!re) return; } 
-        else if(!confirm("Sahkan?")) return; 
+        if(act === 'REJECT') { 
+            re = prompt("Sebab Ditolak:"); 
+            if(!re) return; 
+        } 
+        else if(!confirm("Sahkan data ini?")) return; 
         
+        // 1. Dapatkan elemen kad secara terus (UI)
+        const btn = event.target.closest('button');
+        const cardCol = btn.closest('.col-md-6'); // Cari kotak luar kad
+        const originalText = btn.innerHTML;
+        
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>...'; 
+        btn.disabled = true; 
+        
+        // 2. Hantar arahan ke pelayan Google
         const r = await API.postData('submitVerify', {row:row, act:act, reason:re, name:AppState.uProf.name}); 
-        alert(r.message); 
-        if(r.success) { this.loadPend(); this.checkPendingCount(); DashboardManager.initDash(); } 
+        
+        if(r.success) { 
+            // 3. MAGIK OPTIMISTIC UI: Padam kad dari skrin terus (Tanpa reload database!)
+            if (cardCol) {
+                cardCol.style.transition = "opacity 0.3s, transform 0.3s";
+                cardCol.style.opacity = "0";
+                cardCol.style.transform = "scale(0.9)";
+                setTimeout(() => cardCol.remove(), 300); // Hilang dengan animasi
+            }
+
+            // 4. Tolak lencana (badge) nombor tertunggak secara manual
+            const badge = document.getElementById('badgePending');
+            if (badge && badge.innerText) {
+                let currentCount = parseInt(badge.innerText) - 1;
+                badge.innerText = currentCount > 0 ? currentCount : 0;
+                
+                if (currentCount <= 0) {
+                    badge.style.display = "none";
+                    document.getElementById('verifyContainer').innerHTML = '<div class="col-12 text-center p-5 text-muted bg-white rounded border border-dashed"><i class="bi bi-check-circle fs-3 text-success d-block mb-2"></i>Semua data telah disahkan.</div>';
+                }
+            }
+
+            // NOTA: Kita BUANG panggilan loadPend() dan initDash() di sini.
+            // Dashboard akan automatik dikemas kini apabila user klik tab 'Dashboard' nanti.
+        } else {
+            alert("Ralat pelayan: " + r.message);
+            btn.innerHTML = originalText; 
+            btn.disabled = false;
+        }
     },
 
-    approveAll: async function() { 
-        if(!confirm("Sahkan SEMUA data yang telah diisi?")) return; 
+   approveAll: async function() { 
+        if(!confirm("Sahkan SEMUA data yang telah diisi? Ini mungkin mengambil masa beberapa saat.")) return; 
         
         const btn = event.target.closest('button');
         const originalText = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Memproses...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Memproses Kelompok...';
         btn.disabled = true;
-
-        const progBox = document.getElementById('bulkProgress');
-        const progBar = document.getElementById('progBar');
-        const progText = document.getElementById('progText');
-        if(progBox) progBox.style.display = 'block';
-        if(progBar) progBar.style.width = '0%';
-        if(progText) progText.innerText = '0%';
 
         const d = await API.postData('getPending', {state: AppState.uProf.state}); 
         
         if(!d.rows || !d.rows.length) {
             btn.innerHTML = originalText; btn.disabled = false;
-            if(progBox) progBox.style.display = 'none';
             alert("Tiada data untuk disahkan."); return; 
         } 
         
-        let total = d.rows.length;
-        let count = 0;
+        // KUTIP SEMUA NOMBOR ROW DALAM SATU ARRAY
+        const allRows = d.rows.map(r => r.row);
+        
+        // MAGIK BATCH: Kita hantar satu arahan baru ke backend
+        const r = await API.postData('submitVerifyBulk', { rows: allRows, act: 'APPROVE', reason: 'Bulk', name: AppState.uProf.name }); 
+        
+        if (r.success) {
+            alert(`✅ Selesai! ${allRows.length} data berjaya disahkan serentak.`); 
+            // Refresh skrin kerana semua data dah licin
+            this.loadPend(); 
+            this.checkPendingCount();
+        } else {
+            alert("Gagal memproses kelompok: " + r.message);
+        }
 
-        for (const r of d.rows) { 
-            await API.postData('submitVerify', {row: r.row, act: 'APPROVE', reason: 'Bulk', name: AppState.uProf.name}); 
-            count++;
-            let pct = Math.round((count / total) * 100);
-            if(progBar) progBar.style.width = pct + '%';
-            if(progText) progText.innerText = pct + '%';
-        } 
-        
-        alert("✅ Selesai! Semua data berjaya disahkan."); 
-        btn.innerHTML = originalText; btn.disabled = false;
-        if(progBox) progBox.style.display = 'none';
-        
-        this.loadPend(); DashboardManager.initDash(); this.checkPendingCount();
+        btn.innerHTML = originalText; 
+        btn.disabled = false;
     }
-};
 
 const TaskManager = {
     retainedImagesGlobal: [],
