@@ -162,8 +162,9 @@ const VerifyManager = {
         // 2. Hantar arahan ke pelayan Google
         const r = await API.postData('submitVerify', {row:row, act:act, reason:re, name:AppState.uProf.name}); 
         
-        if(r.success) { 
-            // 3. MAGIK OPTIMISTIC UI: Padam kad dari skrin terus (Tanpa reload database!)
+        // 3. PANGGIL SENSOR BIOSEKURITI DAN POPUP
+        paparPopupHasilPengesahan(r, () => {
+            // MAGIK OPTIMISTIC UI: Jalan lepas pengguna tekan "Faham / OK"
             if (cardCol) {
                 cardCol.style.transition = "opacity 0.3s, transform 0.3s";
                 cardCol.style.opacity = "0";
@@ -171,7 +172,7 @@ const VerifyManager = {
                 setTimeout(() => cardCol.remove(), 300); // Hilang dengan animasi
             }
 
-            // 4. Tolak lencana (badge) nombor tertunggak secara manual
+            // Tolak lencana (badge) nombor tertunggak secara manual
             const badge = document.getElementById('badgePending');
             if (badge && badge.innerText) {
                 let currentCount = parseInt(badge.innerText) - 1;
@@ -182,8 +183,10 @@ const VerifyManager = {
                     document.getElementById('verifyContainer').innerHTML = '<div class="col-12 text-center p-5 text-muted bg-white rounded border border-dashed"><i class="bi bi-check-circle fs-3 text-success d-block mb-2"></i>Semua data telah disahkan.</div>';
                 }
             }
-        } else {
-            alert("Ralat pelayan: " + r.message);
+        });
+
+        // 4. Jika gagal, pulangkan butang ke asal
+        if (!r.success) {
             btn.innerHTML = originalText; 
             btn.disabled = false;
         }
@@ -210,15 +213,14 @@ const VerifyManager = {
         // MAGIK BATCH: Kita hantar satu arahan baru ke backend
         const r = await API.postData('submitVerifyBulk', { rows: allRows, act: 'APPROVE', reason: 'Bulk', name: AppState.uProf.name }); 
         
-        if (r.success) {
-            alert(`✅ Selesai! ${allRows.length} data berjaya disahkan serentak.`); 
-            // Refresh skrin kerana semua data dah licin
-            this.loadPend(); 
-            this.checkPendingCount();
-        } else {
-            alert("Gagal memproses kelompok: " + r.message);
-        }
+        // PANGGIL SENSOR BIOSEKURITI DAN POPUP
+        paparPopupHasilPengesahan(r, () => {
+            // Refresh skrin selepas tekan OK
+            VerifyManager.loadPend(); 
+            VerifyManager.checkPendingCount();
+        });
 
+        // Reset butang ke asal
         btn.innerHTML = originalText; 
         btn.disabled = false;
     }
@@ -673,3 +675,56 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnRefreshTasks = document.getElementById('btnRefreshTasks');
     if(btnRefreshTasks) btnRefreshTasks.addEventListener('click', () => TaskManager.loadMyTasks());
 });
+
+// =========================================================================
+// FUNGSI PEMBANTU: POPUP MAKLUMBALAS PENGESAHAN DENGAN SENSOR BIOSEKURITI
+// =========================================================================
+function paparPopupHasilPengesahan(res, callbackRefresh) {
+    if (res.success) {
+        // SEMAK: Adakah backend hantar bendera kuarantin?
+        if (res.kuarantinDikesan) {
+            Swal.fire({
+                icon: 'warning',
+                title: '<span style="color: #be123c; font-weight: 900;">⚠️ AMARAN BIOSEKURITI!</span>',
+                html: `
+                    <div style="text-align: left; font-size: 0.85rem; color: #334155; line-height: 1.6;">
+                        <p style="margin-top: 0;">Rekod yang baru disahkan mengandungi perosak sasaran kuarantin:</p>
+                        
+                        <div style="background-color: #ffe4e6; border-left: 4px solid #e11d48; padding: 10px 15px; border-radius: 6px; margin: 15px 0; font-weight: bold; color: #9f1239; font-size: 1rem;">
+                            🐛 ${res.senaraiPerosak || "PEROSAK KUARANTIN"}
+                        </div>
+                        
+                        <p><b>✨ Tindakan Automasi Sistem:</b></p>
+                        <ul style="padding-left: 20px; margin-bottom: 0;">
+                            <li>Status rekod telah diubah kepada <b style="color: #16a34a;">DISAHKAN (VERIFIED)</b>.</li>
+                            <li>Satu salinan <b>Laporan Rasmi (PDF)</b> telah diemailkan secara automatik kepada <b>Unit Kuarantin & Biosekuriti HQ</b>.</li>
+                        </ul>
+                    </div>
+                `,
+                background: '#ffffff',
+                confirmButtonColor: '#059669',
+                confirmButtonText: '✅ Baiklah, Saya Faham',
+                allowOutsideClick: false,
+                customClass: {
+                    popup: 'border border-danger border-2 rounded-4 shadow-lg'
+                }
+            }).then(() => {
+                if (typeof callbackRefresh === "function") callbackRefresh();
+            });
+
+        } else {
+            // POPUP BIASA JIKA TIADA PEROSAK KUARANTIN
+            Swal.fire({
+                icon: 'success',
+                title: 'Berjaya!',
+                text: res.message || 'Rekod telah berjaya disahkan.',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                if (typeof callbackRefresh === "function") callbackRefresh();
+            });
+        }
+    } else {
+        Swal.fire({ icon: 'error', title: 'Ralat', text: res.message });
+    }
+}
